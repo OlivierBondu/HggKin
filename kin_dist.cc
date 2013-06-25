@@ -4,9 +4,9 @@
 #include <iostream>
 using namespace std;
 
-#define GGH_GEN 0
+#define GGH_GEN 1
 #define VBF_GEN 1
-#define BKG_GEN 0
+#define BKG_GEN 1
 #define GGH_REC 0
 #define VBF_REC 0
 #define BKG_REC 0

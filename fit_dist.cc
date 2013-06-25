@@ -1,7 +1,11 @@
+#include "include_root.h"
+#include "include_roofit.h"
+#include <iostream>
+
 using namespace std;
 
+int main() {
 
-int fit_dist() {
   //#########MENU
   int const menu_bkg=1;//0:land; 1:logn; 
   int const menu_bkg_pol=0; // degree of polynome
@@ -25,7 +29,7 @@ int fit_dist() {
   
 
   //########BKG
-  /*
+  
   TCanvas *canvas_bkg=new TCanvas("canvas_bkg","canvas_bkg");
   TPad *pad_fit_bkg=new TPad("pad_fit_bkg","pad_fit_bkg",0,0.3,1,1);
   TPad *ratio_pad_bkg=new TPad("ratio_pad_bkg","ratio_pad_bkg",0,0,1,0.3);
@@ -37,7 +41,7 @@ int fit_dist() {
   
   RooPlot* frame_bkg=pt.frame();
 
-  RooRealVar mean_land_bkg("mean_land_bkg","mean_land_bkg",10,0,200);
+RooRealVar mean_land_bkg("mean_land_bkg","mean_land_bkg",10,0,200);
   RooRealVar sigma_land_bkg("sigma_land_bkg","sigma_land_bkg",2,0,100);
   RooLandau *land_bkg=new RooLandau("land_bkg","land_bkg",pt,mean_land_bkg,sigma_land_bkg);
 
@@ -107,7 +111,7 @@ int fit_dist() {
   model_bkg->plotOn(frame_bkg);
 
 
-  TH1F *ratio_bkg=model_bkg->createHistogram("ratio_bkg", pt,RooFit::Binning((int)hist_bkg->GetNbinsX(),[0,200]));
+  TH1F *ratio_bkg=(TH1F*) model_bkg->createHistogram("ratio_bkg", pt,RooFit::Binning(0,200,hist_bkg->GetNbinsX()));
   
    ratio_bkg->Scale(hist_bkg->Integral());
   for (int i=0;i<hist_bkg->GetNbinsX();i++) {
@@ -146,8 +150,8 @@ int fit_dist() {
   sprintf(buffer,"../plot/root/fit%s_%s.root",menu_cut,buffer_savebkg);
   canvas_bkg->SaveAs(buffer);
   
-
-  /*
+  
+  
   //########GGH
   TCanvas *canvas_ggh=new TCanvas("canvas_ggh","canvas_ggh");
   TPad *pad_fit_ggh=new TPad("pad_fit_ggh","pad_fit_ggh",0,0.3,1,1);
@@ -226,7 +230,7 @@ int fit_dist() {
   model_ggh->plotOn(frame_ggh);
 
 
-  TH1F *ratio_ggh=model_ggh->createHistogram("ratio_ggh", pt,RooFit::Binning((int)hist_ggh->GetNbinsX(),[0,200]));
+  TH1F *ratio_ggh=(TH1F*)model_ggh->createHistogram("ratio_ggh", pt,RooFit::Binning(0,200,hist_ggh->GetNbinsX()));
 
   ratio_ggh->Scale(hist_ggh->Integral());
   for (int i=0;i<hist_ggh->GetNbinsX();i++) {
@@ -258,13 +262,13 @@ int fit_dist() {
   sprintf(buffer,"ggh fit : #chi^{2}=%2.2f",frame_ggh->chiSquare());
   latex.DrawLatex(0.3,0.96,buffer);
   
-  sprintf(buffer,"../plot/png/fit%s_%s%s.png",menu_cut,buffer_saveggh);
+  sprintf(buffer,"../plot/png/fit%s_%s.png",menu_cut,buffer_saveggh);
   canvas_ggh->SaveAs(buffer);
   sprintf(buffer,"../plot/pdf/fit%s_%s.pdf",menu_cut,buffer_saveggh);
   canvas_ggh->SaveAs(buffer);
   sprintf(buffer,"../plot/root/fit%s_%s.root",menu_cut,buffer_saveggh);
   canvas_ggh->SaveAs(buffer);
-  */  
+    
   //########VBF
   TCanvas *canvas_vbf=new TCanvas("canvas_vbf","canvas_vbf");
   TPad *pad_fit_vbf=new TPad("pad_fit_vbf","pad_fit_vbf",0,0.3,1,1);
@@ -280,10 +284,6 @@ int fit_dist() {
   RooRealVar mean_land_vbf("mean_land_vbf","mean_land_vbf",10,0,200);
   RooRealVar sigma_land_vbf("sigma_land_vbf","sigma_land_vbf",2,0,100);
   RooLandau *land_vbf=new RooLandau("land_vbf","land_vbf",pt,mean_land_vbf,sigma_land_vbf);
-
-  RooRealVar mean_gauss_vbf("mean_gauss_vbf","mean_gauss_vbf",10,0,100);
-  RooRealVar sigma_gauss_vbf("sigma_gauss_vbf","sigma_gauss_vbf",10,0,100);
-  RooGaussian *gauss_vbf=new RooGaussian("gauss_vbf","gauss_vbf",pt,mean_gauss_vbf,sigma_gauss_vbf);
 
   RooRealVar coef0_logn_vbf("coef0_logn_vbf","coef0_logn_vbf",0,1,100);
   RooRealVar coef1_logn_vbf("coef1_logn_vbf","coef1_logn_vbf",1,1,50);
@@ -349,7 +349,7 @@ int fit_dist() {
   model_vbf->plotOn(frame_vbf);
 
 
-  TH1F *ratio_vbf=model_vbf->createHistogram("ratio_vbf", pt,RooFit::Binning((int)hist_vbf->GetNbinsX(),[0,200]));
+  TH1F *ratio_vbf=(TH1F*)model_vbf->createHistogram("ratio_vbf", pt,RooFit::Binning(0,200,hist_vbf->GetNbinsX()));
 
   ratio_vbf->Scale(hist_vbf->Integral());
   for (int i=0;i<hist_vbf->GetNbinsX();i++) {
@@ -358,13 +358,10 @@ int fit_dist() {
     }}
   
   ratio_vbf->Sumw2();
-  mean_poisson_vbf.setConstant(1);
   coef0_logn_vbf.setConstant(1);
   coef1_logn_vbf.setConstant(1);
   coef2_logn_vbf.setConstant(1);
   coef3_logn_vbf.setConstant(1);
-  mean_gauss_vbf.setConstant(1);
-  sigma_gauss_vbf.setConstant(1);
   mean_land_vbf.setConstant(1);
   sigma_land_vbf.setConstant(1);
   coef0_pol_vbf.setConstant(1);
@@ -384,7 +381,7 @@ int fit_dist() {
   sprintf(buffer,"vbf fit : #chi^{2}=%2.2f",frame_vbf->chiSquare());
   latex.DrawLatex(0.3,0.96,buffer);
   
-  sprintf(buffer,"../plot/png/fit%s_%s%s.png",menu_cut,buffer_savevbf);
+  sprintf(buffer,"../plot/png/fit%s_%s.png",menu_cut,buffer_savevbf);
   canvas_vbf->SaveAs(buffer);
   sprintf(buffer,"../plot/pdf/fit%s_%s.pdf",menu_cut,buffer_savevbf);
   canvas_vbf->SaveAs(buffer);
@@ -394,7 +391,7 @@ int fit_dist() {
 
   
   //###########################DATA
-  /*
+  
   TCanvas *canvas_data=new TCanvas("canvas_data","canvas_data");
   TPad *pad_fit_data=new TPad("pad_fit_data","pad_fit_data",0,0.3,1,1);
   TPad *pad_ratio_data=new TPad("ratio_pad_data","ratio_pad_data",0,0,1,0.3);
@@ -413,7 +410,8 @@ int fit_dist() {
   RooRealVar compo_sgn("compo_sgn","compo_sgn",0,0,1);
   RooAddPdf *model_data;
   //------------------------------------------
-  /*
+    
+
 model_data=new RooAddPdf("model_data","model_data",RooArgList(*model_ggh,*model_bkg),compo_sgn);
   TH1F *hist_data=(TH1F*) hist_ggh->Clone();
   hist_data->Add(hist_bkg);
@@ -421,7 +419,7 @@ model_data=new RooAddPdf("model_data","model_data",RooArgList(*model_ggh,*model_
   RooDataHist *data=new RooDataHist("data","data",pt,hist_data);
   model_data->fitTo(*data);
 
-  TH1F *ratio_data=model_data->createHistogram("ratio_data",pt,RooFit::Binning(hist_data->GetNbinsX(),[0,200]));
+  TH1F *ratio_data=(TH1F*)model_data->createHistogram("ratio_data",pt,RooFit::Binning(0,200,hist_data->GetNbinsX()));
 
   ratio_data->Scale(hist_data->Integral());
   //ratio_data->Sumw2();
@@ -477,7 +475,7 @@ model_data=new RooAddPdf("model_data","model_data",RooArgList(*model_ggh,*model_
   data=new RooDataHist("data","data",pt,hist_data);
   model_data->fitTo(*data);
 
-  ratio_data=(TH1F*) model_data->createHistogram("ratio_data",pt,RooFit::Binning(hist_data->GetNbinsX(),[0,200]));
+  ratio_data=(TH1F*) model_data->createHistogram("ratio_data",pt,RooFit::Binning(0,200,hist_data->GetNbinsX()));
 
   ratio_data->Scale(hist_data->Integral());
   for (int i=0;i<hist_data->GetNbinsX();i++) {
@@ -518,11 +516,12 @@ model_data=new RooAddPdf("model_data","model_data",RooArgList(*model_ggh,*model_
   sprintf(buffer,"../plot/root/fit%s_data_%s_%s.root",menu_cut,buffer_savebkg,buffer_savevbf);
   canvas_data->SaveAs(buffer);
 
+  //Deleting all pointers
 
+  
+  
+  file_result->Close();
+  file_result->Delete();
 
-  */
-  return 0;
-
-
-
+return 0;
 }
