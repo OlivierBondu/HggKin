@@ -291,8 +291,6 @@ RooRealVar mean_land_bkg("mean_land_bkg","mean_land_bkg",10,0,200);
   RooRealVar coef3_logn_vbf("coef3_logn_vbf","coef3_logn_vbf",3,1,50);
   RooGenericPdf *logn_vbf=new RooGenericPdf("logn_vbf","TMath::LogNormal(pt,coef1_logn_vbf,coef2_logn_vbf,coef3_logn_vbf)", RooArgSet(pt,coef1_logn_vbf,coef2_logn_vbf,coef3_logn_vbf));
 
-  RooRealVar mean_poisson_vbf("mean_poisson_vbf","mean_poisson_vbf",0,0,200);
-  RooPoisson *poisson_vbf=new RooPoisson("poisson_vbf","poisson_vbf",pt,mean_poisson_vbf);
 
   RooRealVar coef0_pol_vbf("coef0_pol_vbf","coef0_pol_vbf",0,-100,100);
   RooRealVar coef1_pol_vbf("coef1_pol_vbf","coef1_pol_vbf",2,-100,100);
@@ -318,8 +316,8 @@ RooRealVar mean_land_bkg("mean_land_bkg","mean_land_bkg",10,0,200);
     
   case 1 : 
     pol2_vbf=new RooPolynomial("pol2_vbf","pol2_vbf",pt,RooArgList(coef0_pol_vbf));
-    model_vbf =new RooProdPdf("model_vbf","model_vbf",RooArgList(*poisson_vbf,*pol2_vbf));
-    sprintf(buffer_savevbf,"vbfpoissonpol0");
+    model_vbf =new RooProdPdf("model_vbf","model_vbf",RooArgList(*logn_vbf,*pol2_vbf));
+    sprintf(buffer_savevbf,"vbflognpol0");
     break;  
     
   case 2 : 
@@ -329,8 +327,8 @@ RooRealVar mean_land_bkg("mean_land_bkg","mean_land_bkg",10,0,200);
     break;  
   case 3 : 
     pol2_vbf=new RooPolynomial("pol2_vbf","pol2_vbf",pt,RooArgList(coef0_pol_vbf,coef1_pol_vbf));
-    model_vbf =new RooProdPdf("model_vbf","model_vbf",RooArgList(*poisson_vbf,*pol2_vbf));
-    sprintf(buffer_savevbf,"vbfpoissonpol1");
+    model_vbf =new RooProdPdf("model_vbf","model_vbf",RooArgList(*logn_vbf,*pol2_vbf));
+    sprintf(buffer_savevbf,"vbflognpol1");
     break;  
   case 4 : 
     pol2_vbf=new RooPolynomial("pol2_vbf","pol2_vbf",pt,RooArgList(coef0_pol_vbf,coef1_pol_vbf,coef2_pol_vbf));
@@ -339,8 +337,8 @@ RooRealVar mean_land_bkg("mean_land_bkg","mean_land_bkg",10,0,200);
     break;  
   case 5 : 
     pol2_vbf=new RooPolynomial("pol2_vbf","pol2_vbf",pt,RooArgList(coef0_pol_vbf,coef1_pol_vbf,coef2_pol_vbf));
-    model_vbf =new RooProdPdf("model_vbf","model_vbf",RooArgList(*poisson_vbf,*pol2_vbf));
-    sprintf(buffer_savevbf,"vbfpoissonpol2");
+    model_vbf =new RooProdPdf("model_vbf","model_vbf",RooArgList(*logn_vbf,*pol2_vbf));
+    sprintf(buffer_savevbf,"vbflognpol2");
     break;  
   }
 
