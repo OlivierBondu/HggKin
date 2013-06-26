@@ -1,21 +1,23 @@
 #include "include_root.h"
 #include "include_roofit.h"
+#include "param_kin.h"
+#include "setTDRStyle.h"
 #include <iostream>
 
 using namespace std;
 
 int main() {
-
+   setTDRStyle();
   //#########MENU
-  int const menu_bkg=1;//0:land; 1:logn; 
-  int const menu_bkg_pol=0; // degree of polynome
+  int const menu_bkg=0;//0:land; 1:logn; 
+  int const menu_bkg_pol=1; // degree of polynome
   int const menu_ggh=0;//0:land; 1:logn; 
-  int const menu_ggh_pol=2; // degree of polynome
-  int const menu_vbf=0;//0:land; 1:logn; 
-  int const menu_vbf_pol=2; // degree of polynome
-  char const *menu_cut="cuttheta0.200"; //"", cuttheta{0.200,0.375,0.550,0.750}
+  int const menu_ggh_pol=1; // degree of polynome
+  int const menu_vbf=0;//0:land; 1:logn; 2:tsallis
+  int const menu_vbf_pol=1; // degree of polynome
+  char const *menu_cut=""; //"", cuttheta{0.200,0.375,0.550,0.750}
   
-  TFile *file_result=new TFile("../data/kin_dist.root");
+  TFile *file_result=new TFile("/afs/cern.ch/work/c/cgoudet/private/data/kin_dist.root");
   RooRealVar pt("pt","pt",0,200);
 
   
@@ -29,7 +31,7 @@ int main() {
   
 
   //########BKG
-  
+   
   TCanvas *canvas_bkg=new TCanvas("canvas_bkg","canvas_bkg");
   TPad *pad_fit_bkg=new TPad("pad_fit_bkg","pad_fit_bkg",0,0.3,1,1);
   TPad *ratio_pad_bkg=new TPad("ratio_pad_bkg","ratio_pad_bkg",0,0,1,0.3);
@@ -111,7 +113,7 @@ RooRealVar mean_land_bkg("mean_land_bkg","mean_land_bkg",10,0,200);
   model_bkg->plotOn(frame_bkg);
 
 
-  TH1F *ratio_bkg=(TH1F*) model_bkg->createHistogram("ratio_bkg", pt,RooFit::Binning(0,200,hist_bkg->GetNbinsX()));
+  TH1F *ratio_bkg=(TH1F*) model_bkg->createHistogram("ratio_bkg", pt,RooFit::Binning(hist_bkg->GetNbinsX(),0,200));
   
    ratio_bkg->Scale(hist_bkg->Integral());
   for (int i=0;i<hist_bkg->GetNbinsX();i++) {
@@ -143,15 +145,15 @@ RooRealVar mean_land_bkg("mean_land_bkg","mean_land_bkg",10,0,200);
   sprintf(buffer,"bkg fit : #chi^{2}=%2.2f",frame_bkg->chiSquare());
   latex.DrawLatex(0.3,0.96,buffer);
   
-  sprintf(buffer,"../plot/png/fit%s_%s.png",menu_cut,buffer_savebkg);
+  sprintf(buffer,"/afs/cern.ch/work/c/cgoudet/private/plot/png/fit%s_%s.png",menu_cut,buffer_savebkg);
   canvas_bkg->SaveAs(buffer);
-  sprintf(buffer,"../plot/pdf/fit%s_%s.pdf",menu_cut,buffer_savebkg);
+  sprintf(buffer,"/afs/cern.ch/work/c/cgoudet/private/plot/pdf/fit%s_%s.pdf",menu_cut,buffer_savebkg);
   canvas_bkg->SaveAs(buffer);
-  sprintf(buffer,"../plot/root/fit%s_%s.root",menu_cut,buffer_savebkg);
+  sprintf(buffer,"/afs/cern.ch/work/c/cgoudet/private/plot/root/fit%s_%s.root",menu_cut,buffer_savebkg);
   canvas_bkg->SaveAs(buffer);
   
   
-  
+    
   //########GGH
   TCanvas *canvas_ggh=new TCanvas("canvas_ggh","canvas_ggh");
   TPad *pad_fit_ggh=new TPad("pad_fit_ggh","pad_fit_ggh",0,0.3,1,1);
@@ -230,7 +232,7 @@ RooRealVar mean_land_bkg("mean_land_bkg","mean_land_bkg",10,0,200);
   model_ggh->plotOn(frame_ggh);
 
 
-  TH1F *ratio_ggh=(TH1F*)model_ggh->createHistogram("ratio_ggh", pt,RooFit::Binning(0,200,hist_ggh->GetNbinsX()));
+  TH1F *ratio_ggh=(TH1F*)model_ggh->createHistogram("ratio_ggh", pt,RooFit::Binning(hist_ggh->GetNbinsX(),0,200));
 
   ratio_ggh->Scale(hist_ggh->Integral());
   for (int i=0;i<hist_ggh->GetNbinsX();i++) {
@@ -262,11 +264,11 @@ RooRealVar mean_land_bkg("mean_land_bkg","mean_land_bkg",10,0,200);
   sprintf(buffer,"ggh fit : #chi^{2}=%2.2f",frame_ggh->chiSquare());
   latex.DrawLatex(0.3,0.96,buffer);
   
-  sprintf(buffer,"../plot/png/fit%s_%s.png",menu_cut,buffer_saveggh);
+  sprintf(buffer,"/afs/cern.ch/work/c/cgoudet/private/plot/png/fit%s_%s.png",menu_cut,buffer_saveggh);
   canvas_ggh->SaveAs(buffer);
-  sprintf(buffer,"../plot/pdf/fit%s_%s.pdf",menu_cut,buffer_saveggh);
+  sprintf(buffer,"/afs/cern.ch/work/c/cgoudet/private/plot/pdf/fit%s_%s.pdf",menu_cut,buffer_saveggh);
   canvas_ggh->SaveAs(buffer);
-  sprintf(buffer,"../plot/root/fit%s_%s.root",menu_cut,buffer_saveggh);
+  sprintf(buffer,"/afs/cern.ch/work/c/cgoudet/private/plot/root/fit%s_%s.root",menu_cut,buffer_saveggh);
   canvas_ggh->SaveAs(buffer);
     
   //########VBF
@@ -291,6 +293,10 @@ RooRealVar mean_land_bkg("mean_land_bkg","mean_land_bkg",10,0,200);
   RooRealVar coef3_logn_vbf("coef3_logn_vbf","coef3_logn_vbf",3,1,50);
   RooGenericPdf *logn_vbf=new RooGenericPdf("logn_vbf","TMath::LogNormal(pt,coef1_logn_vbf,coef2_logn_vbf,coef3_logn_vbf)", RooArgSet(pt,coef1_logn_vbf,coef2_logn_vbf,coef3_logn_vbf));
 
+  RooRealVar n("n","n",1,0.1,100);
+  RooRealVar T("T","T",1,0.1,100);
+  RooRealVar mass("mass","mass",100,0,200);
+  RooGenericPdf *tsallis_vbf=new RooGenericPdf("tsallis_vbf","pt*pow(1+(sqrt(mass*mass+pt*pt)-mass)/n/T,-n)",RooArgSet(pt,n,T,mass));
 
   RooRealVar coef0_pol_vbf("coef0_pol_vbf","coef0_pol_vbf",0,-100,100);
   RooRealVar coef1_pol_vbf("coef1_pol_vbf","coef1_pol_vbf",2,-100,100);
@@ -307,7 +313,7 @@ RooRealVar mean_land_bkg("mean_land_bkg","mean_land_bkg",10,0,200);
   RooProdPdf *model_vbf;
 
   char buffer_savevbf[100];
-  switch (2*menu_vbf_pol+menu_vbf) {
+  switch (3*menu_vbf_pol+menu_vbf) {
   case 0 : 
     pol2_vbf=new RooPolynomial("pol2_vbf","pol2_vbf",pt,RooArgList(coef0_pol_vbf));
     model_vbf =new RooProdPdf("model_vbf","model_vbf",RooArgList(*land_vbf,*pol2_vbf));
@@ -319,41 +325,57 @@ RooRealVar mean_land_bkg("mean_land_bkg","mean_land_bkg",10,0,200);
     model_vbf =new RooProdPdf("model_vbf","model_vbf",RooArgList(*logn_vbf,*pol2_vbf));
     sprintf(buffer_savevbf,"vbflognpol0");
     break;  
-    
-  case 2 : 
+  case 2 :
+    pol2_vbf=new RooPolynomial("pol2_vbf","pol2_vbf",pt,RooArgList(coef0_pol_vbf));
+    model_vbf =new RooProdPdf("model_vbf","model_vbf",RooArgList(*tsallis_vbf,*pol2_vbf));
+    sprintf(buffer_savevbf,"vbftalpol0");
+    break;  
+  case 3 : 
     pol2_vbf=new RooPolynomial("pol2_vbf","pol2_vbf",pt,RooArgList(coef0_pol_vbf,coef1_pol_vbf));
     model_vbf =new RooProdPdf("model_vbf","model_vbf",RooArgList(*land_vbf,*pol2_vbf));
     sprintf(buffer_savevbf,"vbflandpol1");
     break;  
-  case 3 : 
+  case 4 : 
     pol2_vbf=new RooPolynomial("pol2_vbf","pol2_vbf",pt,RooArgList(coef0_pol_vbf,coef1_pol_vbf));
     model_vbf =new RooProdPdf("model_vbf","model_vbf",RooArgList(*logn_vbf,*pol2_vbf));
     sprintf(buffer_savevbf,"vbflognpol1");
     break;  
-  case 4 : 
+   case 5 :
+    pol2_vbf=new RooPolynomial("pol2_vbf","pol2_vbf",pt,RooArgList(coef0_pol_vbf,coef1_pol_vbf));
+    model_vbf =new RooProdPdf("model_vbf","model_vbf",RooArgList(*tsallis_vbf,*pol2_vbf));
+    sprintf(buffer_savevbf,"vbftalpol1");
+    break;  
+  case 6 : 
     pol2_vbf=new RooPolynomial("pol2_vbf","pol2_vbf",pt,RooArgList(coef0_pol_vbf,coef1_pol_vbf,coef2_pol_vbf));
     model_vbf =new RooProdPdf("model_vbf","model_vbf",RooArgList(*land_vbf,*pol2_vbf));
     sprintf(buffer_savevbf,"vbflandpol2");
     break;  
-  case 5 : 
+  case 7 : 
     pol2_vbf=new RooPolynomial("pol2_vbf","pol2_vbf",pt,RooArgList(coef0_pol_vbf,coef1_pol_vbf,coef2_pol_vbf));
     model_vbf =new RooProdPdf("model_vbf","model_vbf",RooArgList(*logn_vbf,*pol2_vbf));
     sprintf(buffer_savevbf,"vbflognpol2");
     break;  
-  }
+ case 8 :
+   pol2_vbf=new RooPolynomial("pol2_vbf","pol2_vbf",pt,RooArgList(coef0_pol_vbf,coef1_pol_vbf,coef2_pol_vbf));
+    model_vbf =new RooProdPdf("model_vbf","model_vbf",RooArgList(*tsallis_vbf,*pol2_vbf));
+    sprintf(buffer_savevbf,"vbftalpol2");
+    break;  
+}
 
 
   model_vbf->fitTo(*vbf);
   model_vbf->plotOn(frame_vbf);
 
 
-  TH1F *ratio_vbf=(TH1F*)model_vbf->createHistogram("ratio_vbf", pt,RooFit::Binning(0,200,hist_vbf->GetNbinsX()));
-
-  ratio_vbf->Scale(hist_vbf->Integral());
+  TH1F *ratio_vbf=(TH1F*)model_vbf->createHistogram("ratio_vbf", pt,RooFit::Binning(hist_vbf->GetNbinsX(),0,200));
+  cout << "bug creating ratio" << endl;
+   ratio_vbf->Scale(hist_vbf->Integral());
   for (int i=0;i<hist_vbf->GetNbinsX();i++) {
-    if (ratio_vbf->GetBinContent(i)>0) {
-      ratio_vbf->SetBinContent(i,hist_vbf->GetBinContent(i)/ratio_vbf->GetBinContent(i));
-    }}
+    //cout << ratio_vbf->GetBinContent(i) << " " ;
+    if (ratio_vbf->GetBinContent(i)>0) ratio_vbf->SetBinContent(i,hist_vbf->GetBinContent(i)/ratio_vbf->GetBinContent(i));
+    //    cout << ratio_vbf->GetBinContent(i) << endl;
+
+}
   
   ratio_vbf->Sumw2();
   coef0_logn_vbf.setConstant(1);
@@ -365,31 +387,36 @@ RooRealVar mean_land_bkg("mean_land_bkg","mean_land_bkg",10,0,200);
   coef0_pol_vbf.setConstant(1);
   coef1_pol_vbf.setConstant(1);
   coef2_pol_vbf.setConstant(1);
-  
+  n.setConstant(1);
+  T.setConstant(1);
+  mass.setConstant(1);
+
+
   ratio_pad_vbf->cd();
   ratio_vbf->GetYaxis()->SetRangeUser(0,2);
   ratio_vbf->Draw("P");
   line->Draw("SAME");
+
   
   pad_fit_vbf->cd();
-  //  pad_fit_vbf->SetLogy(1);
+  pad_fit_vbf->SetLogy(1);
   frame_vbf->Draw();  
   
 
   sprintf(buffer,"vbf fit : #chi^{2}=%2.2f",frame_vbf->chiSquare());
   latex.DrawLatex(0.3,0.96,buffer);
   
-  sprintf(buffer,"../plot/png/fit%s_%s.png",menu_cut,buffer_savevbf);
+  sprintf(buffer,"/afs/cern.ch/work/c/cgoudet/private/plot/png/fit%s_%s.png",menu_cut,buffer_savevbf);
   canvas_vbf->SaveAs(buffer);
-  sprintf(buffer,"../plot/pdf/fit%s_%s.pdf",menu_cut,buffer_savevbf);
+  sprintf(buffer,"/afs/cern.ch/work/c/cgoudet/private/plot/pdf/fit%s_%s.pdf",menu_cut,buffer_savevbf);
   canvas_vbf->SaveAs(buffer);
-  sprintf(buffer,"../plot/root/fit%s_%s.root",menu_cut,buffer_savevbf);
+  sprintf(buffer,"/afs/cern.ch/work/c/cgoudet/private/plot/root/fit%s_%s.root",menu_cut,buffer_savevbf);
   canvas_vbf->SaveAs(buffer);
 
 
   
   //###########################DATA
-  
+    
   TCanvas *canvas_data=new TCanvas("canvas_data","canvas_data");
   TPad *pad_fit_data=new TPad("pad_fit_data","pad_fit_data",0,0.3,1,1);
   TPad *pad_ratio_data=new TPad("ratio_pad_data","ratio_pad_data",0,0,1,0.3);
@@ -417,7 +444,7 @@ model_data=new RooAddPdf("model_data","model_data",RooArgList(*model_ggh,*model_
   RooDataHist *data=new RooDataHist("data","data",pt,hist_data);
   model_data->fitTo(*data);
 
-  TH1F *ratio_data=(TH1F*)model_data->createHistogram("ratio_data",pt,RooFit::Binning(0,200,hist_data->GetNbinsX()));
+  TH1F *ratio_data=(TH1F*)model_data->createHistogram("ratio_data",pt,RooFit::Binning(hist_data->GetNbinsX(),0,200));
 
   ratio_data->Scale(hist_data->Integral());
   //ratio_data->Sumw2();
@@ -452,11 +479,11 @@ model_data=new RooAddPdf("model_data","model_data",RooArgList(*model_ggh,*model_
 
 
 
-  sprintf(buffer,"../plot/png/fit%s_data_%s_%s.png",menu_cut,buffer_savebkg,buffer_saveggh);    
+  sprintf(buffer,"/afs/cern.ch/work/c/cgoudet/private/plot/png/fit%s_data_%s_%s.png",menu_cut,buffer_savebkg,buffer_saveggh);    
   canvas_data->SaveAs(buffer);
-  sprintf(buffer,"../plot/pdf/fit%s_data_%s_%s.pdf",menu_cut,buffer_savebkg,buffer_saveggh);
+  sprintf(buffer,"/afs/cern.ch/work/c/cgoudet/private/plot/pdf/fit%s_data_%s_%s.pdf",menu_cut,buffer_savebkg,buffer_saveggh);
   canvas_data->SaveAs(buffer);
-  sprintf(buffer,"../plot/root/fit%s_data_%s_%s.root",menu_cut,buffer_savebkg,buffer_saveggh);
+  sprintf(buffer,"/afs/cern.ch/work/c/cgoudet/private/plot/root/fit%s_data_%s_%s.root",menu_cut,buffer_savebkg,buffer_saveggh);
   canvas_data->SaveAs(buffer);
 
   hist_data->Delete();
@@ -473,7 +500,7 @@ model_data=new RooAddPdf("model_data","model_data",RooArgList(*model_ggh,*model_
   data=new RooDataHist("data","data",pt,hist_data);
   model_data->fitTo(*data);
 
-  ratio_data=(TH1F*) model_data->createHistogram("ratio_data",pt,RooFit::Binning(0,200,hist_data->GetNbinsX()));
+  ratio_data=(TH1F*) model_data->createHistogram("ratio_data",pt,RooFit::Binning(hist_data->GetNbinsX(),0,200));
 
   ratio_data->Scale(hist_data->Integral());
   for (int i=0;i<hist_data->GetNbinsX();i++) {
@@ -507,15 +534,15 @@ model_data=new RooAddPdf("model_data","model_data",RooArgList(*model_ggh,*model_
 
 
 
-  sprintf(buffer,"../plot/png/fit%s_data_%s_%s.png",menu_cut,buffer_savebkg,buffer_savevbf);    
+  sprintf(buffer,"/afs/cern.ch/work/c/cgoudet/private/plot/png/fit%s_data_%s_%s.png",menu_cut,buffer_savebkg,buffer_savevbf);    
   canvas_data->SaveAs(buffer);
-  sprintf(buffer,"../plot/pdf/fit%s_data_%s_%s.pdf",menu_cut,buffer_savebkg,buffer_savevbf);
+  sprintf(buffer,"/afs/cern.ch/work/c/cgoudet/private/plot/pdf/fit%s_data_%s_%s.pdf",menu_cut,buffer_savebkg,buffer_savevbf);
   canvas_data->SaveAs(buffer);
-  sprintf(buffer,"../plot/root/fit%s_data_%s_%s.root",menu_cut,buffer_savebkg,buffer_savevbf);
+  sprintf(buffer,"/afs/cern.ch/work/c/cgoudet/private/plot/root/fit%s_data_%s_%s.root",menu_cut,buffer_savebkg,buffer_savevbf);
   canvas_data->SaveAs(buffer);
 
   //Deleting all pointers
-
+  
   
   
   file_result->Close();
