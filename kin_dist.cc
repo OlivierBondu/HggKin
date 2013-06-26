@@ -233,7 +233,7 @@ int main() {
 
     for (int cut=0;cut <n_cuttheta;cut++) {
       for (int window=0;window<n_window;window++) {
-	sprintf(dummy,"hist_%scuttheta%0.3f_bkg%d_gen","pT",cuttheta[cut],windowval[window]);
+	sprintf(dummy,"hist_%scuttheta%0.3f_bkg%d_gen","pt",cuttheta[cut],windowval[window]);
 	hist_bkg_cut[window][cut]=new TH1F(dummy,dummy,n_bins,binning[1][0],binning[1][1]);
 	hist_bkg_cut[window][cut]->Sumw2();
 	hist_bkg_cut[window][cut]->GetXaxis()->SetTitle("pT");
