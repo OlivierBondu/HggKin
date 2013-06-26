@@ -6,7 +6,7 @@ using namespace std;
 
 #define GGH_GEN 1
 #define VBF_GEN 1
-#define BKG_GEN 1
+#define BKG_GEN 0
 #define GGH_REC 0
 #define VBF_REC 0
 #define BKG_REC 0
@@ -16,15 +16,12 @@ int main() {
 
 
   fstream stream_integral;
-  stream_integral.open("../data/hist_integral.txt",fstream::out);
-  //cout << "started" << endl;  
+  stream_integral.open("/afs/cern.ch/work/c/cgoudet/private/data/hist_integral.txt",fstream::out);
 
   //################################################
-  //  gROOT->ProcessLine(".L param_kin.cc");
-
   
   TFile *file=0;
-  TFile *file_result = new TFile("../data/kin_dist.root","UPDATE");
+  TFile *file_result = new TFile("/afs/cern.ch/work/c/cgoudet/private/data/kin_dist.root","UPDATE");
   
   TTree *tree=0;
 
@@ -34,7 +31,7 @@ int main() {
   TLorentzVector *gamma1=new TLorentzVector();
   TLorentzVector *gamma2=new TLorentzVector();
   TLorentzVector *gamma_pair=new TLorentzVector();
-    TH1F *hist_ptcuttheta[n_cuttheta]={0};
+  TH1F *hist_cuttheta[n_study][n_cuttheta]={{0}};
   
   int nentry=0;
   char buffer [100],dummy[100];
@@ -42,14 +39,13 @@ int main() {
   float variables[8];//g1_pt,g1_eta,g1_phi,g1_mass,g2_pt,g2_eta,g2_phi,g2_mass;
   float costeta;
 
-
   float GetCosTheta(TLorentzVector *g1, TLorentzVector *g2) ;
 
 
 
-  //#######################Analyse of the ggh_gen
+  //#######################GGH
   if (GGH_GEN) {
-    file = new TFile("../data/SMHiggs_m125.root");
+    file = new TFile("/afs/cern.ch/work/c/cgoudet/private/data/SMHiggs_m125.root");
     file_result->cd();
     tree  =(TTree *) file->Get("ggh_m125_8TeV");
    
@@ -57,21 +53,21 @@ int main() {
     TH1F *hist_ggh_gen[1][n_kinvar];
     for (int kinvar=0;kinvar<n_kinvar;kinvar++) {
       sprintf(dummy,"hist_%s_ggh_gen",kinvarval[kinvar]);
-      hist_ggh_gen[0][kinvar]=new TH1F(dummy,dummy,200,0,200-199*kinvar);
+      hist_ggh_gen[0][kinvar]=new TH1F(dummy,dummy,200,binning[kinvar][0],binning[kinvar][1]);
       hist_ggh_gen[0][kinvar]->Sumw2();
       hist_ggh_gen[0][kinvar]->GetXaxis()->SetTitle(kinvarval[kinvar]);
       hist_ggh_gen[0][kinvar]->GetYaxis()->SetTitle("events");
     }
     
-
-    for (int i=0;i<n_cuttheta;i++) {
-      sprintf(dummy,"hist_ptcuttheta%1.3f_ggh_gen",cuttheta[i]);
-      hist_ptcuttheta[i]=new TH1F(dummy,dummy,200,0,200);
-      hist_ptcuttheta[i]->Sumw2();
-      hist_ptcuttheta[i]->GetXaxis()->SetTitle("pt");
-      hist_ptcuttheta[i]->GetYaxis()->SetTitle("events");
+    for (int study=0;study<n_study;study++) {
+      for (int i=0;i<n_cuttheta;i++) {
+	sprintf(dummy,"hist_%scuttheta%1.3f_ggh_gen",kinvarval[study],cuttheta[i]);
+	hist_cuttheta[study][i]=new TH1F(dummy,dummy,200,binning[study][0],binning[study][1]);
+	hist_cuttheta[study][i]->Sumw2();
+	hist_cuttheta[study][i]->GetXaxis()->SetTitle(kinvarval[study]);
+	hist_cuttheta[study][i]->GetYaxis()->SetTitle("events");
+      }
     }
-    
     
     nentry=tree->GetEntries();
     tree->SetBranchStatus("*",0);// selection of useful branches
@@ -81,6 +77,7 @@ int main() {
       tree->SetBranchAddress(buffer,&variables[i]);
     }
     
+    cout << nentry << endl;
     for (int i=0; i<nentry; i++) {
       tree->GetEntry(i);
       gamma1->SetPtEtaPhiM(variables[0],variables[1],variables[2],variables[3]);
@@ -89,26 +86,32 @@ int main() {
       costeta=GetCosTheta(gamma1,gamma2);
       
       hist_ggh_gen[0][0]->Fill(gamma_pair->Pt());
-      hist_ggh_gen[0][1]->Fill(costeta);
-      for (int k=0;k<n_cuttheta;k++) {
-	if (costeta > cuttheta[k]) hist_ptcuttheta[k]->Fill(gamma_pair->Pt());//Fill histograms with cutted data
-      }
+      hist_ggh_gen[0][1]->Fill(gamma_pair->M());
+      hist_ggh_gen[0][2]->Fill(costeta);
+	for (int k=0;k<n_cuttheta;k++) {
+	  if (costeta > cuttheta[k]){
+	    hist_cuttheta[0][k]->Fill(gamma_pair->Pt());//Fill histograms with cutted data
+	    hist_cuttheta[1][k]->Fill(gamma_pair->M());//Fill histograms with cutted data
+	  }
+	}
     }
-    
+
     //Normalizing simulated event to expected number of events
     for (int kinvar=0;kinvar<n_kinvar;kinvar++) {
       hist_ggh_gen[0][kinvar]->Scale(0.019629*2.28e-3*19.52*96290/hist_ggh_gen[0][kinvar]->GetEntries());//BR*L*sig*br/Ngen
       stream_integral <<   hist_ggh_gen[0][kinvar]->GetTitle() << " " << hist_ggh_gen[0][kinvar]->Integral() << endl;
       hist_ggh_gen[0][kinvar]->Write("",TObject::kOverwrite);
     }
-    
-    for (int i=0;i<n_cuttheta;i++) {
-      hist_ptcuttheta[i]->Scale(0.019629*2.28e-3*19.52*96290/hist_ggh_gen[0][0]->GetEntries());
-      stream_integral <<   hist_ptcuttheta[i]->GetTitle() << " " << hist_ptcuttheta[i]->Integral() << endl;
-      hist_ptcuttheta[i]->Write("",TObject::kOverwrite);
-      hist_ptcuttheta[i]->Delete();    
-}
 
+    for (int study=0;study<n_study;study++) {
+      for (int i=0;i<n_cuttheta;i++) {
+	hist_cuttheta[study][i]->Scale(0.019629*2.28e-3*19.52*96290/hist_ggh_gen[0][study]->GetEntries());
+	stream_integral <<   hist_cuttheta[study][i]->GetTitle() << " " << hist_cuttheta[study][i]->Integral() << endl;
+	hist_cuttheta[study][i]->Write("",TObject::kOverwrite);
+	hist_cuttheta[study][i]->Delete();    
+      }
+    }
+    
     for (int kinvar=0;kinvar<n_kinvar;kinvar++) {
       hist_ggh_gen[0][kinvar]->Delete();
     }
@@ -121,24 +124,26 @@ int main() {
   }
   //#######################VBF_GEN#########################
   if (VBF_GEN) {
-    file = new TFile("../data/SMHiggs_m125.root");
+    file = new TFile("/afs/cern.ch/work/c/cgoudet/private/data/SMHiggs_m125.root");
     file_result->cd();
     tree  =(TTree *) file->Get("vbf_m125_8TeV");
     
     TH1F *hist_vbf_gen[1][n_kinvar]={{0}};
     for (int kinvar=0;kinvar<n_kinvar;kinvar++) {
       sprintf(dummy,"hist_%s_vbf_gen",kinvarval[kinvar]);
-      hist_vbf_gen[0][kinvar]=new TH1F(dummy,dummy,200,0,200-199*kinvar);
+      hist_vbf_gen[0][kinvar]=new TH1F(dummy,dummy,200,binning[kinvar][0],binning[kinvar][1]);
       hist_vbf_gen[0][kinvar]->Sumw2();
       hist_vbf_gen[0][kinvar]->GetXaxis()->SetTitle(kinvarval[kinvar]);
       hist_vbf_gen[0][kinvar]->GetYaxis()->SetTitle("events");
     }
-    for (int i=0;i<n_cuttheta;i++) {
-      sprintf(dummy,"hist_ptcuttheta%1.3f_vbf_gen",cuttheta[i]);
-      hist_ptcuttheta[i]=new TH1F(dummy,dummy,200,0,200);
-      hist_ptcuttheta[i]->Sumw2();
-      hist_ptcuttheta[i]->GetXaxis()->SetTitle("pt");
-      hist_ptcuttheta[i]->GetYaxis()->SetTitle("events");
+    for (int study=0;study<n_study;study++) {
+      for (int i=0;i<n_cuttheta;i++) {
+	sprintf(dummy,"hist_%scuttheta%1.3f_vbf_gen",kinvarval[study],cuttheta[i]);
+	hist_cuttheta[study][i]=new TH1F(dummy,dummy,200,binning[study][0],binning[study][1]);
+	hist_cuttheta[study][i]->Sumw2();
+	hist_cuttheta[study][i]->GetXaxis()->SetTitle(kinvarval[study]);
+	hist_cuttheta[study][i]->GetYaxis()->SetTitle("events");
+      }
     }
     
     nentry=tree->GetEntries();
@@ -158,24 +163,30 @@ int main() {
       costeta=GetCosTheta(gamma1,gamma2);
       
       hist_vbf_gen[0][0]->Fill(gamma_pair->Pt());
-      hist_vbf_gen[0][1]->Fill(costeta);
+      hist_vbf_gen[0][1]->Fill(gamma_pair->M());
+      hist_vbf_gen[0][2]->Fill(costeta);
       for (int k=0;k<n_cuttheta;k++) {
-	if (costeta > cuttheta[k]) hist_ptcuttheta[k]->Fill(gamma_pair->Pt());//Fill histograms with cutted data
+	if (costeta > cuttheta[k]) {
+	  hist_cuttheta[0][k]->Fill(gamma_pair->Pt());//Fill histograms with cutted data
+	  hist_cuttheta[1][k]->Fill(gamma_pair->M());
+	}
       }
     }
     
 
     //Normalizing simulated event to expected number of events
     for (int kinvar=0;kinvar<n_kinvar;kinvar++) {
-      hist_vbf_gen[0][kinvar]->Scale(0.019629*2.28e-3*19.52*96290/hist_vbf_gen[0][kinvar]->GetEntries());//BR*L*sig*br/Ngen
+      hist_vbf_gen[0][kinvar]->Scale(0.019629*2.28e-3*1.578*99855/hist_vbf_gen[0][kinvar]->GetEntries());//BR*L*sig*br/Ngen
       stream_integral <<   hist_vbf_gen[0][kinvar]->GetTitle() << " " << hist_vbf_gen[0][kinvar]->Integral() << endl;
       hist_vbf_gen[0][kinvar]->Write("",TObject::kOverwrite); 
     }    
-    for (int i=0;i<n_cuttheta;i++) {
-      hist_ptcuttheta[i]->Scale(0.019629*2.28e-3*19.52*96290/hist_vbf_gen[0][0]->GetEntries());
-      stream_integral <<   hist_ptcuttheta[i]->GetTitle() << " " << hist_ptcuttheta[i]->Integral() << endl;
-      hist_ptcuttheta[i]->Write("",TObject::kOverwrite);
-      hist_ptcuttheta[i]->Delete();    
+    for (int study=0;study<n_study;study++) {
+      for (int i=0;i<n_cuttheta;i++) {
+	hist_cuttheta[study][i]->Scale(0.019629*2.28e-3*1.578*99855/hist_vbf_gen[0][study]->GetEntries());
+	stream_integral <<   hist_cuttheta[study][i]->GetTitle() << " " << hist_cuttheta[study][i]->Integral() << endl;
+	hist_cuttheta[study][i]->Write("",TObject::kOverwrite);
+	hist_cuttheta[study][i]->Delete();    
+      }
     }
 
     for (int kinvar=0;kinvar<n_kinvar;kinvar++) {
@@ -190,18 +201,19 @@ int main() {
 
     cout << "vbf_gen done" << endl;
   }
-  //#####################################Analyse of the bkg_gen
+  //#####################################BKG
   if (BKG_GEN) {
     
-    file = new TFile("../data/DiPhotons.root");
+    file = new TFile("/afs/cern.ch/work/c/cgoudet/private/data/DiPhotons.root");
     file_result->cd();
     tree =(TTree *) file->Get("diphojet_8TeV");
 
-    TH1F* hist_bkg[n_window][2];
-    TH1F* hist_bkg_cut[n_window][n_cuttheta];
+
+    TH1F* hist_bkg[n_window][n_kinvar];// Distributions of variables with mass windows centered on 125GeV
+    TH1F* hist_bkg_cut[n_window][n_cuttheta];  
     
     for (int window=0;window<n_window;window++) {
-      for (int kinvar=0;kinvar<2;kinvar++) {
+      for (int kinvar=0;kinvar<n_kinvar;kinvar++) {
 	sprintf(dummy,"hist_%s_bkg%d_gen",kinvarval[kinvar],windowval[window]);
 	if (!kinvar)    hist_bkg[window][kinvar]=new TH1F(dummy,dummy,200,0,200);
 	else hist_bkg[window][kinvar]=new TH1F(dummy,dummy,200,0,1);
@@ -210,13 +222,24 @@ int main() {
 	hist_bkg[window][kinvar]->GetYaxis()->SetTitle("events");
       }
       for (int k=0;k<n_cuttheta;k++) {
-	sprintf(dummy,"hist_ptcuttheta%0.3f_bkg%d_gen",cuttheta[k],windowval[window]);
+	sprintf(dummy,"hist_cuttheta%0.3f_bkg%d_gen",cuttheta[k],windowval[window]);
 	hist_bkg_cut[window][k]=new TH1F(dummy,dummy,200,0,200);
 	hist_bkg_cut[window][k]->Sumw2();
 	hist_bkg_cut[window][k]->GetXaxis()->SetTitle("pt");
 	hist_bkg_cut[window][k]->GetYaxis()->SetTitle("events");
       }
     }
+
+    for (int study=0;study<n_study;study++) {
+      for (int i=0;i<n_cuttheta;i++) {
+	sprintf(dummy,"hist_%scuttheta%1.3f_bkg_gen",kinvarval[study],cuttheta[i]);
+	hist_cuttheta[study][i]=new TH1F(dummy,dummy,200,0,200);
+	hist_cuttheta[study][i]->Sumw2();
+	hist_cuttheta[study][i]->GetXaxis()->SetTitle(kinvarval[study]);
+	hist_cuttheta[study][i]->GetYaxis()->SetTitle("events");
+      }
+    }
+
 
     
     nentry=tree->GetEntries();
@@ -285,7 +308,8 @@ int main() {
   file_result->Close();
 
   
-
+  cout << "caution : order of varibles modified" << endl;
+  cout << "mass plotting not implemented for bkg" << endl;
   return 0;
 }
 
