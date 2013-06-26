@@ -16,7 +16,7 @@ int main() {
 
 
   fstream stream_integral;
-  stream_integral.open("../data/hist_integral.txt",fstream::out);
+  stream_integral.open("/afs/cern.ch/work/c/cgoudet/private/data/hist_integral.txt",fstream::out);
   //cout << "started" << endl;  
 
   //################################################
@@ -24,7 +24,7 @@ int main() {
 
   
   TFile *file=0;
-  TFile *file_result = new TFile("../data/kin_dist.root","UPDATE");
+  TFile *file_result = new TFile("/afs/cern.ch/work/c/cgoudet/private/data/kin_dist.root","UPDATE");
   
   TTree *tree=0;
 
@@ -49,7 +49,7 @@ int main() {
 
   //#######################Analyse of the ggh_gen
   if (GGH_GEN) {
-    file = new TFile("../data/SMHiggs_m125.root");
+    file = new TFile("/afs/cern.ch/work/c/cgoudet/private/data/SMHiggs_m125.root");
     file_result->cd();
     tree  =(TTree *) file->Get("ggh_m125_8TeV");
    
@@ -121,7 +121,7 @@ int main() {
   }
   //#######################VBF_GEN#########################
   if (VBF_GEN) {
-    file = new TFile("../data/SMHiggs_m125.root");
+    file = new TFile("/afs/cern.ch/work/c/cgoudet/private/data/SMHiggs_m125.root");
     file_result->cd();
     tree  =(TTree *) file->Get("vbf_m125_8TeV");
     
@@ -193,7 +193,7 @@ int main() {
   //#####################################Analyse of the bkg_gen
   if (BKG_GEN) {
     
-    file = new TFile("../data/DiPhotons.root");
+    file = new TFile("/afs/cern.ch/work/c/cgoudet/private/data/DiPhotons.root");
     file_result->cd();
     tree =(TTree *) file->Get("diphojet_8TeV");
 
