@@ -16,7 +16,8 @@ int main() {
   int const menu_vbf=0;//0:land; 1:logn; 2:tsallis
   int const menu_vbf_pol=1; // degree of polynome
   char const *menu_cut=""; //"", cuttheta{0.200,0.375,0.550,0.750}
-  
+  int const dosumm=0; // if 1, do the fit sgn+bkg
+
   TFile *file_result=new TFile("/afs/cern.ch/work/c/cgoudet/private/data/kin_dist.root");
   RooRealVar pt("pt","pt",0,200);
 
@@ -416,7 +417,7 @@ RooRealVar mean_land_bkg("mean_land_bkg","mean_land_bkg",10,0,200);
 
   
   //###########################DATA
-    
+  if ( dosumm) {
   TCanvas *canvas_data=new TCanvas("canvas_data","canvas_data");
   TPad *pad_fit_data=new TPad("pad_fit_data","pad_fit_data",0,0.3,1,1);
   TPad *pad_ratio_data=new TPad("ratio_pad_data","ratio_pad_data",0,0,1,0.3);
@@ -540,7 +541,7 @@ model_data=new RooAddPdf("model_data","model_data",RooArgList(*model_ggh,*model_
   canvas_data->SaveAs(buffer);
   sprintf(buffer,"/afs/cern.ch/work/c/cgoudet/private/plot/root/fit%s_data_%s_%s.root",menu_cut,buffer_savebkg,buffer_savevbf);
   canvas_data->SaveAs(buffer);
-
+  }
   //Deleting all pointers
   
   

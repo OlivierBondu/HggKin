@@ -10,7 +10,7 @@ int main() {
   setTDRStyle();
 
 
-  int dofit(int const &menu_bkg, int const &menu_pol_bkg, int const &menu_ggh, int const &menu_pol_ggh,int const &menu_vbf,int const &menu_pol_vbf,char const *menu_cut);
+  int dofit(int const &menu_bkg, int const &menu_pol_bkg, int const &menu_ggh, int const &menu_pol_ggh,int const &menu_vbf,int const &menu_pol_vbf,char const *menu_cut,int const &do_summ);
   
   char* cutval[5]={"","cuttheta0.200","cuttheta0.375","cuttheta0.550","cuttheta0.750"};
 
@@ -21,7 +21,7 @@ int main() {
 	  for (int menuvbf=0;menuvbf<3;menuvbf++) {
 	    for (int menupolvbf=0;menupolvbf<2;menupolvbf++) {
 	      for (int cut=0;cut<5;cut++) {
-		if (! dofit(menubkg,menupolbkg,menuggh,menupolggh,menuvbf,menupolvbf,cutval[cut])) cout << "erreur" << endl;;
+		if (! dofit(menubkg,menupolbkg,menuggh,menupolggh,menuvbf,menupolvbf,cutval[cut],0)) cout << "erreur" << endl;;
 	      }
 	    }
 	  }
@@ -34,7 +34,7 @@ int main() {
 
 //#################################################################################################
 //#################################################################################################
-int dofit(int const &menu_bkg,int const &menu_bkg_pol, int const &menu_ggh, int const &menu_pol_ggh,int const &menu_vbf, int const & menu_pol_vbf,char const *menu_cut) {
+int dofit(int const &menu_bkg,int const &menu_bkg_pol, int const &menu_ggh, int const &menu_pol_ggh,int const &menu_vbf, int const & menu_pol_vbf,char const *menu_cut,int const &do_summ) {
   TFile *file_result=new TFile("/afs/cern.ch/work/c/cgoudet/private/data/kin_dist.root");
   RooRealVar pt("pt","pt",0,200);
 
@@ -422,7 +422,7 @@ int dofit(int const &menu_bkg,int const &menu_bkg_pol, int const &menu_ggh, int 
 
 
  //###########################VBF+BKG
-
+  if (do_summ) {
   TCanvas *canvas_data=new TCanvas("canvas_data","canvas_data");
   TPad *pad_fit_data=new TPad("pad_fit_data","pad_fit_data",0,0.3,1,1);
   TPad *pad_ratio_data=new TPad("ratio_pad_data","ratio_pad_data",0,0,1,0.3);
@@ -541,7 +541,7 @@ int dofit(int const &menu_bkg,int const &menu_bkg_pol, int const &menu_ggh, int 
   canvas_data->SaveAs(buffer);
   sprintf(buffer,"../plot/root/fit%s_data_%s_%s.root",menu_cut,buffer_savebkg,buffer_saveggh);
   canvas_data->SaveAs(buffer);
-
+  }
 
 
 
