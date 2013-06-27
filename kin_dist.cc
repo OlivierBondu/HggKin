@@ -211,7 +211,7 @@ int main() {
 
     TH1F* hist_bkg[n_kinvar]; //Distribution of inclusive data
     TH1F* hist_bkg_window[n_window][n_kinvar-1];// Distributions of variables with mass windows centered on 125GeV
-    TH1F* hist_bkg_cut[n_window][n_cuttheta];  //Distributions of variables mass and theta cut
+    TH1F* hist_bkg_cut[n_window][n_cuttheta];  //Distributions of pt with mass and theta cut
     
 
     for (int kinvar=0;kinvar<n_kinvar;kinvar++) {
