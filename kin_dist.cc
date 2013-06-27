@@ -53,7 +53,7 @@ int main() {
     TH1F *hist_ggh_gen[1][n_kinvar];
     for (int kinvar=0;kinvar<n_kinvar;kinvar++) {
       sprintf(dummy,"hist_%s_ggh_gen",kinvarval[kinvar]);
-      hist_ggh_gen[0][kinvar]=new TH1F(dummy,dummy,n_bins,binning[kinvar][0],binning[kinvar][1]);
+      hist_ggh_gen[0][kinvar]=new TH1F(dummy,dummy,n_bins[kinvar],binning[kinvar][0],binning[kinvar][1]);
       hist_ggh_gen[0][kinvar]->Sumw2();
       hist_ggh_gen[0][kinvar]->GetXaxis()->SetTitle(kinvarval[kinvar]);
       hist_ggh_gen[0][kinvar]->GetYaxis()->SetTitle("events");
@@ -62,7 +62,7 @@ int main() {
     for (int study=0;study<n_study;study++) {
       for (int i=0;i<n_cuttheta;i++) {
 	sprintf(dummy,"hist_%scuttheta%1.3f_ggh_gen",kinvarval[study],cuttheta[i]);
-	hist_cuttheta[study][i]=new TH1F(dummy,dummy,n_bins,binning[study][0],binning[study][1]);
+	hist_cuttheta[study][i]=new TH1F(dummy,dummy,n_bins[study],binning[study][0],binning[study][1]);
 	hist_cuttheta[study][i]->Sumw2();
 	hist_cuttheta[study][i]->GetXaxis()->SetTitle(kinvarval[study]);
 	hist_cuttheta[study][i]->GetYaxis()->SetTitle("events");
@@ -131,7 +131,7 @@ int main() {
     TH1F *hist_vbf_gen[1][n_kinvar]={{0}};
     for (int kinvar=0;kinvar<n_kinvar;kinvar++) {
       sprintf(dummy,"hist_%s_vbf_gen",kinvarval[kinvar]);
-      hist_vbf_gen[0][kinvar]=new TH1F(dummy,dummy,n_bins,binning[kinvar][0],binning[kinvar][1]);
+      hist_vbf_gen[0][kinvar]=new TH1F(dummy,dummy,n_bins[kinvar],binning[kinvar][0],binning[kinvar][1]);
       hist_vbf_gen[0][kinvar]->Sumw2();
       hist_vbf_gen[0][kinvar]->GetXaxis()->SetTitle(kinvarval[kinvar]);
       hist_vbf_gen[0][kinvar]->GetYaxis()->SetTitle("events");
@@ -139,7 +139,7 @@ int main() {
     for (int study=0;study<n_study;study++) {
       for (int i=0;i<n_cuttheta;i++) {
 	sprintf(dummy,"hist_%scuttheta%1.3f_vbf_gen",kinvarval[study],cuttheta[i]);
-	hist_cuttheta[study][i]=new TH1F(dummy,dummy,n_bins,binning[study][0],binning[study][1]);
+	hist_cuttheta[study][i]=new TH1F(dummy,dummy,n_bins[study],binning[study][0],binning[study][1]);
 	hist_cuttheta[study][i]->Sumw2();
 	hist_cuttheta[study][i]->GetXaxis()->SetTitle(kinvarval[study]);
 	hist_cuttheta[study][i]->GetYaxis()->SetTitle("events");
@@ -216,14 +216,14 @@ int main() {
 
     for (int kinvar=0;kinvar<n_kinvar;kinvar++) {
       sprintf(dummy,"hist_%s_bkg_gen",kinvarval[kinvar]);
-      hist_bkg[kinvar]=new TH1F(dummy,dummy,n_bins,binning[kinvar][0],binning[kinvar][1]);
+      hist_bkg[kinvar]=new TH1F(dummy,dummy,n_bins[kinvar],binning[kinvar][0],binning[kinvar][1]);
       hist_bkg[kinvar]->Sumw2();
       hist_bkg[kinvar]->GetXaxis()->SetTitle(kinvarval[kinvar]);
       hist_bkg[kinvar]->GetYaxis()->SetTitle("events");
       if (kinvar) {
 	for (int window=0;window<n_window;window++) {
 	  sprintf(dummy,"hist_%s_bkg%d_gen",kinvarval[kinvar],windowval[window]);
-	  hist_bkg_window[window][kinvar-1]=new TH1F(dummy,dummy,n_bins,binning[kinvar][0],binning[kinvar][1]);
+	  hist_bkg_window[window][kinvar-1]=new TH1F(dummy,dummy,n_bins[kinvar],binning[kinvar][0],binning[kinvar][1]);
 	  hist_bkg_window[window][kinvar-1]->Sumw2();
 	  hist_bkg_window[window][kinvar-1]->GetXaxis()->SetTitle(kinvarval[kinvar]);
 	  hist_bkg_window[window][kinvar-1]->GetYaxis()->SetTitle("events");
@@ -234,14 +234,14 @@ int main() {
     for (int cut=0;cut <n_cuttheta;cut++) {
       for (int window=0;window<n_window;window++) {
 	sprintf(dummy,"hist_%scuttheta%0.3f_bkg%d_gen","pt",cuttheta[cut],windowval[window]);
-	hist_bkg_cut[window][cut]=new TH1F(dummy,dummy,n_bins,binning[1][0],binning[1][1]);
+	hist_bkg_cut[window][cut]=new TH1F(dummy,dummy,n_bins[1],binning[1][0],binning[1][1]);
 	hist_bkg_cut[window][cut]->Sumw2();
 	hist_bkg_cut[window][cut]->GetXaxis()->SetTitle("pT");
 	hist_bkg_cut[window][cut]->GetYaxis()->SetTitle("events");      
       }
       for (int study=0;study<n_study;study++) {
 	sprintf(dummy,"hist_%scuttheta%0.3f_bkg_gen",kinvarval[study],cuttheta[cut]);
-	hist_cuttheta[study][cut]=new TH1F(dummy,dummy,n_bins,binning[study][0],binning[study][1]);
+	hist_cuttheta[study][cut]=new TH1F(dummy,dummy,n_bins[study],binning[study][0],binning[study][1]);
 	hist_cuttheta[study][cut]->Sumw2();
 	hist_cuttheta[study][cut]->GetXaxis()->SetTitle(kinvarval[study]);
 	hist_cuttheta[study][cut]->GetYaxis()->SetTitle("events");      
