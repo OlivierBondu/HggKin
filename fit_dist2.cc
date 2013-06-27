@@ -8,15 +8,15 @@ using namespace std;
 
 
 int main() {
-  fstream stream;
-  stream.open("/afs/cern.ch/work/c/cgoudet/private/data/result_fit.txt",fstream::out|fstream::trunc);
-  stream.close();
-
   int fit_bkg(int const &menu_bkg,int const &menu_pol_bkg,char const *menu_cut);
   int fit_ggh(int const &menu_ggh,int const &menu_pol_ggh,char const *menu_cut);
   int fit_vbf(int const &menu_vbf,int const &menu_pol_vbf,char const *menu_cut);
 
   char* cutval[5]={"","cuttheta0.200","cuttheta0.375","cuttheta0.550","cuttheta0.750"};
+  fstream stream;
+  stream.open("/afs/cern.ch/work/c/cgoudet/private/data/result_fit.txt",fstream::out|fstream::trunc);
+  stream.close();
+
 
   for (int cut=0;cut<5;cut++) {
     for (int menu=0;menu<3;menu++) {
@@ -28,7 +28,7 @@ int main() {
       }
     }
   }  
-  stream.close();
+
   void create_latex_tabular();
   create_latex_tabular();
 
@@ -189,7 +189,8 @@ int main() {
   canvas_bkg->SaveAs(buffer);
 
   sprintf(buffer,"%s_%s",buffer_savebkg,menu_cut);
-  cout << buffer << " " << frame_bkg->chiSquare() << endl;
+  cout << "chi2 :" << endl;  
+cout << buffer << " " << frame_bkg->chiSquare() << endl;
   fstream stream;
   stream.open("/afs/cern.ch/work/c/cgoudet/private/data/result_fit.txt",fstream::out|fstream::app);
   stream << buffer << " " << frame_bkg->chiSquare() << endl;
@@ -353,6 +354,7 @@ int main() {
   canvas_ggh->SaveAs(buffer);
 
   sprintf(buffer,"%s_%s",buffer_saveggh,menu_cut);
+  cout << "chi2 : " << endl;
   cout << buffer << " " << frame_ggh->chiSquare() << endl;
   fstream stream;
   stream.open("/afs/cern.ch/work/c/cgoudet/private/data/result_fit.txt",fstream::out|fstream::app);
@@ -515,6 +517,7 @@ int main() {
   canvas_vbf->SaveAs(buffer);
 
   sprintf(buffer,"%s_%s",buffer_savevbf,menu_cut);
+  cout << "chi2 : " << endl;
   cout << buffer << " " << frame_vbf->chiSquare() << endl;
   fstream stream;
   stream.open("/afs/cern.ch/work/c/cgoudet/private/data/result_fit.txt",fstream::out|fstream::app);
@@ -538,7 +541,7 @@ void create_latex_tabular() {
 
   char const *name_process[3]={"bkg","ggh","vbf"};
   char* const cutval[5]={"no cut","cuttheta0.200","cuttheta0.375","cuttheta0.550","cuttheta0.750"};
-  streamout << "landpol0 & landpol1 & landpol2 & lognpol0 & lognpol1 & lognpol2 & tallispol0 & tallispol1 & tallispol2 \\" << endl;
+
 
   for (int cut=0;cut<5;cut++) {
     //getting result
@@ -549,7 +552,8 @@ void create_latex_tabular() {
       }
     }
     //writing results
-    streamout << cutval[cut] << "-------------------------------------------------------------" << endl;
+    streamout << cutval[cut] << "--------------------------------------------------------------------------------" << endl;
+  streamout << "process & landpol0 & landpol1 & landpol2 & lognpol0 & lognpol1 & lognpol2 & tallispol0 & tallispol1 & tallispol2 \\\\" << endl;
     for (int process=0;process<3;process++) {
       streamout << name_process[process] << " " ; 
       for (int fit=0;fit<9;fit++){
@@ -557,8 +561,9 @@ void create_latex_tabular() {
       }
       streamout << "\\\\" << endl;
     }
-    
+    streamout << endl << endl;
+
     }
-
-
+  streamin.close();
+  streamout.close();
 }
