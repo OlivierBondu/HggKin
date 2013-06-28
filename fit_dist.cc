@@ -9,15 +9,16 @@ using namespace std;
 int main() {
    setTDRStyle();
   //#########MENU
-  int const menu_bkg=0;//0:land; 1:logn; 
-  int const menu_bkg_pol=1; // degree of polynome
-  int const menu_ggh=0;//0:land; 1:logn; 
-  int const menu_ggh_pol=1; // degree of polynome
-  int const menu_vbf=0;//0:land; 1:logn; 2:tsallis
-  int const menu_vbf_pol=1; // degree of polynome
-  char const *menu_cut=""; //"", cuttheta{0.200,0.375,0.550,0.750}
-  int const dosumm=0; // if 1, do the fit sgn+bkg
-
+   int const menu_bkg=2;//0:land; 1:logn; 
+   int const menu_bkg_pol=1; // degree of polynome
+   int const menu_ggh=1;//0:land; 1:logn; 
+   int const menu_ggh_pol=2; // degree of polynome
+   int const menu_vbf=1;//0:land; 1:logn; 2:tsallis
+   int const menu_vbf_pol=2; // degree of polynome
+   char const *menu_cut="cuttheta0.750"; //"", cuttheta{0.200,0.375,0.550,0.750}
+   int const window=3;// mass window of the background centered on 125GeV
+   int const dosumm=1; // if 1, do the fit sgn+bkg
+   
   TFile *file_result=new TFile("/afs/cern.ch/work/c/cgoudet/private/data/kin_dist.root");
   RooRealVar pt("pt","pt",0,200);
 
@@ -61,7 +62,8 @@ RooRealVar mean_land_bkg("mean_land_bkg","mean_land_bkg",10,0,200);
   RooRealVar coef3_pol_bkg("coef3_pol_bkg","coef3_pol_bkg",3,-100,100);
   RooPolynomial *pol2_bkg;
 
-  sprintf(buffer,"hist_pt%s_bkg3_gen",menu_cut);
+  if (window)  sprintf(buffer,"hist_pt%s_bkg%d_gen",menu_cut,window);
+  else sprintf(buffer,"hist_pt%s_bkg_gen",menu_cut);
   cout << "before get" << endl;
   TH1F* hist_bkg=(TH1F*) file_result->Get(buffer);
   hist_bkg->Sumw2();
@@ -72,40 +74,42 @@ RooRealVar mean_land_bkg("mean_land_bkg","mean_land_bkg",10,0,200);
 
   RooProdPdf *model_bkg;
   char buffer_savebkg[100];
+  if (window) sprintf(buffer,"%d",window);
+  else sprintf(buffer,"");
 
   switch (2*menu_bkg_pol+menu_bkg) {
   case 0 : 
     pol2_bkg=new RooPolynomial("pol2_bkg","pol2_bkg",pt,RooArgList(coef0_pol_bkg));
     model_bkg =new RooProdPdf("model_bkg","model_bkg",RooArgList(*land_bkg,*pol2_bkg));
-    sprintf(buffer_savebkg,"bkglandpol0");
+    sprintf(buffer_savebkg,"bkg%slandpol0",buffer);
     break;  
     
   case 1 : 
     pol2_bkg=new RooPolynomial("pol2_bkg","pol2_bkg",pt,RooArgList(coef0_pol_bkg));
     model_bkg =new RooProdPdf("model_bkg","model_bkg",RooArgList(*logn_bkg,*pol2_bkg));
-    sprintf(buffer_savebkg,"bkglognpol0");
+    sprintf(buffer_savebkg,"bkg%slognpol0",buffer);
     break;  
     
   case 2 : 
     pol2_bkg=new RooPolynomial("pol2_bkg","pol2_bkg",pt,RooArgList(coef0_pol_bkg,coef1_pol_bkg));
     model_bkg =new RooProdPdf("model_bkg","model_bkg",RooArgList(*land_bkg,*pol2_bkg));
-    sprintf(buffer_savebkg,"bkglandpol1");
+    sprintf(buffer_savebkg,"bkg%slandpol1",buffer);
     break;  
   case 3 : 
 
     pol2_bkg=new RooPolynomial("pol2_bkg","pol2_bkg",pt,RooArgList(coef0_pol_bkg,coef1_pol_bkg));
     model_bkg =new RooProdPdf("model_bkg","model_bkg",RooArgList(*logn_bkg,*pol2_bkg));
-    sprintf(buffer_savebkg,"bkglognpol1");
+    sprintf(buffer_savebkg,"bkg%slognpol1",buffer);
     break;  
   case 4 : 
     pol2_bkg=new RooPolynomial("pol2_bkg","pol2_bkg",pt,RooArgList(coef0_pol_bkg,coef1_pol_bkg,coef2_pol_bkg));
     model_bkg =new RooProdPdf("model_bkg","model_bkg",RooArgList(*land_bkg,*pol2_bkg));
-    sprintf(buffer_savebkg,"bkglandpol2");
+    sprintf(buffer_savebkg,"bkg%slandpol2",buffer);
     break;  
   case 5 : 
     pol2_bkg=new RooPolynomial("pol2_bkg","pol2_bkg",pt,RooArgList(coef0_pol_bkg,coef1_pol_bkg,coef2_pol_bkg));
     model_bkg =new RooProdPdf("model_bkg","model_bkg",RooArgList(*logn_bkg,*pol2_bkg));
-    sprintf(buffer_savebkg,"bkglognpol2");
+    sprintf(buffer_savebkg,"bkg%slognpol2",buffer);
     break;  
   }
 
@@ -471,7 +475,7 @@ model_data=new RooAddPdf("model_data","model_data",RooArgList(*model_ggh,*model_
   //  pad_fit_data->SetLogy(1);
   frame_dataggh->Draw();  
 
-  sprintf(buffer,"chi2=%2.2f",frame_dataggh->chiSquare());
+  sprintf(buffer,"#chi^{2}=%2.2f",frame_dataggh->chiSquare());
   latex.DrawLatex(0.7,0.8,buffer);
   sprintf(buffer,"compo signal : %2.2e",compo_sgn.getVal());
   latex.DrawLatex(0.15,0.96,buffer);
@@ -526,7 +530,7 @@ model_data=new RooAddPdf("model_data","model_data",RooArgList(*model_ggh,*model_
   //  pad_fit_data->SetLogy(1);
   frame_datavbf->Draw();  
 
-  sprintf(buffer,"chi2=%2.2f",frame_datavbf->chiSquare());
+  sprintf(buffer,"#chi^{2}=%2.2f",frame_datavbf->chiSquare());
   latex.DrawLatex(0.7,0.8,buffer);
   sprintf(buffer,"compo signal : %2.2e",compo_sgn.getVal());
   latex.DrawLatex(0.15,0.96,buffer);

@@ -8,7 +8,7 @@ using namespace std;
 
 
 int main() {
-  int fit_bkg(int const &menu_bkg,int const &menu_pol_bkg,char const *menu_cut);
+  int fit_bkg(int const &menu_bkg,int const &menu_pol_bkg,char const *menu_cut,int const &menu_window);
   int fit_ggh(int const &menu_ggh,int const &menu_pol_ggh,char const *menu_cut);
   int fit_vbf(int const &menu_vbf,int const &menu_pol_vbf,char const *menu_cut);
 
@@ -22,22 +22,20 @@ int main() {
     for (int menu=0;menu<3;menu++) {
       for (int menu_pol=0;menu_pol<3;menu_pol++) {
 	
-	fit_bkg(menu,menu_pol,cutval[cut]);
+	fit_bkg(menu,menu_pol,cutval[cut],3);
 	fit_ggh(menu,menu_pol,cutval[cut]);
 	fit_vbf(menu,menu_pol,cutval[cut]);
       }
     }
   }  
 
-  void create_latex_tabular();
-  create_latex_tabular();
-
+ 
   return 0;
   
 }
 //#################################################################################################
 //#################################################################################################
-  int fit_bkg(int const &menu_bkg,int const &menu_pol_bkg,char const *menu_cut){
+int fit_bkg(int const &menu_bkg,int const &menu_pol_bkg,char const *menu_cut,int const &menu_window){
   setTDRStyle();
   TFile *file_result=new TFile("/afs/cern.ch/work/c/cgoudet/private/data/kin_dist.root");
   RooRealVar pt("pt","pt",0,200);
@@ -83,7 +81,9 @@ int main() {
   RooRealVar coef3_pol_bkg("coef3_pol_bkg","coef3_pol_bkg",3,-100,100);
   RooPolynomial *pol_bkg;
 
-  sprintf(buffer,"hist_pt%s_bkg_gen",menu_cut);
+  if (menu_window)  sprintf(buffer,"hist_pt%s_bkg%s_gen",menu_cut,menu_window);
+  else   sprintf(buffer,"hist_pt%s_bkg_gen",menu_cut);
+
   TH1F* hist_bkg=(TH1F*) file_result->Get(buffer);
   hist_bkg->Sumw2();
   RooDataHist *bkg=new RooDataHist("bkg","bkg",pt,hist_bkg);
@@ -92,52 +92,54 @@ int main() {
   RooProdPdf *model_bkg;
 
   char buffer_savebkg[100];
+  if (window) sprintf(buffer,"%d",window);
+  else sprintf(buffer,"");
 
   switch (3*menu_pol_bkg+menu_bkg) {
   case 0 : 
-    pol_bkg=new RooPolynomial("pol_bkg","pol_bkg",pt,RooArgList(coef0_pol_bkg));
+   pol_bkg=new RooPolynomial("pol_bkg","pol_bkg",pt,RooArgList(coef0_pol_bkg));
     model_bkg =new RooProdPdf("model_bkg","model_bkg",RooArgList(*land_bkg,*pol_bkg));
-    sprintf(buffer_savebkg,"bkglandpol0");
+    sprintf(buffer_savebkg,"bkg%slandpol0",buffer);
     break;  
   case 1 : 
     pol_bkg=new RooPolynomial("pol_bkg","pol_bkg",pt,RooArgList(coef0_pol_bkg));
     model_bkg =new RooProdPdf("model_bkg","model_bkg",RooArgList(*logn_bkg,*pol_bkg));
-    sprintf(buffer_savebkg,"bkglognpol0");
+    sprintf(buffer_savebkg,"bkg%slognpol0",buffer);
     break;  
   case 2 : 
     pol_bkg=new RooPolynomial("pol_bkg","pol_bkg",pt,RooArgList(coef0_pol_bkg));
     model_bkg =new RooProdPdf("model_bkg","model_bkg",RooArgList(*tallis_bkg,*pol_bkg));
-    sprintf(buffer_savebkg,"bkgtallispol0");
+    sprintf(buffer_savebkg,"bkg%stallispol0",buffer);
     break;  
   case 3 : 
     pol_bkg=new RooPolynomial("pol_bkg","pol_bkg",pt,RooArgList(coef0_pol_bkg,coef1_pol_bkg));
     model_bkg =new RooProdPdf("model_bkg","model_bkg",RooArgList(*land_bkg,*pol_bkg));
-    sprintf(buffer_savebkg,"bkglandpol1");
+    sprintf(buffer_savebkg,"bkg%slandpol1",buffer);
     break;  
   case 4 : 
     pol_bkg=new RooPolynomial("pol_bkg","pol_bkg",pt,RooArgList(coef0_pol_bkg,coef1_pol_bkg));
     model_bkg =new RooProdPdf("model_bkg","model_bkg",RooArgList(*logn_bkg,*pol_bkg));
-    sprintf(buffer_savebkg,"bkglognpol1");
+    sprintf(buffer_savebkg,"bkg%slognpol1",buffer);
     break;  
   case 5 : 
     pol_bkg=new RooPolynomial("pol_bkg","pol_bkg",pt,RooArgList(coef0_pol_bkg,coef1_pol_bkg));
     model_bkg =new RooProdPdf("model_bkg","model_bkg",RooArgList(*tallis_bkg,*pol_bkg));
-    sprintf(buffer_savebkg,"bkgtallispol1");
+    sprintf(buffer_savebkg,"bkg%stallispol1",buffer);
     break;  
   case 6 : 
     pol_bkg=new RooPolynomial("pol_bkg","pol_bkg",pt,RooArgList(coef0_pol_bkg,coef1_pol_bkg,coef2_pol_bkg));
     model_bkg =new RooProdPdf("model_bkg","model_bkg",RooArgList(*land_bkg,*pol_bkg));
-    sprintf(buffer_savebkg,"bkglandpol2");
+    sprintf(buffer_savebkg,"bkg%slandpol2",buffer);
     break;  
   case 7 : 
     pol_bkg=new RooPolynomial("pol_bkg","pol_bkg",pt,RooArgList(coef0_pol_bkg,coef1_pol_bkg,coef2_pol_bkg));
     model_bkg =new RooProdPdf("model_bkg","model_bkg",RooArgList(*logn_bkg,*pol_bkg));
-    sprintf(buffer_savebkg,"bkglognpol2");
+    sprintf(buffer_savebkg,"bkg%slognpol2",buffer);
     break;  
   case 8 : 
     pol_bkg=new RooPolynomial("pol_bkg","pol_bkg",pt,RooArgList(coef0_pol_bkg,coef1_pol_bkg,coef2_pol_bkg));
     model_bkg =new RooProdPdf("model_bkg","model_bkg",RooArgList(*tallis_bkg,*pol_bkg));
-    sprintf(buffer_savebkg,"bkgtallispol2");
+    sprintf(buffer_savebkg,"bkg%stallispol2",buffer);
     break;  
   }
 
@@ -174,7 +176,7 @@ int main() {
   line->Draw("SAME");
   
   pad_fit_bkg->cd();
-  pad_fit_bkg->SetLogy(1);
+  //  pad_fit_bkg->SetLogy(1);
   frame_bkg->Draw();  
   
 
@@ -195,6 +197,22 @@ cout << buffer << " " << frame_bkg->chiSquare() << endl;
   stream.open("/afs/cern.ch/work/c/cgoudet/private/data/result_fit.txt",fstream::out|fstream::app);
   stream << buffer << " " << frame_bkg->chiSquare() << endl;
   stream.close();
+
+
+  model_bkg->Delete();
+  ratio_bkg->Delete();
+  land_bkg->Delete();
+  logn_bkg->Delete();
+  pol_bkg->Delete();
+  tallis_bkg->Delete();
+  line->Delete();
+  frame_bkg->Delete();
+  file_result->Close();
+  file_result->Delete();
+  pad_fit_bkg->Delete();
+  ratio_pad_bkg->Delete();
+  canvas_bkg->Close();
+
 
   return 1;
   }
@@ -339,7 +357,7 @@ cout << buffer << " " << frame_bkg->chiSquare() << endl;
   line->Draw("SAME");
   
   pad_fit_ggh->cd();
-  pad_fit_ggh->SetLogy(1);
+  //pad_fit_ggh->SetLogy(1);
   frame_ggh->Draw();  
   
 
@@ -360,6 +378,22 @@ cout << buffer << " " << frame_bkg->chiSquare() << endl;
   stream.open("/afs/cern.ch/work/c/cgoudet/private/data/result_fit.txt",fstream::out|fstream::app);
   stream << buffer << " " << frame_ggh->chiSquare() << endl;
   stream.close();
+
+
+  model_ggh->Delete();
+  ratio_ggh->Delete();
+  land_ggh->Delete();
+  logn_ggh->Delete();
+  pol_ggh->Delete();
+  tallis_ggh->Delete();
+  line->Delete();
+  frame_ggh->Delete();
+  file_result->Close();
+  file_result->Delete();
+  pad_fit_ggh->Delete();
+  ratio_pad_ggh->Delete();
+  canvas_ggh->Close();
+
 
   return 1;
   }
@@ -502,7 +536,7 @@ cout << buffer << " " << frame_bkg->chiSquare() << endl;
   line->Draw("SAME");
   
   pad_fit_vbf->cd();
-  pad_fit_vbf->SetLogy(1);
+  //  pad_fit_vbf->SetLogy(1);
   frame_vbf->Draw();  
   
 
@@ -524,46 +558,25 @@ cout << buffer << " " << frame_bkg->chiSquare() << endl;
   stream << buffer << " " << frame_vbf->chiSquare() << endl;
   stream.close();
 
+  model_vbf->Delete();
+  ratio_vbf->Delete();
+  land_vbf->Delete();
+  logn_vbf->Delete();
+  pol_vbf->Delete();
+  tallis_vbf->Delete();
+  line->Delete();
+  frame_vbf->Delete();
+  file_result->Close();
+  file_result->Delete();
+  pad_fit_vbf->Delete();
+  ratio_pad_vbf->Delete();
+  canvas_vbf->Close();
+
+
   return 1;
   }
 
 
 
 //################################################
-void create_latex_tabular() {
 
-  fstream streamin, streamout;
-  streamin.open("/afs/cern.ch/work/c/cgoudet/private/data/result_fit.txt",fstream::in);
-  streamout.open("/afs/cern.ch/work/c/cgoudet/private/data/result_fit_tabular.txt",fstream::out|fstream::trunc);
-  char description[30];
-  double chi2;
-  double result[3][9]={{-2}};//[process][fit]
-
-  char const *name_process[3]={"bkg","ggh","vbf"};
-  char* const cutval[5]={"no cut","cuttheta0.200","cuttheta0.375","cuttheta0.550","cuttheta0.750"};
-
-
-  for (int cut=0;cut<5;cut++) {
-    //getting result
-    for (int fit=0;fit<9;fit++) {
-      for (int process=0;process<3;process++) {
-	streamin >> description >> chi2;
-	result[process][fit]=chi2;
-      }
-    }
-    //writing results
-    streamout << cutval[cut] << "--------------------------------------------------------------------------------" << endl;
-  streamout << "process & landpol0 & landpol1 & landpol2 & lognpol0 & lognpol1 & lognpol2 & tallispol0 & tallispol1 & tallispol2 \\\\" << endl;
-    for (int process=0;process<3;process++) {
-      streamout << name_process[process] << " " ; 
-      for (int fit=0;fit<9;fit++){
-	streamout << "&" << " " << result[process][fit] << " "  ; 
-      }
-      streamout << "\\\\" << endl;
-    }
-    streamout << endl << endl;
-
-    }
-  streamin.close();
-  streamout.close();
-}
