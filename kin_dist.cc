@@ -37,7 +37,7 @@ int main() {
   char buffer [100],dummy[100];
   char const *gen_variables[8]={"gh_g1_p4_pt","gh_g1_p4_eta","gh_g1_p4_phi","gh_g1_p4_mass","gh_g2_p4_pt","gh_g2_p4_eta","gh_g2_p4_phi","gh_g2_p4_mass"};//useful variables
   float variables[8];//g1_pt,g1_eta,g1_phi,g1_mass,g2_pt,g2_eta,g2_phi,g2_mass;
-  float pt,mass,ctheta;
+  float dipho_pt,dipho_mass,dipho_ctheta;
 
   float GetCosTheta(TLorentzVector *g1, TLorentzVector *g2) ;
 
@@ -51,9 +51,9 @@ int main() {
 
 
     tree_result=new TTree("tree_ggh","tree_ggh");
-    tree_result->Branch("mass",&mass,"mass/F");
-    tree_result->Branch("pt",&pt,"pt/F");
-    tree_result->Branch("ctheta",&ctheta,"ctheta/F");
+    tree_result->Branch("dipho_mass",&dipho_mass,"dipho_mass/F");
+    tree_result->Branch("dipho_pt",&dipho_pt,"dipho_pt/F");
+    tree_result->Branch("dipho_ctheta",&dipho_ctheta,"dipho_ctheta/F");
 
 
 
@@ -90,18 +90,18 @@ int main() {
       gamma1->SetPtEtaPhiM(variables[0],variables[1],variables[2],variables[3]);
       gamma2->SetPtEtaPhiM(variables[4],variables[5],variables[6],variables[7]);
       *gamma_pair=*gamma1+*gamma2;//contains kinematical properties of the Diphoton system
-      ctheta=GetCosTheta(gamma1,gamma2);
-      mass=gamma_pair->M();
-      pt=gamma_pair->Pt();
+      dipho_ctheta=GetCosTheta(gamma1,gamma2);
+      dipho_mass=gamma_pair->M();
+      dipho_pt=gamma_pair->Pt();
       tree_result->Fill();
 
-      hist_ggh_gen[0][1]->Fill(pt);
-      hist_ggh_gen[0][0]->Fill(mass);
-      hist_ggh_gen[0][2]->Fill(ctheta);
+      hist_ggh_gen[0][1]->Fill(dipho_pt);
+      hist_ggh_gen[0][0]->Fill(dipho_mass);
+      hist_ggh_gen[0][2]->Fill(dipho_ctheta);
 	for (int k=0;k<n_cuttheta;k++) {
-	  if (ctheta > cuttheta[k]){
-	    hist_cuttheta[1][k]->Fill(pt);//Fill histograms with cutted data
-	    hist_cuttheta[0][k]->Fill(mass);//Fill histograms with cutted data
+	  if (dipho_ctheta > cuttheta[k]){
+	    hist_cuttheta[1][k]->Fill(dipho_pt);//Fill histograms with cutted data
+	    hist_cuttheta[0][k]->Fill(dipho_mass);//Fill histograms with cutted data
 	  }
 	}
     }
@@ -140,9 +140,9 @@ int main() {
     tree  =(TTree *) file->Get("vbf_m125_8TeV");
     
     tree_result=new TTree("tree_vbf","tree_vbf");
-    tree_result->Branch("mass",&mass,"mass/F");
-    tree_result->Branch("pt",&pt,"pt/F");
-    tree_result->Branch("ctheta",&ctheta,"ctheta/F");
+    tree_result->Branch("dipho_mass",&dipho_mass,"dipho_mass/F");
+    tree_result->Branch("dipho_pt",&dipho_pt,"dipho_pt/F");
+    tree_result->Branch("dipho_ctheta",&dipho_ctheta,"dipho_ctheta/F");
 
     TH1F *hist_vbf_gen[1][n_kinvar]={{0}};
     for (int kinvar=0;kinvar<n_kinvar;kinvar++) {
@@ -176,18 +176,18 @@ int main() {
       gamma1->SetPtEtaPhiM(variables[0],variables[1],variables[2],variables[3]);
       gamma2->SetPtEtaPhiM(variables[4],variables[5],variables[6],variables[7]);
       *gamma_pair=*gamma1+*gamma2;//contains kinematical properties of the Diphoton system
-      ctheta=GetCosTheta(gamma1,gamma2);
-      mass=gamma_pair->M();
-      pt=gamma_pair->Pt();
+      dipho_ctheta=GetCosTheta(gamma1,gamma2);
+      dipho_mass=gamma_pair->M();
+      dipho_pt=gamma_pair->Pt();
       tree_result->Fill();
       
-      hist_vbf_gen[0][1]->Fill(pt);
-      hist_vbf_gen[0][0]->Fill(mass);
-      hist_vbf_gen[0][2]->Fill(ctheta);
+      hist_vbf_gen[0][1]->Fill(dipho_pt);
+      hist_vbf_gen[0][0]->Fill(dipho_mass);
+      hist_vbf_gen[0][2]->Fill(dipho_ctheta);
       for (int k=0;k<n_cuttheta;k++) {
-	if (ctheta > cuttheta[k]) {
-	  hist_cuttheta[1][k]->Fill(pt);//Fill histograms with cutted data
-	  hist_cuttheta[0][k]->Fill(mass);
+	if (dipho_ctheta > cuttheta[k]) {
+	  hist_cuttheta[1][k]->Fill(dipho_pt);//Fill histograms with cutted data
+	  hist_cuttheta[0][k]->Fill(dipho_mass);
 	}
       }
     }
@@ -229,9 +229,9 @@ int main() {
     tree =(TTree *) file->Get("diphojet_8TeV");
 
     tree_result=new TTree("tree_bkg","tree_bkg");
-    tree_result->Branch("mass",&mass,"mass/F");
-    tree_result->Branch("pt",&pt,"pt/F");
-    tree_result->Branch("ctheta",&ctheta,"ctheta/F");
+    tree_result->Branch("dipho_mass",&dipho_mass,"dipho_mass/F");
+    tree_result->Branch("dipho_pt",&dipho_pt,"dipho_pt/F");
+    tree_result->Branch("dipho_ctheta",&dipho_ctheta,"dipho_ctheta/F");
 
     TH1F* hist_bkg[n_kinvar]; //Distribution of inclusive data
     TH1F* hist_bkg_window[n_window][n_kinvar-1];// Distributions of variables with mass windows centered on 125GeV
@@ -287,28 +287,28 @@ int main() {
       gamma1->SetPtEtaPhiM(variables[0],variables[1],variables[2],variables[3]);
       gamma2->SetPtEtaPhiM(variables[4],variables[5],variables[6],variables[7]);
       *gamma_pair=*gamma1+*gamma2;
-      ctheta=GetCosTheta(gamma1,gamma2);
-      mass=gamma_pair->M();
-      pt=gamma_pair->Pt();
+      dipho_ctheta=GetCosTheta(gamma1,gamma2);
+      dipho_mass=gamma_pair->M();
+      dipho_pt=gamma_pair->Pt();
       tree_result->Fill();
 
       
-      hist_bkg[0]->Fill(mass);
-      hist_bkg[1]->Fill(pt);
-      hist_bkg[2]->Fill(ctheta);
+      hist_bkg[0]->Fill(dipho_mass);
+      hist_bkg[1]->Fill(dipho_pt);
+      hist_bkg[2]->Fill(dipho_ctheta);
     
       for (int window=0;window<n_window; window++) {
-	hist_bkg_window[window][0]->Fill(pt);
-	hist_bkg_window[window][1]->Fill(ctheta);
+	hist_bkg_window[window][0]->Fill(dipho_pt);
+	hist_bkg_window[window][1]->Fill(dipho_ctheta);
       }
 
       for (int cut=0;cut<n_cuttheta;cut++){
-	if (ctheta>cuttheta[cut]) {
-	  hist_cuttheta[0][cut]->Fill(mass);
-	  hist_cuttheta[1][cut]->Fill(pt);
+	if (dipho_ctheta>cuttheta[cut]) {
+	  hist_cuttheta[0][cut]->Fill(dipho_mass);
+	  hist_cuttheta[1][cut]->Fill(dipho_pt);
 	  for (int window=0;window<n_window;window++) {
-	    if (mass > 125-windowval[window]/2. && mass < 125+windowval[window]/2.)
-	      hist_bkg_cut[window][cut]->Fill(pt);
+	    if (dipho_mass > 125-windowval[window]/2. && dipho_mass < 125+windowval[window]/2.)
+	      hist_bkg_cut[window][cut]->Fill(dipho_pt);
 	  }
 	}
       }
