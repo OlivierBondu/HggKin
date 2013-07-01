@@ -24,7 +24,7 @@ int main() {
   TFile *file_result = new TFile("/afs/cern.ch/work/c/cgoudet/private/data/kin_dist.root","UPDATE");
   
   TTree *tree=0;
-
+  TTree *tree_result=0;
   
 
   //Creating variables for the analysis
@@ -37,7 +37,7 @@ int main() {
   char buffer [100],dummy[100];
   char const *gen_variables[8]={"gh_g1_p4_pt","gh_g1_p4_eta","gh_g1_p4_phi","gh_g1_p4_mass","gh_g2_p4_pt","gh_g2_p4_eta","gh_g2_p4_phi","gh_g2_p4_mass"};//useful variables
   float variables[8];//g1_pt,g1_eta,g1_phi,g1_mass,g2_pt,g2_eta,g2_phi,g2_mass;
-  float costeta;
+  float pt,mass,ctheta;
 
   float GetCosTheta(TLorentzVector *g1, TLorentzVector *g2) ;
 
@@ -48,8 +48,15 @@ int main() {
     file = new TFile("/afs/cern.ch/work/c/cgoudet/private/data/SMHiggs_m125.root");
     file_result->cd();
     tree  =(TTree *) file->Get("ggh_m125_8TeV");
-   
- 
+
+
+    tree_result=new TTree("tree_ggh","tree_ggh");
+    tree_result->Branch("mass",&mass,"mass/F");
+    tree_result->Branch("pt",&pt,"pt/F");
+    tree_result->Branch("ctheta",&ctheta,"ctheta/F");
+
+
+
     TH1F *hist_ggh_gen[1][n_kinvar];
     for (int kinvar=0;kinvar<n_kinvar;kinvar++) {
       sprintf(dummy,"hist_%s_ggh_gen",kinvarval[kinvar]);
@@ -83,15 +90,18 @@ int main() {
       gamma1->SetPtEtaPhiM(variables[0],variables[1],variables[2],variables[3]);
       gamma2->SetPtEtaPhiM(variables[4],variables[5],variables[6],variables[7]);
       *gamma_pair=*gamma1+*gamma2;//contains kinematical properties of the Diphoton system
-      costeta=GetCosTheta(gamma1,gamma2);
-      
-      hist_ggh_gen[0][1]->Fill(gamma_pair->Pt());
-      hist_ggh_gen[0][0]->Fill(gamma_pair->M());
-      hist_ggh_gen[0][2]->Fill(costeta);
+      ctheta=GetCosTheta(gamma1,gamma2);
+      mass=gamma_pair->M();
+      pt=gamma_pair->Pt();
+      tree_result->Fill();
+
+      hist_ggh_gen[0][1]->Fill(pt);
+      hist_ggh_gen[0][0]->Fill(mass);
+      hist_ggh_gen[0][2]->Fill(ctheta);
 	for (int k=0;k<n_cuttheta;k++) {
-	  if (costeta > cuttheta[k]){
-	    hist_cuttheta[1][k]->Fill(gamma_pair->Pt());//Fill histograms with cutted data
-	    hist_cuttheta[0][k]->Fill(gamma_pair->M());//Fill histograms with cutted data
+	  if (ctheta > cuttheta[k]){
+	    hist_cuttheta[1][k]->Fill(pt);//Fill histograms with cutted data
+	    hist_cuttheta[0][k]->Fill(mass);//Fill histograms with cutted data
 	  }
 	}
     }
@@ -116,7 +126,8 @@ int main() {
       hist_ggh_gen[0][kinvar]->Delete();
     }
 
-
+    tree_result->Write("",TObject::kOverwrite);
+    tree_result->Delete();
     tree->Delete();
     file->Close();
     file->Delete();
@@ -128,6 +139,11 @@ int main() {
     file_result->cd();
     tree  =(TTree *) file->Get("vbf_m125_8TeV");
     
+    tree_result=new TTree("tree_vbf","tree_vbf");
+    tree_result->Branch("mass",&mass,"mass/F");
+    tree_result->Branch("pt",&pt,"pt/F");
+    tree_result->Branch("ctheta",&ctheta,"ctheta/F");
+
     TH1F *hist_vbf_gen[1][n_kinvar]={{0}};
     for (int kinvar=0;kinvar<n_kinvar;kinvar++) {
       sprintf(dummy,"hist_%s_vbf_gen",kinvarval[kinvar]);
@@ -160,15 +176,18 @@ int main() {
       gamma1->SetPtEtaPhiM(variables[0],variables[1],variables[2],variables[3]);
       gamma2->SetPtEtaPhiM(variables[4],variables[5],variables[6],variables[7]);
       *gamma_pair=*gamma1+*gamma2;//contains kinematical properties of the Diphoton system
-      costeta=GetCosTheta(gamma1,gamma2);
+      ctheta=GetCosTheta(gamma1,gamma2);
+      mass=gamma_pair->M();
+      pt=gamma_pair->Pt();
+      tree_result->Fill();
       
-      hist_vbf_gen[0][1]->Fill(gamma_pair->Pt());
-      hist_vbf_gen[0][0]->Fill(gamma_pair->M());
-      hist_vbf_gen[0][2]->Fill(costeta);
+      hist_vbf_gen[0][1]->Fill(pt);
+      hist_vbf_gen[0][0]->Fill(mass);
+      hist_vbf_gen[0][2]->Fill(ctheta);
       for (int k=0;k<n_cuttheta;k++) {
-	if (costeta > cuttheta[k]) {
-	  hist_cuttheta[1][k]->Fill(gamma_pair->Pt());//Fill histograms with cutted data
-	  hist_cuttheta[0][k]->Fill(gamma_pair->M());
+	if (ctheta > cuttheta[k]) {
+	  hist_cuttheta[1][k]->Fill(pt);//Fill histograms with cutted data
+	  hist_cuttheta[0][k]->Fill(mass);
 	}
       }
     }
@@ -194,7 +213,8 @@ int main() {
     }
     
 
-
+    tree_result->Write("",TObject::kOverwrite);
+    tree_result->Delete();
     tree->Delete();
     file->Close();
     file->Delete();
@@ -208,6 +228,10 @@ int main() {
     file_result->cd();
     tree =(TTree *) file->Get("diphojet_8TeV");
 
+    tree_result=new TTree("tree_bkg","tree_bkg");
+    tree_result->Branch("mass",&mass,"mass/F");
+    tree_result->Branch("pt",&pt,"pt/F");
+    tree_result->Branch("ctheta",&ctheta,"ctheta/F");
 
     TH1F* hist_bkg[n_kinvar]; //Distribution of inclusive data
     TH1F* hist_bkg_window[n_window][n_kinvar-1];// Distributions of variables with mass windows centered on 125GeV
@@ -263,24 +287,28 @@ int main() {
       gamma1->SetPtEtaPhiM(variables[0],variables[1],variables[2],variables[3]);
       gamma2->SetPtEtaPhiM(variables[4],variables[5],variables[6],variables[7]);
       *gamma_pair=*gamma1+*gamma2;
-      costeta=GetCosTheta(gamma1,gamma2);
+      ctheta=GetCosTheta(gamma1,gamma2);
+      mass=gamma_pair->M();
+      pt=gamma_pair->Pt();
+      tree_result->Fill();
+
       
-      hist_bkg[0]->Fill(gamma_pair->M());
-      hist_bkg[1]->Fill(gamma_pair->Pt());
-      hist_bkg[2]->Fill(costeta);
+      hist_bkg[0]->Fill(mass);
+      hist_bkg[1]->Fill(pt);
+      hist_bkg[2]->Fill(ctheta);
     
       for (int window=0;window<n_window; window++) {
-	hist_bkg_window[window][0]->Fill(gamma_pair->Pt());
-	hist_bkg_window[window][1]->Fill(costeta);
+	hist_bkg_window[window][0]->Fill(pt);
+	hist_bkg_window[window][1]->Fill(ctheta);
       }
 
       for (int cut=0;cut<n_cuttheta;cut++){
-	if (costeta>cuttheta[cut]) {
-	  hist_cuttheta[0][cut]->Fill(gamma_pair->M());
-	  hist_cuttheta[1][cut]->Fill(gamma_pair->Pt());
+	if (ctheta>cuttheta[cut]) {
+	  hist_cuttheta[0][cut]->Fill(mass);
+	  hist_cuttheta[1][cut]->Fill(pt);
 	  for (int window=0;window<n_window;window++) {
-	    if (gamma_pair->M() > 125-windowval[window]/2. && gamma_pair->M() < 125+windowval[window]/2.)
-	      hist_bkg_cut[window][cut]->Fill(gamma_pair->Pt());
+	    if (mass > 125-windowval[window]/2. && mass < 125+windowval[window]/2.)
+	      hist_bkg_cut[window][cut]->Fill(pt);
 	  }
 	}
       }
@@ -318,7 +346,8 @@ int main() {
 	}
 	
 
-
+	  tree_result->Write("",TObject::kOverwrite);
+	  tree_result->Delete();
 	  tree->Delete();
 	  file->Close();
 	  file->Delete();  
