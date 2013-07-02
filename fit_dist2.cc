@@ -1,27 +1,31 @@
 #include "include_roofit.h"
 #include "include_root.h"
 #include "setTDRStyle.h"
-#include <fstream>
 #include <iostream>
+#include <fstream>
+
 
 using namespace std;
 
 
 int main() {
+
   int fit_bkg(int const &menu_bkg,int const &menu_pol_bkg,char const *menu_cut,int const &menu_window);
   int fit_ggh(int const &menu_ggh,int const &menu_pol_ggh,char const *menu_cut);
   int fit_vbf(int const &menu_vbf,int const &menu_pol_vbf,char const *menu_cut);
 
-  char* cutval[5]={"","cuttheta0.200","cuttheta0.375","cuttheta0.550","cuttheta0.750"};
+
   fstream stream;
   stream.open("/afs/cern.ch/work/c/cgoudet/private/data/result_fit.txt",fstream::out|fstream::trunc);
   stream.close();
 
+  char* cutval[5]={"","cuttheta200","cuttheta375","cuttheta550","cuttheta750"};
 
   for (int cut=0;cut<5;cut++) {
     for (int menu=0;menu<3;menu++) {
       for (int menu_pol=0;menu_pol<3;menu_pol++) {
 	
+
 	fit_bkg(menu,menu_pol,cutval[cut],3);
 	fit_ggh(menu,menu_pol,cutval[cut]);
 	fit_vbf(menu,menu_pol,cutval[cut]);
@@ -31,11 +35,13 @@ int main() {
 
  
   return 0;
-  
+
 }
 //#################################################################################################
 //#################################################################################################
+
 int fit_bkg(int const &menu_bkg,int const &menu_pol_bkg,char const *menu_cut,int const &menu_window){
+
   setTDRStyle();
   TFile *file_result=new TFile("/afs/cern.ch/work/c/cgoudet/private/data/kin_dist.root");
   RooRealVar pt("pt","pt",0,200);
@@ -81,7 +87,7 @@ int fit_bkg(int const &menu_bkg,int const &menu_pol_bkg,char const *menu_cut,int
   RooRealVar coef3_pol_bkg("coef3_pol_bkg","coef3_pol_bkg",3,-100,100);
   RooPolynomial *pol_bkg;
 
-  if (menu_window)  sprintf(buffer,"hist_pt%s_bkg%s_gen",menu_cut,menu_window);
+  if (menu_window)  sprintf(buffer,"hist_pt%s_bkg%d_gen",menu_cut,menu_window);
   else   sprintf(buffer,"hist_pt%s_bkg_gen",menu_cut);
 
   TH1F* hist_bkg=(TH1F*) file_result->Get(buffer);
@@ -91,9 +97,9 @@ int fit_bkg(int const &menu_bkg,int const &menu_pol_bkg,char const *menu_cut,int
 
   RooProdPdf *model_bkg;
 
-  char buffer_savebkg[100];
-  if (window) sprintf(buffer,"%d",window);
-  else sprintf(buffer,"");
+  char buffer_savebkg[100]="";
+  if (menu_window) sprintf(buffer,"%d",menu_window);
+  //  else sprintf(buffer,"");
 
   switch (3*menu_pol_bkg+menu_bkg) {
   case 0 : 
@@ -109,6 +115,7 @@ int fit_bkg(int const &menu_bkg,int const &menu_pol_bkg,char const *menu_cut,int
   case 2 : 
     pol_bkg=new RooPolynomial("pol_bkg","pol_bkg",pt,RooArgList(coef0_pol_bkg));
     model_bkg =new RooProdPdf("model_bkg","model_bkg",RooArgList(*tallis_bkg,*pol_bkg));
+
     sprintf(buffer_savebkg,"bkg%stallispol0",buffer);
     break;  
   case 3 : 
@@ -124,6 +131,7 @@ int fit_bkg(int const &menu_bkg,int const &menu_pol_bkg,char const *menu_cut,int
   case 5 : 
     pol_bkg=new RooPolynomial("pol_bkg","pol_bkg",pt,RooArgList(coef0_pol_bkg,coef1_pol_bkg));
     model_bkg =new RooProdPdf("model_bkg","model_bkg",RooArgList(*tallis_bkg,*pol_bkg));
+
     sprintf(buffer_savebkg,"bkg%stallispol1",buffer);
     break;  
   case 6 : 
@@ -141,7 +149,9 @@ int fit_bkg(int const &menu_bkg,int const &menu_pol_bkg,char const *menu_cut,int
     model_bkg =new RooProdPdf("model_bkg","model_bkg",RooArgList(*tallis_bkg,*pol_bkg));
     sprintf(buffer_savebkg,"bkg%stallispol2",buffer);
     break;  
+
   }
+
 
 
   model_bkg->fitTo(*bkg);
@@ -180,8 +190,8 @@ int fit_bkg(int const &menu_bkg,int const &menu_pol_bkg,char const *menu_cut,int
   frame_bkg->Draw();  
   
 
-  sprintf(buffer,"bkg fit : #chi^{2}=%2.2f",frame_bkg->chiSquare());
-  latex.DrawLatex(0.3,0.96,buffer);
+  sprintf(buffer,"%s %s : #chi^{2}=%2.2f",buffer_savebkg,menu_cut,frame_bkg->chiSquare());
+  latex.DrawLatex(0.2,0.96,buffer);
   
   sprintf(buffer,"/afs/cern.ch/work/c/cgoudet/private/plot/png/fit%s_%s.png",menu_cut,buffer_savebkg);
   canvas_bkg->SaveAs(buffer);
@@ -191,6 +201,7 @@ int fit_bkg(int const &menu_bkg,int const &menu_pol_bkg,char const *menu_cut,int
   canvas_bkg->SaveAs(buffer);
 
   sprintf(buffer,"%s_%s",buffer_savebkg,menu_cut);
+
   cout << "chi2 :" << endl;  
 cout << buffer << " " << frame_bkg->chiSquare() << endl;
   fstream stream;
@@ -218,7 +229,6 @@ cout << buffer << " " << frame_bkg->chiSquare() << endl;
   }
 
  
-
   //########GGH
 
   int fit_ggh(int const &menu_ggh,int const &menu_pol_ggh,char const *menu_cut){
@@ -255,6 +265,7 @@ cout << buffer << " " << frame_bkg->chiSquare() << endl;
   RooRealVar coef2_logn_ggh("coef2_logn_ggh","coef2_logn_ggh",0,-30,30);
   RooRealVar coef3_logn_ggh("coef3_logn_ggh","coef3_logn_ggh",3,1,100);
   RooGenericPdf *logn_ggh=new RooGenericPdf("logn_ggh","TMath::LogNormal(pt,coef1_logn_ggh,coef2_logn_ggh,coef3_logn_ggh)", RooArgSet(pt,coef1_logn_ggh,coef2_logn_ggh,coef3_logn_ggh));
+
 
   RooRealVar mass_ggh("mass_ggh","mass_ggh",125,0,200);
   RooRealVar n_ggh("n_ggh","n_ggh",1,0.1,100);
@@ -325,6 +336,7 @@ cout << buffer << " " << frame_bkg->chiSquare() << endl;
   }
 
 
+
   model_ggh->fitTo(*ggh);
   model_ggh->plotOn(frame_ggh);
 
@@ -361,7 +373,7 @@ cout << buffer << " " << frame_bkg->chiSquare() << endl;
   frame_ggh->Draw();  
   
 
-  sprintf(buffer,"ggh fit : #chi^{2}=%2.2f",frame_ggh->chiSquare());
+  sprintf(buffer,"%s %s : #chi^{2}=%2.2f",buffer_saveggh,menu_cut,frame_ggh->chiSquare());
   latex.DrawLatex(0.3,0.96,buffer);
   
   sprintf(buffer,"/afs/cern.ch/work/c/cgoudet/private/plot/png/fit%s_%s.png",menu_cut,buffer_saveggh);
@@ -540,7 +552,7 @@ cout << buffer << " " << frame_bkg->chiSquare() << endl;
   frame_vbf->Draw();  
   
 
-  sprintf(buffer,"vbf fit : #chi^{2}=%2.2f",frame_vbf->chiSquare());
+  sprintf(buffer,"%s %s : #chi^{2}=%2.2f",buffer_savevbf,menu_cut,frame_vbf->chiSquare());
   latex.DrawLatex(0.3,0.96,buffer);
   
   sprintf(buffer,"/afs/cern.ch/work/c/cgoudet/private/plot/png/fit%s_%s.png",menu_cut,buffer_savevbf);
@@ -551,12 +563,14 @@ cout << buffer << " " << frame_bkg->chiSquare() << endl;
   canvas_vbf->SaveAs(buffer);
 
   sprintf(buffer,"%s_%s",buffer_savevbf,menu_cut);
+
   cout << "chi2 : " << endl;
   cout << buffer << " " << frame_vbf->chiSquare() << endl;
   fstream stream;
   stream.open("/afs/cern.ch/work/c/cgoudet/private/data/result_fit.txt",fstream::out|fstream::app);
   stream << buffer << " " << frame_vbf->chiSquare() << endl;
   stream.close();
+
 
   model_vbf->Delete();
   ratio_vbf->Delete();
@@ -571,6 +585,8 @@ cout << buffer << " " << frame_bkg->chiSquare() << endl;
   pad_fit_vbf->Delete();
   ratio_pad_vbf->Delete();
   canvas_vbf->Close();
+
+
 
 
   return 1;

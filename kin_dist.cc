@@ -61,7 +61,7 @@ int main() {
     
     for (int study=0;study<n_study;study++) {
       for (int i=0;i<n_cuttheta;i++) {
-	sprintf(dummy,"hist_%scuttheta%1.3f_ggh_gen",kinvarval[study],cuttheta[i]);
+	sprintf(dummy,"hist_%scuttheta%d_ggh_gen",kinvarval[study], cuttheta[i]);
 	hist_cuttheta[study][i]=new TH1F(dummy,dummy,n_bins,binning[study][0],binning[study][1]);
 	hist_cuttheta[study][i]->Sumw2();
 	hist_cuttheta[study][i]->GetXaxis()->SetTitle(kinvarval[study]);
@@ -89,7 +89,7 @@ int main() {
       hist_ggh_gen[0][0]->Fill(gamma_pair->M());
       hist_ggh_gen[0][2]->Fill(costeta);
 	for (int k=0;k<n_cuttheta;k++) {
-	  if (costeta > cuttheta[k]){
+	  if (costeta > cuttheta[k]/1000.){
 	    hist_cuttheta[1][k]->Fill(gamma_pair->Pt());//Fill histograms with cutted data
 	    hist_cuttheta[0][k]->Fill(gamma_pair->M());//Fill histograms with cutted data
 	  }
@@ -138,7 +138,7 @@ int main() {
     }
     for (int study=0;study<n_study;study++) {
       for (int i=0;i<n_cuttheta;i++) {
-	sprintf(dummy,"hist_%scuttheta%1.3f_vbf_gen",kinvarval[study],cuttheta[i]);
+	sprintf(dummy,"hist_%scuttheta%d_vbf_gen",kinvarval[study],cuttheta[i]);
 	hist_cuttheta[study][i]=new TH1F(dummy,dummy,n_bins,binning[study][0],binning[study][1]);
 	hist_cuttheta[study][i]->Sumw2();
 	hist_cuttheta[study][i]->GetXaxis()->SetTitle(kinvarval[study]);
@@ -166,7 +166,7 @@ int main() {
       hist_vbf_gen[0][0]->Fill(gamma_pair->M());
       hist_vbf_gen[0][2]->Fill(costeta);
       for (int k=0;k<n_cuttheta;k++) {
-	if (costeta > cuttheta[k]) {
+	if (costeta > cuttheta[k]/1000.) {
 	  hist_cuttheta[1][k]->Fill(gamma_pair->Pt());//Fill histograms with cutted data
 	  hist_cuttheta[0][k]->Fill(gamma_pair->M());
 	}
@@ -233,14 +233,14 @@ int main() {
 
     for (int cut=0;cut <n_cuttheta;cut++) {
       for (int window=0;window<n_window;window++) {
-	sprintf(dummy,"hist_%scuttheta%0.3f_bkg%d_gen","pt",cuttheta[cut],windowval[window]);
+	sprintf(dummy,"hist_%scuttheta%d_bkg%d_gen","pt",cuttheta[cut],windowval[window]);
 	hist_bkg_cut[window][cut]=new TH1F(dummy,dummy,n_bins,binning[1][0],binning[1][1]);
 	hist_bkg_cut[window][cut]->Sumw2();
 	hist_bkg_cut[window][cut]->GetXaxis()->SetTitle("pT");
 	hist_bkg_cut[window][cut]->GetYaxis()->SetTitle("events");      
       }
       for (int study=0;study<n_study;study++) {
-	sprintf(dummy,"hist_%scuttheta%0.3f_bkg_gen",kinvarval[study],cuttheta[cut]);
+	sprintf(dummy,"hist_%scuttheta%d_bkg_gen",kinvarval[study],cuttheta[cut]);
 	hist_cuttheta[study][cut]=new TH1F(dummy,dummy,n_bins,binning[study][0],binning[study][1]);
 	hist_cuttheta[study][cut]->Sumw2();
 	hist_cuttheta[study][cut]->GetXaxis()->SetTitle(kinvarval[study]);
@@ -275,7 +275,7 @@ int main() {
       }
 
       for (int cut=0;cut<n_cuttheta;cut++){
-	if (costeta>cuttheta[cut]) {
+	if (costeta>cuttheta[cut]/1000.) {
 	  hist_cuttheta[0][cut]->Fill(gamma_pair->M());
 	  hist_cuttheta[1][cut]->Fill(gamma_pair->Pt());
 	  for (int window=0;window<n_window;window++) {
