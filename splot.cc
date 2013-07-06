@@ -33,12 +33,12 @@ int main() {
   int DoSPlot(RooWorkspace*);
 
   if (AddModel(ws)) cout << "AddModel failed" << endl;
-  if (AddData(ws)) cout << "AddData failed" << endl;
-  if (DoSPlot(ws)) cout << "DoSPlot failes" << endl;
+  //  if (AddData(ws)) cout << "AddData failed" << endl;
+  //if (DoSPlot(ws)) cout << "DoSPlot failes" << endl;
   cout << "DoSPlot succeded" << endl;
   TFile *root_file=new TFile("/afs/cern.ch/work/c/cgoudet/private/data/WS_SPlot.root","UPDATE");
   //  ws->Print();
-  ws->Write("",TObject::kOverwrite);
+  //  ws->Write("",TObject::kOverwrite);
   root_file->Close();
   return 0;
 }
@@ -47,30 +47,56 @@ int main() {
 int AddModel(RooWorkspace *ws) {
 
 
+  TFile *file_kin=new TFile("/afs/cern.ch/work/c/cgoudet/private/data/kin_dist.root");
+
 
   RooRealVar *dipho_mass=new RooRealVar("dipho_mass","mass_dipho_mass",120,100,180);
   RooRealVar *dipho_pt=new RooRealVar("dipho_pt","dipho_pt",100,0,200);
   RooPlot *frame_mass=0,*frame_pt=0;
-
+  TTree *tree=0;
+  RooDataSet *data=0;
+  TCanvas *canvas=new TCanvas();
 
   //Model of ggh =gauss_mass * tallispol1_pt
   cout << "#####  Model ggH" << endl;
  
-  RooRealVar *mean_mass_ggh=new RooRealVar("mean_mass_ggh","mean_mass_ggh",126,100,180);
-  RooRealVar *sigma_mass_ggh=new RooRealVar("sigma_mass_ggh","sigma_mass_ggh",1,0,10);
+  RooRealVar *mean_mass_ggh=new RooRealVar("mean_mass_ggh","mean_mass_ggh",125,100,180);
+  RooRealVar *sigma_mass_ggh=new RooRealVar("sigma_mass_ggh","sigma_mass_ggh",3e-2,0,10);
   RooGaussian *model_mass_ggh=new RooGaussian("model_mass_ggh","model_mass_ggh",*dipho_mass,*mean_mass_ggh,*sigma_mass_ggh);
+  tree=(TTree*) file_kin->Get("tree_ggh");
+  data=new RooDataSet("data","data",tree , *dipho_mass);
+  model_mass_ggh->fitTo(*data);
+  frame_mass=dipho_mass->frame();
+  data->plotOn(frame_mass);
+  model_mass_ggh->plotOn(frame_mass);
+  frame_mass->Draw();
+  canvas->SaveAs("frame.png");
+  data->Delete();
+  tree->Delete();
 
 
-  RooRealVar *coef0_pol_pt_ggh=new RooRealVar("coef0_pol_pt_ggh","coef0_pol_pt_ggh",1,0,100);
-  RooRealVar *coef1_pol_pt_ggh=new RooRealVar("coef1_pol_pt_ggh","coef1_pol_pt_ggh",1,0,100);
+  RooRealVar *coef0_pol_pt_ggh=new RooRealVar("coef0_pol_pt_ggh","coef0_pol_pt_ggh",3,-100,100);
+  RooRealVar *coef1_pol_pt_ggh=new RooRealVar("coef1_pol_pt_ggh","coef1_pol_pt_ggh",0,-100,100);
   RooPolynomial *pol_pt_ggh=new RooPolynomial("pol_pt_ggh","pol_pt_ggh",*dipho_pt,RooArgSet(*coef0_pol_pt_ggh,*coef1_pol_pt_ggh));
 
-  RooRealVar *coefM_tallis_pt_ggh=new RooRealVar("coefM_tallis_pt_ggh","coefM_tallis_pt_ggh",1,0,300);
-  RooRealVar *coefT_tallis_pt_ggh=new RooRealVar("coefT_tallis_pt_ggh","coefT_tallis_pt_ggh",1,0.01,100);
-  RooRealVar *coefN_tallis_pt_ggh=new RooRealVar("coefN_tallis_pt_ggh","coefN_tallis_pt_ggh",1,0.01,100);
-  RooGenericPdf *tallis_pt_ggh=new RooGenericPdf("tallis_pt_ggh","dipho_pt*pow(1+(sqrt(coefM_tallis_pt_ggh*coefM_tallis_pt_ggh+dipho_pt*dipho_pt)-coefM_tallis_pt_ggh)/coefN_tallis_pt_ggh/coefT_tallis_pt_ggh,-coefN_tallis_pt_ggh)",RooArgSet(*dipho_pt,*coefN_tallis_pt_ggh,*coefM_tallis_pt_ggh,*coefT_tallis_pt_ggh));
+  RooRealVar *coefM_tsallis_pt_ggh=new RooRealVar("coefM_tsallis_pt_ggh","coefM_tsallis_pt_ggh",125,0,300);
+  RooRealVar *coefT_tsallis_pt_ggh=new RooRealVar("coefT_tsallis_pt_ggh","coefT_tsallis_pt_ggh",1,-100,100);
+  RooRealVar *coefN_tsallis_pt_ggh=new RooRealVar("coefN_tsallis_pt_ggh","coefN_tsallis_pt_ggh",1,-100,100);
+  RooGenericPdf *tsallis_pt_ggh=new RooGenericPdf("tsallis_pt_ggh","(coefN_tsallis_pt_ggh-1)*(coefN_tsallis_pt_ggh-2)/coefN_tsallis_pt_ggh/coefT_tsallis_pt_ggh/(coefN_tsallis_pt_ggh*coefT_tsallis_pt_ggh+(coefN_tsallis_pt_ggh-2)*coefM_tsallis_pt_ggh)*dipho_pt*pow(1+(sqrt(coefM_tsallis_pt_ggh*coefM_tsallis_pt_ggh+dipho_pt*dipho_pt)-coefM_tsallis_pt_ggh)/coefN_tsallis_pt_ggh/coefT_tsallis_pt_ggh,-coefN_tsallis_pt_ggh)",RooArgSet(*dipho_pt,*coefN_tsallis_pt_ggh,*coefM_tsallis_pt_ggh,*coefT_tsallis_pt_ggh));
   
-  RooProdPdf *model_pt_ggh=new RooProdPdf("model_pt_ggh","model_pt_ggh",RooArgList(*pol_pt_ggh,*tallis_pt_ggh));
+  RooProdPdf *model_pt_ggh=new RooProdPdf("model_pt_ggh","model_pt_ggh",RooArgList(*pol_pt_ggh,*tsallis_pt_ggh));
+
+  data=new RooDataSet("data_ggh","data_ggh",(TTree*) file_kin->Get("tree_ggh"),*dipho_pt);
+  //  model_pt_ggh->fitTo(*data);
+
+  TFile f("/afs/cern.ch/work/c/cgoudet/private/data/WS_SPlot.root","UPDATE");
+  RooPlot* frame=dipho_pt->frame();
+  frame->SetName("frame");  
+  model_pt_ggh->plotOn(frame);
+  data->plotOn(frame);  
+  frame->Write("",TObject::kOverwrite);
+  f.Close();
+  data->Delete();
 
 
   RooProdPdf *model_ggh=new RooProdPdf("model_ggh","model_ggh",RooArgList(*model_pt_ggh,*model_mass_ggh));
@@ -81,7 +107,7 @@ int AddModel(RooWorkspace *ws) {
   RooRealVar *coef1_bern_mass_bkg=new RooRealVar("coef1_bern_mass_bkg","coef1_bern_mass_bkg",0,-50,50);
   RooRealVar *coef2_bern_mass_bkg=new RooRealVar("coef2_bern_mass_bkg","coef2_bern_mass_bkg",0,-50,50);
   RooRealVar *coef3_bern_mass_bkg=new RooRealVar("coef3_bern_mass_bkg","coef3_bern_mass_bkg",0,-50,50);
-  RooBernstein *model_mass_bkg=new RooBernstein("model_mass_bkg","model_mass_bkg",*dipho_mass,RooArgSet(*coef0_bern_mass_bkg,*coef1_bern_mass_bkg,*coef2_bern_mass_bkg,*coef3_bern_mass_bkg));
+  RooPolynomial *model_mass_bkg=new RooPolynomial("model_mass_bkg","model_mass_bkg",*dipho_mass,RooArgSet(*coef0_bern_mass_bkg,*coef1_bern_mass_bkg,*coef2_bern_mass_bkg,*coef3_bern_mass_bkg));
 
 
   RooRealVar *coef0_pol_pt_bkg=new RooRealVar("coef0_pol_pt_bkg","coef0_pol_pt_bkg",0,-50,50);
@@ -109,7 +135,7 @@ int AddModel(RooWorkspace *ws) {
 
 
   ws->import(*model_both);
-
+  file_kin->Close();
 
 
 
@@ -129,7 +155,6 @@ int AddData(RooWorkspace* ws) {
   RooDataSet *data_ggh=new RooDataSet("data_ggh","data_ggh",tree,RooArgSet(*dipho_mass,*dipho_pt));
   tree->Delete();
   tree=(TTree*) file_kin->Get("tree_bkg");
-  tree->Print();
   RooDataSet *data=new RooDataSet("data","data",tree,RooArgSet(*dipho_mass,*dipho_pt));
    data->append(*data_ggh);
 
@@ -151,16 +176,7 @@ int DoSPlot(RooWorkspace* ws) {
   
 
   
-    model->fitTo(*data,RooFit::Extended());
-
-  TFile f("/afs/cern.ch/work/c/cgoudet/private/data/WS_SPlot.root","UPDATE");
-  RooRealVar *dipho_mass=ws->var("dipho_mass");  
-  RooPlot* massframe=dipho_mass->frame();
-  massframe->SetName("frame");  
-  model->plotOn(massframe);
-  data->plotOn(massframe);  
-massframe->Write("",TObject::kOverwrite);
-  f.Close();
+  //    model->fitTo(*data,RooFit::Extended());
 
 
   return 0;
