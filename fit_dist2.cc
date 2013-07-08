@@ -22,8 +22,8 @@ int main() {
   char* cutval[5]={"","200","375","550","750"};
 
    for (int cut=0;cut<5;cut++) {
-    for (int menu=0;menu<1;menu++) {
-      for (int menu_pol=0;menu_pol<1;menu_pol++) {
+    for (int menu=0;menu<3;menu++) {
+      for (int menu_pol=0;menu_pol<3;menu_pol++) {
 	
 
 	fit_bkg(menu,menu_pol,cutval[cut],3);
