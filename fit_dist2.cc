@@ -19,11 +19,11 @@ int main() {
   stream.open("result_fit.txt",fstream::out|fstream::trunc);
   stream.close();
 
-  char* cutval[5]={"","cuttheta200","cuttheta375","cuttheta550","cuttheta750"};
+  char* cutval[5]={"","200","375","550","750"};
 
-  for (int cut=0;cut<5;cut++) {
-    for (int menu=0;menu<3;menu++) {
-      for (int menu_pol=0;menu_pol<3;menu_pol++) {
+   for (int cut=0;cut<5;cut++) {
+    for (int menu=0;menu<1;menu++) {
+      for (int menu_pol=0;menu_pol<1;menu_pol++) {
 	
 
 	fit_bkg(menu,menu_pol,cutval[cut],3);
@@ -31,7 +31,7 @@ int main() {
 	fit_vbf(menu,menu_pol,cutval[cut]);
       }
     }
-  }  
+      }  
 
  
   return 0;
@@ -46,7 +46,8 @@ int fit_bkg(int const &menu_bkg,int const &menu_pol_bkg,char const *menu_cut,int
   TFile *file_result=new TFile("kin_dist.root");
   RooRealVar dipho_pt("dipho_pt","dipho_pt",0,200);
   RooRealVar dipho_mass("dipho_mass","dipho_mass",0,600);
-  
+  RooRealVar dipho_ctheta("dipho_ctheta","dipho_ctheta",0,1);
+
   TLatex latex;
   latex.SetNDC();
   latex.SetTextSize(0.05);
@@ -89,15 +90,31 @@ int fit_bkg(int const &menu_bkg,int const &menu_pol_bkg,char const *menu_cut,int
 
   TTree *tree_bkg=(TTree*) file_result->Get("tree_bkg");
   tree_bkg->Print();
-
+  pad_fit_bkg->cd();
   RooDataSet *dataset_bkg=0;
-  sprintf(buffer,"dipho_mass<%2.2f && dipho_mass>%2.2f",125.+menu_window/2.,125.-menu_window/2.);
-  cout << buffer << endl;
-
-  if (menu_window) dataset_bkg=new RooDataSet("dataset_bkg","dataset_bkg",tree_bkg,RooArgSet(dipho_pt,dipho_mass),buffer);
-  else dataset_bkg=new RooDataSet("dataset_bkg","dataset_bkg",tree_bkg,dipho_pt);
-  dataset_bkg->plotOn(frame_bkg);
+  if (menu_window && !strcmp(menu_cut,"")) {
+    sprintf(buffer,"dipho_mass<%3.2f && dipho_mass > %3.2f", 125+menu_window/2.,125-menu_window/2.);
+    dataset_bkg=new RooDataSet("dataset_bkg","dataset_bkg",tree_bkg,RooArgSet(dipho_pt,dipho_mass),buffer);
+    tree_bkg->Draw("dipho_pt>>hist_bkg(300,0,200)",buffer);
+	    }
+  else if (menu_window && strcmp(menu_cut,"")) {
+    sprintf(buffer,"dipho_mass<%3.2f && dipho_mass > %3.2f && dipho_ctheta>%s/1000.", 125+menu_window/2.,125-menu_window/2.,menu_cut);
+    dataset_bkg=new RooDataSet("dataset_bkg","dataset_bkg",tree_bkg,RooArgSet(dipho_pt,dipho_mass,dipho_ctheta),buffer);
+    tree_bkg->Draw("dipho_pt>>hist_bkg(300,0,200)",buffer);  
+}
+  else if (strcmp(menu_cut,"")) {
+    sprintf(buffer,"dipho_ctheta>%s/1000.",menu_cut);
+    dataset_bkg=new RooDataSet("dataset_bkg","dataset_bkg",tree_bkg,RooArgSet(dipho_pt,dipho_ctheta),buffer);
+    tree_bkg->Draw("dipho_pt>>hist_bkg(300,0,200)",buffer);  
+}
+  else {
+    dataset_bkg=new RooDataSet("dataset_bkg","dataset_bkg",tree_bkg,dipho_pt);
+    tree_bkg->Draw("dipho_pt>>hist_bkg(300,0,200)");  
+  }
+  
+dataset_bkg->plotOn(frame_bkg);
   RooProdPdf *model_bkg;
+
 
   char buffer_savebkg[100];
   switch (3*menu_pol_bkg+menu_bkg) {
@@ -163,8 +180,9 @@ int fit_bkg(int const &menu_bkg,int const &menu_pol_bkg,char const *menu_cut,int
   model_bkg->fitTo(*dataset_bkg);
   model_bkg->plotOn(frame_bkg);
   cout << "plotted" << endl;  
-pad_fit_bkg->cd();
-  tree_bkg->Draw("dipho_pt>>hist_bkg(300,0,200)");
+
+
+
   TH1F *hist_bkg=(TH1F*) gDirectory->Get("hist_bkg");
   hist_bkg->Sumw2();
   TH1F *ratio_bkg=(TH1F*) model_bkg->createHistogram("ratio_bkg", dipho_pt,RooFit::Binning(hist_bkg->GetNbinsX(),0,200));
@@ -206,21 +224,26 @@ pad_fit_bkg->cd();
 
 
   //canvas_bkg->Update();
-  sprintf(buffer,"bkg fit : #chi^{2}=%2.2f",frame_bkg->chiSquare());
-  latex.DrawLatex(0.3,0.96,buffer);
-  
-  sprintf(buffer,"fit%s_%s.png",menu_cut,buffer_savebkg);
-  canvas_bkg->SaveAs(buffer);
-  sprintf(buffer,"fit%s_%s.pdf",menu_cut,buffer_savebkg);
-  canvas_bkg->SaveAs(buffer);
-  sprintf(buffer,"fit%s_%s.root",menu_cut,buffer_savebkg);
-  canvas_bkg->SaveAs(buffer);
+  if (!strcmp(menu_cut,"")) sprintf(buffer,"%s : #chi^{2}=%2.2f",buffer_savebkg,frame_bkg->chiSquare());
+  else sprintf(buffer,"%s_cuttheta%s : #chi^{2}=%2.2f",buffer_savebkg,menu_cut,frame_bkg->chiSquare());
+  latex.DrawLatex(0.25,0.96,buffer);
 
+  char dummy_cut[40];
+  if (strcmp(menu_cut,"")) sprintf(dummy_cut,"cuttheta%s",menu_cut);
+  
+  sprintf(buffer,"fit%s_%s.png",dummy_cut,buffer_savebkg);
+  canvas_bkg->SaveAs(buffer);
+  sprintf(buffer,"fit%s_%s.pdf",dummy_cut,buffer_savebkg);
+  canvas_bkg->SaveAs(buffer);
+  sprintf(buffer,"fit%s_%s.root",dummy_cut,buffer_savebkg);
+  canvas_bkg->SaveAs(buffer);
+  
   fstream stream;
   stream.open("result_fit.txt", fstream::out | fstream::app);
-  stream << buffer_savebkg << " " << frame_bkg->chiSquare() << endl;
+  stream << buffer_savebkg << "_" << dummy_cut << " " << frame_bkg->chiSquare() << endl;
   stream.close();
 
+  file_result->Close();
   return 1;
   }
 
@@ -233,6 +256,7 @@ pad_fit_bkg->cd();
   TFile *file_result=new TFile("kin_dist.root");
   RooRealVar dipho_pt("dipho_pt","dipho_pt",0,200);
   RooRealVar dipho_mass("dispho_mass","dipho_mass",100,0,600);  
+  RooRealVar dipho_ctheta("dipho_ctheta","dipho_ctheta",0,1);
   
   TLatex latex;
   latex.SetNDC();
@@ -276,7 +300,18 @@ pad_fit_bkg->cd();
 
   sprintf(buffer,"hist_dipho_pt%s_ggh_gen",menu_cut);
   TTree *tree_ggh=(TTree*) file_result->Get("tree_ggh");
-  RooDataSet *dataset_ggh=new RooDataSet("dataset_ggh","dataset_ggh",tree_ggh,dipho_pt);
+  RooDataSet *dataset_ggh=0;
+  pad_fit_ggh->cd();
+  if (strcmp(menu_cut,"")) {
+    sprintf(buffer,"dipho_ctheta > %s/1000.", menu_cut);
+    dataset_ggh=new RooDataSet("dataset_ggh","dataset_ggh",tree_ggh,RooArgSet(dipho_pt,dipho_ctheta),buffer);
+    tree_ggh->Draw("dipho_pt>>hist_ggh(300,0,200)",buffer);
+  }
+  else {
+    dataset_ggh=new RooDataSet("dataset_ggh","dataset_ggh",tree_ggh,dipho_pt);
+    tree_ggh->Draw("dipho_pt>>hist_ggh(300,0,200)");
+  }
+
   dataset_ggh->plotOn(frame_ggh);
 
   RooProdPdf *model_ggh;
@@ -335,21 +370,21 @@ pad_fit_bkg->cd();
   model_ggh->fitTo(*dataset_ggh);
   model_ggh->plotOn(frame_ggh);
   cout << "plotted" << endl;  
-  pad_fit_ggh->cd();
-  tree_ggh->Draw("dipho_pt>>hist_ggh(300,0,200)");
+
+
   TH1F *hist_ggh=(TH1F*) gDirectory->Get("hist_ggh");
   hist_ggh->Sumw2();
   TH1F *ratio_ggh=(TH1F*) model_ggh->createHistogram("ratio_ggh", dipho_pt,RooFit::Binning(hist_ggh->GetNbinsX(),0,200));
-
+  
   cout << ratio_ggh->GetNbinsX() << " " << hist_ggh->GetNbinsX() << endl;
   cout << "created ratio" << endl;
-   ratio_ggh->Scale(hist_ggh->Integral());
+  ratio_ggh->Scale(hist_ggh->Integral());
   for (int i=0;i<hist_ggh->GetNbinsX()+1;i++) {
-
+    
     //    cout << hist_ggh->GetBinCenter(i) << " " << ratio_ggh->GetBinContent(i) << " " << hist_ggh->GetBinContent(i) << " ";
     if (ratio_ggh->GetBinContent(i)>0) ratio_ggh->SetBinContent(i,hist_ggh->GetBinContent(i)/ratio_ggh->GetBinContent(i));
     //    cout << ratio_ggh->GetBinContent(i) << endl;
-
+    
 }
   cout << "modified ratio" << endl;
   ratio_ggh->Sumw2();
@@ -378,20 +413,24 @@ pad_fit_bkg->cd();
 
 
   //canvas_ggh->Update();
-  sprintf(buffer,"ggh fit : #chi^{2}=%2.2f",frame_ggh->chiSquare());
-  latex.DrawLatex(0.3,0.96,buffer);
+  if (!strcmp(menu_cut,"")) sprintf(buffer,"%s : #chi^{2}=%2.2f",buffer_saveggh,frame_ggh->chiSquare());
+  else sprintf(buffer,"%s_cuttheta%s : #chi^{2}=%2.2f",buffer_saveggh,menu_cut,frame_ggh->chiSquare());
+  latex.DrawLatex(0.25,0.96,buffer);
   
-  sprintf(buffer,"fit%s_%s.png",menu_cut,buffer_saveggh);
+
+  char dummy_cut[40]="";
+  if (strcmp(menu_cut,""))   sprintf(dummy_cut,"cuttheta%s",menu_cut);
+  sprintf(buffer,"fit%s_%s.png",dummy_cut,buffer_saveggh);
   canvas_ggh->SaveAs(buffer);
-  sprintf(buffer,"fit%s_%s.pdf",menu_cut,buffer_saveggh);
+  sprintf(buffer,"fit%s_%s.pdf",dummy_cut,buffer_saveggh);
   canvas_ggh->SaveAs(buffer);
-  sprintf(buffer,"fit%s_%s.root",menu_cut,buffer_saveggh);
+  sprintf(buffer,"fit%s_%s.root",dummy_cut,buffer_saveggh);
   canvas_ggh->SaveAs(buffer);
 
 
   fstream stream;
   stream.open("result_fit.txt",fstream::out|fstream::app);
-  stream << buffer_saveggh << " " << frame_ggh->chiSquare() << endl;
+  stream << buffer_saveggh << "_" << dummy_cut << " " << frame_ggh->chiSquare() << endl;
   stream.close();
   return 1;
   }
@@ -402,7 +441,7 @@ pad_fit_bkg->cd();
   setTDRStyle();
   TFile *file_result=new TFile("kin_dist.root");
   RooRealVar dipho_pt("dipho_pt","dipho_pt",0,200);
-  
+  RooRealVar dipho_ctheta("dipho_ctheta","dipho_ctheta",0,1);  
   
   TLatex latex;
   latex.SetNDC();
@@ -445,8 +484,21 @@ pad_fit_bkg->cd();
 
   sprintf(buffer,"hist_dipho_pt%s_vbf_gen",menu_cut);
   TTree *tree_vbf=(TTree*) file_result->Get("tree_vbf");
-  RooDataSet *dataset_vbf=new RooDataSet("dataset_vbf","dataset_vbf",tree_vbf,dipho_pt);
+  RooDataSet *dataset_vbf=0;
+pad_fit_vbf->cd();
+
+  if (strcmp(menu_cut,"")) {
+    sprintf(buffer,"dipho_ctheta > %s/1000.", menu_cut);
+    dataset_vbf=new RooDataSet("dataset_vbf","dataset_vbf",tree_vbf,RooArgSet(dipho_pt,dipho_ctheta),buffer);
+    tree_vbf->Draw("dipho_pt>>hist_vbf(300,0,200)",buffer);
+  }
+  else {
+    dataset_vbf=new RooDataSet("dataset_vbf","dataset_vbf",tree_vbf,dipho_pt);
+    tree_vbf->Draw("dipho_pt>>hist_vbf(300,0,200)");
+  }
+  
   dataset_vbf->plotOn(frame_vbf);
+
 
   RooProdPdf *model_vbf;
 
@@ -504,8 +556,7 @@ pad_fit_bkg->cd();
   model_vbf->fitTo(*dataset_vbf);
   model_vbf->plotOn(frame_vbf);
   cout << "plotted" << endl;  
-pad_fit_vbf->cd();
-  tree_vbf->Draw("dipho_pt>>hist_vbf(300,0,200)");
+
   TH1F *hist_vbf=(TH1F*) gDirectory->Get("hist_vbf");
   hist_vbf->Sumw2();
   TH1F *ratio_vbf=(TH1F*) model_vbf->createHistogram("ratio_vbf", dipho_pt,RooFit::Binning(hist_vbf->GetNbinsX(),0,200));
@@ -547,21 +598,26 @@ pad_fit_vbf->cd();
 
 
   //canvas_vbf->Update();
-  sprintf(buffer,"vbf fit : #chi^{2}=%2.2f",frame_vbf->chiSquare());
-  latex.DrawLatex(0.3,0.96,buffer);
-  
-  sprintf(buffer,"fit%s_%s.png",menu_cut,buffer_savevbf);
+  if (!strcmp(menu_cut,"")) sprintf(buffer,"%s : #chi^{2}=%2.2f",buffer_savevbf,frame_vbf->chiSquare());
+  else sprintf(buffer,"%s_%s : #chi^{2}=%2.2f",buffer_savevbf,menu_cut,frame_vbf->chiSquare());
+  latex.DrawLatex(0.25,0.96,buffer);
+
+
+  char dummy_cut[40]="";
+  if (strcmp(menu_cut,"")) sprintf(dummy_cut,"cuttheta%s",menu_cut);  
+  sprintf(buffer,"fit%s_%s.png",dummy_cut,buffer_savevbf);
   canvas_vbf->SaveAs(buffer);
-  sprintf(buffer,"fit%s_%s.pdf",menu_cut,buffer_savevbf);
+  sprintf(buffer,"fit%s_%s.pdf",dummy_cut,buffer_savevbf);
   canvas_vbf->SaveAs(buffer);
-  sprintf(buffer,"fit%s_%s.root",menu_cut,buffer_savevbf);
+  sprintf(buffer,"fit%s_%s.root",dummy_cut,buffer_savevbf);
   canvas_vbf->SaveAs(buffer);
 
  
   fstream stream;
   stream.open("result_fit.txt",fstream::out|fstream::app);
-  stream << buffer_savevbf << " " << frame_vbf->chiSquare() << endl;
+  stream << buffer_savevbf << "_" << dummy_cut << " " << frame_vbf->chiSquare() << endl;
   stream.close();
+
 
   return 1;
   }

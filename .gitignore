@@ -5,6 +5,7 @@
 *.exe
 *~
 *.out
+*.sh
 
 # Compiled Dynamic libraries
 *.so
@@ -15,6 +16,8 @@
 *.la
 *.a
 
-
-
-
+# data
+*.root
+*.tex
+*.pdf
+*.txt
