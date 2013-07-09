@@ -22,7 +22,6 @@ int main() {
       for (int menu_pol=0;menu_pol<3;menu_pol++) {
 	
 	//fit_bkg(menu,menu_pol,cutval[cut],3);
-	
 	//fit_ggh(menu,menu_pol,cutval[cut]);
 	fit_vbf(menu,menu_pol,cutval[cut]);
       }
@@ -78,11 +77,11 @@ int fit_bkg(int const &menu_bkg,int const &menu_pol_bkg,char const *menu_cut,int
   RooRealVar coefM_tsallis_bkg("coefM_tsallis_bkg","coefM_tsallis_bkg",180,0,210);
   RooGenericPdf *tsallis_bkg=new RooGenericPdf("tsallis_bkg","(coefN_tsallis_bkg-1)*(coefN_tsallis_bkg-2)/coefN_tsallis_bkg/coefT_tsallis_bkg/(coefN_tsallis_bkg*coefT_tsallis_bkg+coefM_tsallis_bkg*(coefN_tsallis_bkg-2))*dipho_pt*TMath::Power(1+(sqrt(coefM_tsallis_bkg*coefM_tsallis_bkg+dipho_pt*dipho_pt)-coefM_tsallis_bkg)/coefN_tsallis_bkg/coefT_tsallis_bkg,-coefN_tsallis_bkg)",RooArgSet(dipho_pt,coefN_tsallis_bkg,coefM_tsallis_bkg,coefT_tsallis_bkg));
 
-  RooRealVar coef0_pol_bkg("coef0_pol_bkg","coef0_pol_bkg",0,-100,100);
-  RooRealVar coef1_pol_bkg("coef1_pol_bkg","coef1_pol_bkg",2,-100,100);
-  RooRealVar coef2_pol_bkg("coef2_pol_bkg","coef2_pol_bkg",2,-100,100);
-  RooRealVar coef3_pol_bkg("coef3_pol_bkg","coef3_pol_bkg",3,-100,100);
-  RooPolynomial *pol2_bkg;
+  RooRealVar coef0_pol_bkg("coef0_pol_bkg","coef0_pol_bkg",5,0,100);
+  RooRealVar coef1_pol_bkg("coef1_pol_bkg","coef1_pol_bkg",2,0,100);
+  RooRealVar coef2_pol_bkg("coef2_pol_bkg","coef2_pol_bkg",2,0,100);
+  RooRealVar coef3_pol_bkg("coef3_pol_bkg","coef3_pol_bkg",3,0,100);
+  RooBernstein *pol2_bkg;
 
   TTree *tree_bkg=(TTree*) file_result->Get("tree_bkg");
   tree_bkg->Print();
@@ -115,57 +114,57 @@ dataset_bkg->plotOn(frame_bkg);
   char buffer_savebkg[100];
   switch (3*menu_pol_bkg+menu_bkg) {
   case 0 : 
-    pol2_bkg=new RooPolynomial("pol2_bkg","pol2_bkg",dipho_pt,RooArgList(coef0_pol_bkg));
+    pol2_bkg=new RooBernstein("pol2_bkg","pol2_bkg",dipho_pt,RooArgList(coef0_pol_bkg));
     model_bkg =new RooProdPdf("model_bkg","model_bkg",RooArgList(*land_bkg,*pol2_bkg));
     if (menu_window)    sprintf(buffer_savebkg,"bkg%dlandpol0",menu_window);
     else sprintf(buffer_savebkg,"bkglandpol0");
     break;  
     
   case 1 : 
-    pol2_bkg=new RooPolynomial("pol2_bkg","pol2_bkg",dipho_pt,RooArgList(coef0_pol_bkg));
+    pol2_bkg=new RooBernstein("pol2_bkg","pol2_bkg",dipho_pt,RooArgList(coef0_pol_bkg));
     model_bkg =new RooProdPdf("model_bkg","model_bkg",RooArgList(*logn_bkg,*pol2_bkg));
     if (menu_window)    sprintf(buffer_savebkg,"bkg%dlognpol0",menu_window);
     else sprintf(buffer_savebkg,"bkglognpol0");
     break;  
   case 2 :
-    pol2_bkg=new RooPolynomial("pol2_bkg","pol2_bkg",dipho_pt,RooArgList(coef0_pol_bkg));
+    pol2_bkg=new RooBernstein("pol2_bkg","pol2_bkg",dipho_pt,RooArgList(coef0_pol_bkg));
     model_bkg =new RooProdPdf("model_bkg","model_bkg",RooArgList(*tsallis_bkg,*pol2_bkg));
     if (menu_window)    sprintf(buffer_savebkg,"bkg%dtsallispol0",menu_window);
     else sprintf(buffer_savebkg,"bkgtsallispol0");
     break;  
   case 3 : 
-    pol2_bkg=new RooPolynomial("pol2_bkg","pol2_bkg",dipho_pt,RooArgList(coef0_pol_bkg,coef1_pol_bkg));
+    pol2_bkg=new RooBernstein("pol2_bkg","pol2_bkg",dipho_pt,RooArgList(coef0_pol_bkg,coef1_pol_bkg));
     model_bkg =new RooProdPdf("model_bkg","model_bkg",RooArgList(*land_bkg,*pol2_bkg));
     if (menu_window)    sprintf(buffer_savebkg,"bkg%dlandpol1",menu_window);
     else sprintf(buffer_savebkg,"bkglandpol1");
     break;  
   case 4 : 
-    pol2_bkg=new RooPolynomial("pol2_bkg","pol2_bkg",dipho_pt,RooArgList(coef0_pol_bkg,coef1_pol_bkg));
+    pol2_bkg=new RooBernstein("pol2_bkg","pol2_bkg",dipho_pt,RooArgList(coef0_pol_bkg,coef1_pol_bkg));
     model_bkg =new RooProdPdf("model_bkg","model_bkg",RooArgList(*logn_bkg,*pol2_bkg));
     sprintf(buffer_savebkg,"bkglognpol1");
     if (menu_window)    sprintf(buffer_savebkg,"bkg%dlognpol1",menu_window);
     else sprintf(buffer_savebkg,"bkglognpol1");
     break;  
    case 5 :
-    pol2_bkg=new RooPolynomial("pol2_bkg","pol2_bkg",dipho_pt,RooArgList(coef0_pol_bkg,coef1_pol_bkg));
+    pol2_bkg=new RooBernstein("pol2_bkg","pol2_bkg",dipho_pt,RooArgList(coef0_pol_bkg,coef1_pol_bkg));
     model_bkg =new RooProdPdf("model_bkg","model_bkg",RooArgList(*tsallis_bkg,*pol2_bkg));
     if (menu_window)     sprintf(buffer_savebkg,"bkg%dtsallispol1",menu_window);
     else     sprintf(buffer_savebkg,"bkgtsallispol1");
     break;  
   case 6 : 
-    pol2_bkg=new RooPolynomial("pol2_bkg","pol2_bkg",dipho_pt,RooArgList(coef0_pol_bkg,coef1_pol_bkg,coef2_pol_bkg));
+    pol2_bkg=new RooBernstein("pol2_bkg","pol2_bkg",dipho_pt,RooArgList(coef0_pol_bkg,coef1_pol_bkg,coef2_pol_bkg));
     model_bkg =new RooProdPdf("model_bkg","model_bkg",RooArgList(*land_bkg,*pol2_bkg));
     if (menu_window)     sprintf(buffer_savebkg,"bkg%dlandpol2",menu_window);
     else     sprintf(buffer_savebkg,"bkglandpol2");
     break;  
   case 7 : 
-    pol2_bkg=new RooPolynomial("pol2_bkg","pol2_bkg",dipho_pt,RooArgList(coef0_pol_bkg,coef1_pol_bkg,coef2_pol_bkg));
+    pol2_bkg=new RooBernstein("pol2_bkg","pol2_bkg",dipho_pt,RooArgList(coef0_pol_bkg,coef1_pol_bkg,coef2_pol_bkg));
     model_bkg =new RooProdPdf("model_bkg","model_bkg",RooArgList(*logn_bkg,*pol2_bkg));
     if (menu_window)     sprintf(buffer_savebkg,"bkg%dlognpol2",menu_window);
     else     sprintf(buffer_savebkg,"bkglognpol2");
     break;  
  case 8 :
-   pol2_bkg=new RooPolynomial("pol2_bkg","pol2_bkg",dipho_pt,RooArgList(coef0_pol_bkg,coef1_pol_bkg,coef2_pol_bkg));
+   pol2_bkg=new RooBernstein("pol2_bkg","pol2_bkg",dipho_pt,RooArgList(coef0_pol_bkg,coef1_pol_bkg,coef2_pol_bkg));
     model_bkg =new RooProdPdf("model_bkg","model_bkg",RooArgList(*tsallis_bkg,*pol2_bkg));
     if (menu_window)     sprintf(buffer_savebkg,"bkg%dtsallispol2",menu_window);
     else     sprintf(buffer_savebkg,"bkgtsallispol2");
@@ -288,11 +287,11 @@ dataset_bkg->plotOn(frame_bkg);
   RooRealVar coefM_tsallis_ggh("coefM_tsallis_ggh","coefM_tsallis_ggh",180,0,210);
   RooGenericPdf *tsallis_ggh=new RooGenericPdf("tsallis_ggh","(coefN_tsallis_ggh-1)*(coefN_tsallis_ggh-2)/coefN_tsallis_ggh/coefT_tsallis_ggh/(coefN_tsallis_ggh*coefT_tsallis_ggh+coefM_tsallis_ggh*(coefN_tsallis_ggh-2))*dipho_pt*TMath::Power(1+(sqrt(coefM_tsallis_ggh*coefM_tsallis_ggh+dipho_pt*dipho_pt)-coefM_tsallis_ggh)/coefN_tsallis_ggh/coefT_tsallis_ggh,-coefN_tsallis_ggh)",RooArgSet(dipho_pt,coefN_tsallis_ggh,coefM_tsallis_ggh,coefT_tsallis_ggh));
 
-  RooRealVar coef0_pol_ggh("coef0_pol_ggh","coef0_pol_ggh",0,-100,100);
-  RooRealVar coef1_pol_ggh("coef1_pol_ggh","coef1_pol_ggh",2,-100,100);
-  RooRealVar coef2_pol_ggh("coef2_pol_ggh","coef2_pol_ggh",2,-100,100);
-  RooRealVar coef3_pol_ggh("coef3_pol_ggh","coef3_pol_ggh",3,-100,100);
-  RooPolynomial *pol2_ggh;
+  RooRealVar coef0_pol_ggh("coef0_pol_ggh","coef0_pol_ggh",5,0,100);
+  RooRealVar coef1_pol_ggh("coef1_pol_ggh","coef1_pol_ggh",2,0,100);
+  RooRealVar coef2_pol_ggh("coef2_pol_ggh","coef2_pol_ggh",2,0,100);
+  RooRealVar coef3_pol_ggh("coef3_pol_ggh","coef3_pol_ggh",3,0,100);
+  RooBernstein *pol2_ggh;
 
   sprintf(buffer,"hist_dipho_pt%s_ggh_gen",menu_cut);
   TTree *tree_ggh=(TTree*) file_result->Get("tree_ggh");
@@ -315,48 +314,48 @@ dataset_bkg->plotOn(frame_bkg);
   char buffer_saveggh[100];
   switch (3*menu_pol_ggh+menu_ggh) {
   case 0 : 
-    pol2_ggh=new RooPolynomial("pol2_ggh","pol2_ggh",dipho_pt,RooArgList(coef0_pol_ggh));
+    pol2_ggh=new RooBernstein("pol2_ggh","pol2_ggh",dipho_pt,RooArgList(coef0_pol_ggh));
     model_ggh =new RooProdPdf("model_ggh","model_ggh",RooArgList(*land_ggh,*pol2_ggh));
     sprintf(buffer_saveggh,"gghlandpol0");
     break;  
     
   case 1 : 
-    pol2_ggh=new RooPolynomial("pol2_ggh","pol2_ggh",dipho_pt,RooArgList(coef0_pol_ggh));
+    pol2_ggh=new RooBernstein("pol2_ggh","pol2_ggh",dipho_pt,RooArgList(coef0_pol_ggh));
     model_ggh =new RooProdPdf("model_ggh","model_ggh",RooArgList(*logn_ggh,*pol2_ggh));
     sprintf(buffer_saveggh,"gghlognpol0");
     break;  
   case 2 :
-    pol2_ggh=new RooPolynomial("pol2_ggh","pol2_ggh",dipho_pt,RooArgList(coef0_pol_ggh));
+    pol2_ggh=new RooBernstein("pol2_ggh","pol2_ggh",dipho_pt,RooArgList(coef0_pol_ggh));
     model_ggh =new RooProdPdf("model_ggh","model_ggh",RooArgList(*tsallis_ggh,*pol2_ggh));
     sprintf(buffer_saveggh,"gghtsallispol0");
     break;  
   case 3 : 
-    pol2_ggh=new RooPolynomial("pol2_ggh","pol2_ggh",dipho_pt,RooArgList(coef0_pol_ggh,coef1_pol_ggh));
+    pol2_ggh=new RooBernstein("pol2_ggh","pol2_ggh",dipho_pt,RooArgList(coef0_pol_ggh,coef1_pol_ggh));
     model_ggh =new RooProdPdf("model_ggh","model_ggh",RooArgList(*land_ggh,*pol2_ggh));
     sprintf(buffer_saveggh,"gghlandpol1");
     break;  
   case 4 : 
-    pol2_ggh=new RooPolynomial("pol2_ggh","pol2_ggh",dipho_pt,RooArgList(coef0_pol_ggh,coef1_pol_ggh));
+    pol2_ggh=new RooBernstein("pol2_ggh","pol2_ggh",dipho_pt,RooArgList(coef0_pol_ggh,coef1_pol_ggh));
     model_ggh =new RooProdPdf("model_ggh","model_ggh",RooArgList(*logn_ggh,*pol2_ggh));
     sprintf(buffer_saveggh,"gghlognpol1");
     break;  
    case 5 :
-    pol2_ggh=new RooPolynomial("pol2_ggh","pol2_ggh",dipho_pt,RooArgList(coef0_pol_ggh,coef1_pol_ggh));
+    pol2_ggh=new RooBernstein("pol2_ggh","pol2_ggh",dipho_pt,RooArgList(coef0_pol_ggh,coef1_pol_ggh));
     model_ggh =new RooProdPdf("model_ggh","model_ggh",RooArgList(*tsallis_ggh,*pol2_ggh));
     sprintf(buffer_saveggh,"gghtsallispol1");
     break;  
   case 6 : 
-    pol2_ggh=new RooPolynomial("pol2_ggh","pol2_ggh",dipho_pt,RooArgList(coef0_pol_ggh,coef1_pol_ggh,coef2_pol_ggh));
+    pol2_ggh=new RooBernstein("pol2_ggh","pol2_ggh",dipho_pt,RooArgList(coef0_pol_ggh,coef1_pol_ggh,coef2_pol_ggh));
     model_ggh =new RooProdPdf("model_ggh","model_ggh",RooArgList(*land_ggh,*pol2_ggh));
     sprintf(buffer_saveggh,"gghlandpol2");
     break;  
   case 7 : 
-    pol2_ggh=new RooPolynomial("pol2_ggh","pol2_ggh",dipho_pt,RooArgList(coef0_pol_ggh,coef1_pol_ggh,coef2_pol_ggh));
+    pol2_ggh=new RooBernstein("pol2_ggh","pol2_ggh",dipho_pt,RooArgList(coef0_pol_ggh,coef1_pol_ggh,coef2_pol_ggh));
     model_ggh =new RooProdPdf("model_ggh","model_ggh",RooArgList(*logn_ggh,*pol2_ggh));
     sprintf(buffer_saveggh,"gghlognpol2");
     break;  
  case 8 :
-   pol2_ggh=new RooPolynomial("pol2_ggh","pol2_ggh",dipho_pt,RooArgList(coef0_pol_ggh,coef1_pol_ggh,coef2_pol_ggh));
+   pol2_ggh=new RooBernstein("pol2_ggh","pol2_ggh",dipho_pt,RooArgList(coef0_pol_ggh,coef1_pol_ggh,coef2_pol_ggh));
     model_ggh =new RooProdPdf("model_ggh","model_ggh",RooArgList(*tsallis_ggh,*pol2_ggh));
     sprintf(buffer_saveggh,"gghtsallispol2");
     break;  
@@ -477,11 +476,11 @@ dataset_bkg->plotOn(frame_bkg);
   RooRealVar coefM_tsallis_vbf("coefM_tsallis_vbf","coefM_tsallis_vbf",180,0,210);
   RooGenericPdf *tsallis_vbf=new RooGenericPdf("tsallis_vbf","(coefN_tsallis_vbf-1)*(coefN_tsallis_vbf-2)/coefN_tsallis_vbf/coefT_tsallis_vbf/(coefN_tsallis_vbf*coefT_tsallis_vbf+coefM_tsallis_vbf*(coefN_tsallis_vbf-2))*dipho_pt*TMath::Power(1+(sqrt(coefM_tsallis_vbf*coefM_tsallis_vbf+dipho_pt*dipho_pt)-coefM_tsallis_vbf)/coefN_tsallis_vbf/coefT_tsallis_vbf,-coefN_tsallis_vbf)",RooArgSet(dipho_pt,coefN_tsallis_vbf,coefM_tsallis_vbf,coefT_tsallis_vbf));
 
-  RooRealVar coef0_pol_vbf("coef0_pol_vbf","coef0_pol_vbf",0,-100,100);
-  RooRealVar coef1_pol_vbf("coef1_pol_vbf","coef1_pol_vbf",2,-100,100);
-  RooRealVar coef2_pol_vbf("coef2_pol_vbf","coef2_pol_vbf",2,-100,100);
-  RooRealVar coef3_pol_vbf("coef3_pol_vbf","coef3_pol_vbf",3,-100,100);
-  RooPolynomial *pol2_vbf;
+  RooRealVar coef0_pol_vbf("coef0_pol_vbf","coef0_pol_vbf",5,0,100);
+  RooRealVar coef1_pol_vbf("coef1_pol_vbf","coef1_pol_vbf",2,0,100);
+  RooRealVar coef2_pol_vbf("coef2_pol_vbf","coef2_pol_vbf",2,0,100);
+  RooRealVar coef3_pol_vbf("coef3_pol_vbf","coef3_pol_vbf",3,0,100);
+  RooBernstein *pol2_vbf;
 
   sprintf(buffer,"hist_dipho_pt%s_vbf_gen",menu_cut);
   TTree *tree_vbf=(TTree*) file_result->Get("tree_vbf");
@@ -506,48 +505,48 @@ pad_fit_vbf->cd();
   char buffer_savevbf[100];
   switch (3*menu_pol_vbf+menu_vbf) {
   case 0 : 
-    pol2_vbf=new RooPolynomial("pol2_vbf","pol2_vbf",dipho_pt,RooArgList(coef0_pol_vbf));
+    pol2_vbf=new RooBernstein("pol2_vbf","pol2_vbf",dipho_pt,RooArgList(coef0_pol_vbf));
     model_vbf =new RooProdPdf("model_vbf","model_vbf",RooArgList(*land_vbf,*pol2_vbf));
     sprintf(buffer_savevbf,"vbflandpol0");
     break;  
     
   case 1 : 
-    pol2_vbf=new RooPolynomial("pol2_vbf","pol2_vbf",dipho_pt,RooArgList(coef0_pol_vbf));
+    pol2_vbf=new RooBernstein("pol2_vbf","pol2_vbf",dipho_pt,RooArgList(coef0_pol_vbf));
     model_vbf =new RooProdPdf("model_vbf","model_vbf",RooArgList(*logn_vbf,*pol2_vbf));
     sprintf(buffer_savevbf,"vbflognpol0");
     break;  
   case 2 :
-    pol2_vbf=new RooPolynomial("pol2_vbf","pol2_vbf",dipho_pt,RooArgList(coef0_pol_vbf));
+    pol2_vbf=new RooBernstein("pol2_vbf","pol2_vbf",dipho_pt,RooArgList(coef0_pol_vbf));
     model_vbf =new RooProdPdf("model_vbf","model_vbf",RooArgList(*tsallis_vbf,*pol2_vbf));
     sprintf(buffer_savevbf,"vbftsallispol0");
     break;  
   case 3 : 
-    pol2_vbf=new RooPolynomial("pol2_vbf","pol2_vbf",dipho_pt,RooArgList(coef0_pol_vbf,coef1_pol_vbf));
+    pol2_vbf=new RooBernstein("pol2_vbf","pol2_vbf",dipho_pt,RooArgList(coef0_pol_vbf,coef1_pol_vbf));
     model_vbf =new RooProdPdf("model_vbf","model_vbf",RooArgList(*land_vbf,*pol2_vbf));
     sprintf(buffer_savevbf,"vbflandpol1");
     break;  
   case 4 : 
-    pol2_vbf=new RooPolynomial("pol2_vbf","pol2_vbf",dipho_pt,RooArgList(coef0_pol_vbf,coef1_pol_vbf));
+    pol2_vbf=new RooBernstein("pol2_vbf","pol2_vbf",dipho_pt,RooArgList(coef0_pol_vbf,coef1_pol_vbf));
     model_vbf =new RooProdPdf("model_vbf","model_vbf",RooArgList(*logn_vbf,*pol2_vbf));
     sprintf(buffer_savevbf,"vbflognpol1");
     break;  
    case 5 :
-    pol2_vbf=new RooPolynomial("pol2_vbf","pol2_vbf",dipho_pt,RooArgList(coef0_pol_vbf,coef1_pol_vbf));
+    pol2_vbf=new RooBernstein("pol2_vbf","pol2_vbf",dipho_pt,RooArgList(coef0_pol_vbf,coef1_pol_vbf));
     model_vbf =new RooProdPdf("model_vbf","model_vbf",RooArgList(*tsallis_vbf,*pol2_vbf));
     sprintf(buffer_savevbf,"vbftsallispol1");
     break;  
   case 6 : 
-    pol2_vbf=new RooPolynomial("pol2_vbf","pol2_vbf",dipho_pt,RooArgList(coef0_pol_vbf,coef1_pol_vbf,coef2_pol_vbf));
+    pol2_vbf=new RooBernstein("pol2_vbf","pol2_vbf",dipho_pt,RooArgList(coef0_pol_vbf,coef1_pol_vbf,coef2_pol_vbf));
     model_vbf =new RooProdPdf("model_vbf","model_vbf",RooArgList(*land_vbf,*pol2_vbf));
     sprintf(buffer_savevbf,"vbflandpol2");
     break;  
   case 7 : 
-    pol2_vbf=new RooPolynomial("pol2_vbf","pol2_vbf",dipho_pt,RooArgList(coef0_pol_vbf,coef1_pol_vbf,coef2_pol_vbf));
+    pol2_vbf=new RooBernstein("pol2_vbf","pol2_vbf",dipho_pt,RooArgList(coef0_pol_vbf,coef1_pol_vbf,coef2_pol_vbf));
     model_vbf =new RooProdPdf("model_vbf","model_vbf",RooArgList(*logn_vbf,*pol2_vbf));
     sprintf(buffer_savevbf,"vbflognpol2");
     break;  
  case 8 :
-   pol2_vbf=new RooPolynomial("pol2_vbf","pol2_vbf",dipho_pt,RooArgList(coef0_pol_vbf,coef1_pol_vbf,coef2_pol_vbf));
+   pol2_vbf=new RooBernstein("pol2_vbf","pol2_vbf",dipho_pt,RooArgList(coef0_pol_vbf,coef1_pol_vbf,coef2_pol_vbf));
     model_vbf =new RooProdPdf("model_vbf","model_vbf",RooArgList(*tsallis_vbf,*pol2_vbf));
     sprintf(buffer_savevbf,"vbftsallispol2");
     break;  
