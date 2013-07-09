@@ -14,20 +14,16 @@ int main() {
   int fit_ggh(int const &menu_ggh,int const &menu_pol_ggh,char const *menu_cut);
   int fit_vbf(int const &menu_vbf,int const &menu_pol_vbf,char const *menu_cut);
 
-
-  fstream stream;
-  stream.open("result_fit.txt",fstream::out|fstream::trunc);
-  stream.close();
-
+  
   char* cutval[5]={"","200","375","550","750"};
 
    for (int cut=0;cut<5;cut++) {
     for (int menu=0;menu<3;menu++) {
       for (int menu_pol=0;menu_pol<3;menu_pol++) {
 	
-
-	fit_bkg(menu,menu_pol,cutval[cut],3);
-	fit_ggh(menu,menu_pol,cutval[cut]);
+	//fit_bkg(menu,menu_pol,cutval[cut],3);
+	
+	//fit_ggh(menu,menu_pol,cutval[cut]);
 	fit_vbf(menu,menu_pol,cutval[cut]);
       }
     }
@@ -228,7 +224,7 @@ dataset_bkg->plotOn(frame_bkg);
   else sprintf(buffer,"%s_cuttheta%s : #chi^{2}=%2.2f",buffer_savebkg,menu_cut,frame_bkg->chiSquare());
   latex.DrawLatex(0.25,0.96,buffer);
 
-  char dummy_cut[40];
+  char dummy_cut[40]="";
   if (strcmp(menu_cut,"")) sprintf(dummy_cut,"cuttheta%s",menu_cut);
   
   sprintf(buffer,"fit%s_%s.png",dummy_cut,buffer_savebkg);
@@ -239,7 +235,7 @@ dataset_bkg->plotOn(frame_bkg);
   canvas_bkg->SaveAs(buffer);
   
   fstream stream;
-  stream.open("result_fit.txt", fstream::out | fstream::app);
+  stream.open("result_fit_bkg.txt", fstream::out | fstream::app);
   stream << buffer_savebkg << "_" << dummy_cut << " " << frame_bkg->chiSquare() << endl;
   stream.close();
 
@@ -428,11 +424,16 @@ dataset_bkg->plotOn(frame_bkg);
   canvas_ggh->SaveAs(buffer);
 
 
+
   fstream stream;
-  stream.open("result_fit.txt",fstream::out|fstream::app);
+  stream.open("result_fit_ggh.txt", fstream::out | fstream::app );
   stream << buffer_saveggh << "_" << dummy_cut << " " << frame_ggh->chiSquare() << endl;
   stream.close();
+
+  file_result->Close();
   return 1;
+
+
   }
 
  
@@ -599,7 +600,7 @@ pad_fit_vbf->cd();
 
   //canvas_vbf->Update();
   if (!strcmp(menu_cut,"")) sprintf(buffer,"%s : #chi^{2}=%2.2f",buffer_savevbf,frame_vbf->chiSquare());
-  else sprintf(buffer,"%s_%s : #chi^{2}=%2.2f",buffer_savevbf,menu_cut,frame_vbf->chiSquare());
+  else sprintf(buffer,"%s_cuttheta%s : #chi^{2}=%2.2f",buffer_savevbf,menu_cut,frame_vbf->chiSquare());
   latex.DrawLatex(0.25,0.96,buffer);
 
 
@@ -612,12 +613,14 @@ pad_fit_vbf->cd();
   sprintf(buffer,"fit%s_%s.root",dummy_cut,buffer_savevbf);
   canvas_vbf->SaveAs(buffer);
 
+
  
   fstream stream;
-  stream.open("result_fit.txt",fstream::out|fstream::app);
+  stream.open("result_fit_vbf.txt", fstream::out | fstream::app);
   stream << buffer_savevbf << "_" << dummy_cut << " " << frame_vbf->chiSquare() << endl;
   stream.close();
 
+  file_result->Close();
 
   return 1;
   }
