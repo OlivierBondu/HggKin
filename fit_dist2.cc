@@ -4,7 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include "RooDataSet.h"
-#pragma optimize 0
+
 
 
 using namespace std;
@@ -21,14 +21,13 @@ int main() {
   
   char* cutval[5]={"","200","375","550","750"};
 
-  fit_bkg(2,2,cutval[1],3);
    for (int cut=0;cut<5;cut++) {
     for (int menu=0;menu<3;menu++) {
       for (int menu_pol=0;menu_pol<3;menu_pol++) {
 	
-	//fit_bkg(menu,menu_pol,cutval[cut],3);
-	//fit_ggh(menu,menu_pol,cutval[cut]);
-	//	fit_vbf(menu,menu_pol,cutval[cut]);
+	fit_bkg(menu,menu_pol,cutval[cut],3);
+	fit_ggh(menu,menu_pol,cutval[cut]);
+	fit_vbf(menu,menu_pol,cutval[cut]);
       }
     }
    }  
@@ -43,8 +42,8 @@ int main() {
 int fit_bkg(int const &menu_bkg,int const &menu_pol_bkg,char const *menu_cut,int const &menu_window){
 
   setTDRStyle();
-  //  TFile *file_result=new TFile("kin_dist.root");
-  TFile *file_result=new TFile("../../data/kin_dist.root");
+    TFile *file_result=new TFile("kin_dist.root");
+    //TFile *file_result=new TFile("../../data/kin_dist.root");
   RooRealVar dipho_pt("dipho_pt","p_{T #gamma #gamma}",0,200,"GeV");
   RooRealVar dipho_mass("dipho_mass","m_{#gamma#gamma}",0,600, "GeV");
   RooRealVar dipho_ctheta("dipho_ctheta","cos(#theta *)",0,1);
