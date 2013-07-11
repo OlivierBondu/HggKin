@@ -4,13 +4,15 @@
 #include <iostream>
 #include <fstream>
 #include "RooDataSet.h"
+#pragma optimize 0
 
-#define NBINS 100
 
 using namespace std;
 
 
+
 int main() {
+
 
   int fit_bkg(int const &menu_bkg,int const &menu_pol_bkg,char const *menu_cut,int const &menu_window);
   int fit_ggh(int const &menu_ggh,int const &menu_pol_ggh,char const *menu_cut);
@@ -19,17 +21,18 @@ int main() {
   
   char* cutval[5]={"","200","375","550","750"};
 
+  fit_bkg(2,2,cutval[1],3);
    for (int cut=0;cut<5;cut++) {
     for (int menu=0;menu<3;menu++) {
       for (int menu_pol=0;menu_pol<3;menu_pol++) {
 	
 	//fit_bkg(menu,menu_pol,cutval[cut],3);
 	//fit_ggh(menu,menu_pol,cutval[cut]);
-	fit_vbf(menu,menu_pol,cutval[cut]);
+	//	fit_vbf(menu,menu_pol,cutval[cut]);
       }
     }
-      }  
-
+   }  
+   
  
   return 0;
 
@@ -40,10 +43,11 @@ int main() {
 int fit_bkg(int const &menu_bkg,int const &menu_pol_bkg,char const *menu_cut,int const &menu_window){
 
   setTDRStyle();
-  TFile *file_result=new TFile("kin_dist.root");
-  RooRealVar dipho_pt("dipho_pt","dipho_pt",0,200);
-  RooRealVar dipho_mass("dipho_mass","dipho_mass",0,600);
-  RooRealVar dipho_ctheta("dipho_ctheta","dipho_ctheta",0,1);
+  //  TFile *file_result=new TFile("kin_dist.root");
+  TFile *file_result=new TFile("../../data/kin_dist.root");
+  RooRealVar dipho_pt("dipho_pt","p_{T #gamma #gamma}",0,200,"GeV");
+  RooRealVar dipho_mass("dipho_mass","m_{#gamma#gamma}",0,600, "GeV");
+  RooRealVar dipho_ctheta("dipho_ctheta","cos(#theta *)",0,1);
 
   TLatex latex;
   latex.SetNDC();
@@ -89,27 +93,32 @@ int fit_bkg(int const &menu_bkg,int const &menu_pol_bkg,char const *menu_cut,int
   tree_bkg->Print();
   pad_fit_bkg->cd();
   RooDataSet *dataset_bkg=0;
+  TH1F *hist_bkg=0;
   if (menu_window && !strcmp(menu_cut,"")) {
     sprintf(buffer,"dipho_mass<%3.2f && dipho_mass > %3.2f", 125+menu_window/2.,125-menu_window/2.);
     dataset_bkg=new RooDataSet("dataset_bkg","dataset_bkg",tree_bkg,RooArgSet(dipho_pt,dipho_mass),buffer);
-    tree_bkg->Draw("dipho_pt>>hist_bkg(NBINS,0,200)",buffer);
+    tree_bkg->Draw("dipho_pt>>hist_bkg(100,0,200)",buffer);
+    hist_bkg=(TH1F*) gDirectory->Get("hist_bkg");
 	    }
   else if (menu_window && strcmp(menu_cut,"")) {
     sprintf(buffer,"dipho_mass<%3.2f && dipho_mass > %3.2f && dipho_ctheta>%s/1000.", 125+menu_window/2.,125-menu_window/2.,menu_cut);
     dataset_bkg=new RooDataSet("dataset_bkg","dataset_bkg",tree_bkg,RooArgSet(dipho_pt,dipho_mass,dipho_ctheta),buffer);
-    tree_bkg->Draw("dipho_pt>>hist_bkg(NBINS,0,200)",buffer);  
+    tree_bkg->Draw("dipho_pt>>hist_bkg(100,0,200)",buffer);  
+    hist_bkg=(TH1F*) gDirectory->Get("hist_bkg");
 }
   else if (strcmp(menu_cut,"")) {
     sprintf(buffer,"dipho_ctheta>%s/1000.",menu_cut);
     dataset_bkg=new RooDataSet("dataset_bkg","dataset_bkg",tree_bkg,RooArgSet(dipho_pt,dipho_ctheta),buffer);
-    tree_bkg->Draw("dipho_pt>>hist_bkg(NBINS,0,200)",buffer);  
+    tree_bkg->Draw("dipho_pt>>hist_bkg(100,0,200)",buffer);  
+    hist_bkg=(TH1F*) gDirectory->Get("hist_bkg");
 }
   else {
     dataset_bkg=new RooDataSet("dataset_bkg","dataset_bkg",tree_bkg,dipho_pt);
-    tree_bkg->Draw("dipho_pt>>hist_bkg(NBINS,0,200)");  
+    tree_bkg->Draw("dipho_pt>>hist_bkg(100,0,200)");  
+    hist_bkg=(TH1F*) gDirectory->Get("hist_bkg");
   }
   
-dataset_bkg->plotOn(frame_bkg);
+  dataset_bkg->plotOn(frame_bkg);
   RooProdPdf *model_bkg;
 
 
@@ -180,20 +189,25 @@ dataset_bkg->plotOn(frame_bkg);
 
 
 
-  TH1F *hist_bkg=(TH1F*) gDirectory->Get("hist_bkg");
+  
+  //  TH1F *hist_bkg=(TH1F*) gPad->GetPrimitive("hist_bkg");
+  //  TH1F *hist_bkg=(TH1F*) tree_bkg->GetHistogram();
   hist_bkg->Sumw2();
   TH1F *ratio_bkg=(TH1F*) model_bkg->createHistogram("ratio_bkg", dipho_pt,RooFit::Binning(hist_bkg->GetNbinsX(),0,200));
 
   cout << ratio_bkg->GetNbinsX() << " " << hist_bkg->GetNbinsX() << endl;
   cout << "created ratio" << endl;
    ratio_bkg->Scale(hist_bkg->Integral());
-  for (int i=0;i<hist_bkg->GetNbinsX()+1;i++) {
 
-    //    cout << hist_bkg->GetBinCenter(i) << " " << ratio_bkg->GetBinContent(i) << " " << hist_bkg->GetBinContent(i) << " ";
-    if (ratio_bkg->GetBinContent(i)>0) ratio_bkg->SetBinContent(i,hist_bkg->GetBinContent(i)/ratio_bkg->GetBinContent(i));
-    //    cout << ratio_bkg->GetBinContent(i) << endl;
 
-}
+//   for (int i=1;i<hist_bkg->GetNbinsX()+1;i++) {
+
+//     cout << ratio_bkg->GetBinCenter(i) << " " << hist_bkg->GetBinCenter(i) << " " << ratio_bkg->GetBinContent(i) << " " << hist_bkg->GetBinContent(i) <<  endl;
+//         if (ratio_bkg->GetBinContent(i)>0) ratio_bkg->SetBinContent(i,hist_bkg->GetBinContent(i)/ratio_bkg->GetBinContent(i));
+
+// }
+   ratio_bkg->Divide(hist_bkg);
+
   cout << "modified ratio" << endl;
   ratio_bkg->Sumw2();
   coef1_logn_bkg.setConstant(1);
@@ -217,7 +231,8 @@ dataset_bkg->plotOn(frame_bkg);
 
   pad_fit_bkg->cd();
   //  pad_fit_bkg->SetLogy(1);
-  frame_bkg->Draw();  
+  frame_bkg->GetXaxis()->SetTitle("");  
+frame_bkg->Draw();  
 
 
   //canvas_bkg->Update();
@@ -248,12 +263,13 @@ dataset_bkg->plotOn(frame_bkg);
  
   //########GGH
 
-  int fit_ggh(int const &menu_ggh,int const &menu_pol_ggh,char const *menu_cut){
+int fit_ggh(int const &menu_ggh,int const &menu_pol_ggh,char const *menu_cut){
   setTDRStyle();
   TFile *file_result=new TFile("kin_dist.root");
-  RooRealVar dipho_pt("dipho_pt","dipho_pt",0,200);
-  RooRealVar dipho_mass("dispho_mass","dipho_mass",100,0,600);  
-  RooRealVar dipho_ctheta("dipho_ctheta","dipho_ctheta",0,1);
+  RooRealVar dipho_pt("dipho_pt","p_{T #gamma #gamma}",0,200,"GeV");
+  RooRealVar dipho_mass("dipho_mass","m_{#gamma#gamma}",0,600, "GeV");
+  RooRealVar dipho_ctheta("dipho_ctheta","cos(#theta *)",0,1);
+
   
   TLatex latex;
   latex.SetNDC();
@@ -299,14 +315,17 @@ dataset_bkg->plotOn(frame_bkg);
   TTree *tree_ggh=(TTree*) file_result->Get("tree_ggh");
   RooDataSet *dataset_ggh=0;
   pad_fit_ggh->cd();
+  TH1F *hist_ggh=0;
   if (strcmp(menu_cut,"")) {
     sprintf(buffer,"dipho_ctheta > %s/1000.", menu_cut);
     dataset_ggh=new RooDataSet("dataset_ggh","dataset_ggh",tree_ggh,RooArgSet(dipho_pt,dipho_ctheta),buffer);
-    tree_ggh->Draw("dipho_pt>>hist_ggh(NBINS,0,200)",buffer);
+    tree_ggh->Draw("dipho_pt>>hist_ggh(100,0,200)",buffer);
+    hist_ggh=(TH1F*) gDirectory->Get("hist_ggh");
   }
   else {
     dataset_ggh=new RooDataSet("dataset_ggh","dataset_ggh",tree_ggh,dipho_pt);
-    tree_ggh->Draw("dipho_pt>>hist_ggh(NBINS,0,200)");
+    tree_ggh->Draw("dipho_pt>>hist_ggh(100,0,200)");
+    hist_ggh=(TH1F*) gDirectory->Get("hist_ggh");
   }
 
   dataset_ggh->plotOn(frame_ggh);
@@ -369,20 +388,22 @@ dataset_bkg->plotOn(frame_bkg);
   cout << "plotted" << endl;  
 
 
-  TH1F *hist_ggh=(TH1F*) gDirectory->Get("hist_ggh");
+
   hist_ggh->Sumw2();
   TH1F *ratio_ggh=(TH1F*) model_ggh->createHistogram("ratio_ggh", dipho_pt,RooFit::Binning(hist_ggh->GetNbinsX(),0,200));
   
   cout << ratio_ggh->GetNbinsX() << " " << hist_ggh->GetNbinsX() << endl;
   cout << "created ratio" << endl;
   ratio_ggh->Scale(hist_ggh->Integral());
-  for (int i=0;i<hist_ggh->GetNbinsX()+1;i++) {
+//   for (int i=0;i<hist_ggh->GetNbinsX()+1;i++) {
     
-    //    cout << hist_ggh->GetBinCenter(i) << " " << ratio_ggh->GetBinContent(i) << " " << hist_ggh->GetBinContent(i) << " ";
-    if (ratio_ggh->GetBinContent(i)>0) ratio_ggh->SetBinContent(i,hist_ggh->GetBinContent(i)/ratio_ggh->GetBinContent(i));
-    //    cout << ratio_ggh->GetBinContent(i) << endl;
+//     //    cout << hist_ggh->GetBinCenter(i) << " " << ratio_ggh->GetBinContent(i) << " " << hist_ggh->GetBinContent(i) << " ";
+//     if (ratio_ggh->GetBinContent(i)>0) ratio_ggh->SetBinContent(i,hist_ggh->GetBinContent(i)/ratio_ggh->GetBinContent(i));
+//     //    cout << ratio_ggh->GetBinContent(i) << endl;
     
-}
+// }
+
+   ratio_ggh->Divide(hist_ggh);
   cout << "modified ratio" << endl;
   ratio_ggh->Sumw2();
   coef1_logn_ggh.setConstant(1);
@@ -406,6 +427,7 @@ dataset_bkg->plotOn(frame_bkg);
 
   pad_fit_ggh->cd();
   //  pad_fit_ggh->SetLogy(1);
+  frame_ggh->GetXaxis()->SetTitle("");  
   frame_ggh->Draw();  
 
 
@@ -439,11 +461,13 @@ dataset_bkg->plotOn(frame_bkg);
 
  
   //########VBF
-  int fit_vbf(int const &menu_vbf,int const &menu_pol_vbf,char const *menu_cut){
+int fit_vbf(int const &menu_vbf,int const &menu_pol_vbf,char const *menu_cut){
   setTDRStyle();
   TFile *file_result=new TFile("kin_dist.root");
-  RooRealVar dipho_pt("dipho_pt","dipho_pt",0,200);
-  RooRealVar dipho_ctheta("dipho_ctheta","dipho_ctheta",0,1);  
+  RooRealVar dipho_pt("dipho_pt","p_{T #gamma #gamma}",0,200,"GeV");
+  RooRealVar dipho_mass("dipho_mass","m_{#gamma#gamma}",0,600, "GeV");
+  RooRealVar dipho_ctheta("dipho_ctheta","cos(#theta *)",0,1);
+
   
   TLatex latex;
   latex.SetNDC();
@@ -488,15 +512,17 @@ dataset_bkg->plotOn(frame_bkg);
   TTree *tree_vbf=(TTree*) file_result->Get("tree_vbf");
   RooDataSet *dataset_vbf=0;
 pad_fit_vbf->cd();
-
+ TH1F *hist_vbf=0;
   if (strcmp(menu_cut,"")) {
     sprintf(buffer,"dipho_ctheta > %s/1000.", menu_cut);
     dataset_vbf=new RooDataSet("dataset_vbf","dataset_vbf",tree_vbf,RooArgSet(dipho_pt,dipho_ctheta),buffer);
-    tree_vbf->Draw("dipho_pt>>hist_vbf(NBINS,0,200)",buffer);
+    tree_vbf->Draw("dipho_pt>>hist_vbf(100,0,200)",buffer);
+    hist_vbf=(TH1F*) gDirectory->Get("hist_vbf");
   }
   else {
     dataset_vbf=new RooDataSet("dataset_vbf","dataset_vbf",tree_vbf,dipho_pt);
-    tree_vbf->Draw("dipho_pt>>hist_vbf(NBINS,0,200)");
+    tree_vbf->Draw("dipho_pt>>hist_vbf(100,0,200)");
+    hist_vbf=(TH1F*) gDirectory->Get("hist_vbf");
   }
   
   dataset_vbf->plotOn(frame_vbf);
@@ -559,20 +585,22 @@ pad_fit_vbf->cd();
   model_vbf->plotOn(frame_vbf);
   cout << "plotted" << endl;  
 
-  TH1F *hist_vbf=(TH1F*) gDirectory->Get("hist_vbf");
+
   hist_vbf->Sumw2();
   TH1F *ratio_vbf=(TH1F*) model_vbf->createHistogram("ratio_vbf", dipho_pt,RooFit::Binning(hist_vbf->GetNbinsX(),0,200));
 
   cout << ratio_vbf->GetNbinsX() << " " << hist_vbf->GetNbinsX() << endl;
   cout << "created ratio" << endl;
-   ratio_vbf->Scale(hist_vbf->Integral());
-  for (int i=0;i<hist_vbf->GetNbinsX()+1;i++) {
-
-    //    cout << hist_vbf->GetBinCenter(i) << " " << ratio_vbf->GetBinContent(i) << " " << hist_vbf->GetBinContent(i) << " ";
-    if (ratio_vbf->GetBinContent(i)>0) ratio_vbf->SetBinContent(i,hist_vbf->GetBinContent(i)/ratio_vbf->GetBinContent(i));
-    //    cout << ratio_vbf->GetBinContent(i) << endl;
-
-}
+  ratio_vbf->Scale(hist_vbf->Integral());
+  //   for (int i=0;i<hist_vbf->GetNbinsX()+1;i++) {
+  
+  //     //    cout << hist_vbf->GetBinCenter(i) << " " << ratio_vbf->GetBinContent(i) << " " << hist_vbf->GetBinContent(i) << " ";
+  //     if (ratio_vbf->GetBinContent(i)>0) ratio_vbf->SetBinContent(i,hist_vbf->GetBinContent(i)/ratio_vbf->GetBinContent(i));
+  //     //    cout << ratio_vbf->GetBinContent(i) << endl;
+  
+  // }
+  
+  ratio_vbf->Divide(hist_vbf);
   cout << "modified ratio" << endl;
   ratio_vbf->Sumw2();
   coef1_logn_vbf.setConstant(1);
@@ -596,6 +624,7 @@ pad_fit_vbf->cd();
 
   pad_fit_vbf->cd();
   //  pad_fit_vbf->SetLogy(1);
+  frame_vbf->GetXaxis()->SetTitle("");  
   frame_vbf->Draw();  
 
 
