@@ -5,6 +5,8 @@
 #include <fstream>
 #include "RooDataSet.h"
 
+#define NBINS 100
+
 using namespace std;
 
 
@@ -90,21 +92,21 @@ int fit_bkg(int const &menu_bkg,int const &menu_pol_bkg,char const *menu_cut,int
   if (menu_window && !strcmp(menu_cut,"")) {
     sprintf(buffer,"dipho_mass<%3.2f && dipho_mass > %3.2f", 125+menu_window/2.,125-menu_window/2.);
     dataset_bkg=new RooDataSet("dataset_bkg","dataset_bkg",tree_bkg,RooArgSet(dipho_pt,dipho_mass),buffer);
-    tree_bkg->Draw("dipho_pt>>hist_bkg(300,0,200)",buffer);
+    tree_bkg->Draw("dipho_pt>>hist_bkg(NBINS,0,200)",buffer);
 	    }
   else if (menu_window && strcmp(menu_cut,"")) {
     sprintf(buffer,"dipho_mass<%3.2f && dipho_mass > %3.2f && dipho_ctheta>%s/1000.", 125+menu_window/2.,125-menu_window/2.,menu_cut);
     dataset_bkg=new RooDataSet("dataset_bkg","dataset_bkg",tree_bkg,RooArgSet(dipho_pt,dipho_mass,dipho_ctheta),buffer);
-    tree_bkg->Draw("dipho_pt>>hist_bkg(300,0,200)",buffer);  
+    tree_bkg->Draw("dipho_pt>>hist_bkg(NBINS,0,200)",buffer);  
 }
   else if (strcmp(menu_cut,"")) {
     sprintf(buffer,"dipho_ctheta>%s/1000.",menu_cut);
     dataset_bkg=new RooDataSet("dataset_bkg","dataset_bkg",tree_bkg,RooArgSet(dipho_pt,dipho_ctheta),buffer);
-    tree_bkg->Draw("dipho_pt>>hist_bkg(300,0,200)",buffer);  
+    tree_bkg->Draw("dipho_pt>>hist_bkg(NBINS,0,200)",buffer);  
 }
   else {
     dataset_bkg=new RooDataSet("dataset_bkg","dataset_bkg",tree_bkg,dipho_pt);
-    tree_bkg->Draw("dipho_pt>>hist_bkg(300,0,200)");  
+    tree_bkg->Draw("dipho_pt>>hist_bkg(NBINS,0,200)");  
   }
   
 dataset_bkg->plotOn(frame_bkg);
@@ -300,11 +302,11 @@ dataset_bkg->plotOn(frame_bkg);
   if (strcmp(menu_cut,"")) {
     sprintf(buffer,"dipho_ctheta > %s/1000.", menu_cut);
     dataset_ggh=new RooDataSet("dataset_ggh","dataset_ggh",tree_ggh,RooArgSet(dipho_pt,dipho_ctheta),buffer);
-    tree_ggh->Draw("dipho_pt>>hist_ggh(300,0,200)",buffer);
+    tree_ggh->Draw("dipho_pt>>hist_ggh(NBINS,0,200)",buffer);
   }
   else {
     dataset_ggh=new RooDataSet("dataset_ggh","dataset_ggh",tree_ggh,dipho_pt);
-    tree_ggh->Draw("dipho_pt>>hist_ggh(300,0,200)");
+    tree_ggh->Draw("dipho_pt>>hist_ggh(NBINS,0,200)");
   }
 
   dataset_ggh->plotOn(frame_ggh);
@@ -490,11 +492,11 @@ pad_fit_vbf->cd();
   if (strcmp(menu_cut,"")) {
     sprintf(buffer,"dipho_ctheta > %s/1000.", menu_cut);
     dataset_vbf=new RooDataSet("dataset_vbf","dataset_vbf",tree_vbf,RooArgSet(dipho_pt,dipho_ctheta),buffer);
-    tree_vbf->Draw("dipho_pt>>hist_vbf(300,0,200)",buffer);
+    tree_vbf->Draw("dipho_pt>>hist_vbf(NBINS,0,200)",buffer);
   }
   else {
     dataset_vbf=new RooDataSet("dataset_vbf","dataset_vbf",tree_vbf,dipho_pt);
-    tree_vbf->Draw("dipho_pt>>hist_vbf(300,0,200)");
+    tree_vbf->Draw("dipho_pt>>hist_vbf(NBINS,0,200)");
   }
   
   dataset_vbf->plotOn(frame_vbf);
