@@ -21,17 +21,18 @@ int main() {
   
   char* cutval[5]={"","200","375","550","750"};
 
+  //  fit_bkg(2,2,"750",3);
    for (int cut=0;cut<5;cut++) {
     for (int menu=0;menu<3;menu++) {
       for (int menu_pol=0;menu_pol<3;menu_pol++) {
 	
 	fit_bkg(menu,menu_pol,cutval[cut],3);
-	fit_ggh(menu,menu_pol,cutval[cut]);
-	fit_vbf(menu,menu_pol,cutval[cut]);
+	//fit_ggh(menu,menu_pol,cutval[cut]);
+	//fit_vbf(menu,menu_pol,cutval[cut]);
       }
     }
    }  
-   
+   cout << "Went up to the end" << endl;   
  
   return 0;
 
@@ -42,12 +43,12 @@ int main() {
 int fit_bkg(int const &menu_bkg,int const &menu_pol_bkg,char const *menu_cut,int const &menu_window){
 
   setTDRStyle();
-    TFile *file_result=new TFile("kin_dist.root");
-    //TFile *file_result=new TFile("../../data/kin_dist.root");
+  TFile *file_result=new TFile("kin_dist.root");
+  //  TFile *file_result=new TFile("../../data/kin_dist.root");
   RooRealVar dipho_pt("dipho_pt","p_{T #gamma #gamma}",0,200,"GeV");
   RooRealVar dipho_mass("dipho_mass","m_{#gamma#gamma}",0,600, "GeV");
   RooRealVar dipho_ctheta("dipho_ctheta","cos(#theta *)",0,1);
-
+  
   TLatex latex;
   latex.SetNDC();
   latex.SetTextSize(0.05);
@@ -55,8 +56,8 @@ int fit_bkg(int const &menu_bkg,int const &menu_pol_bkg,char const *menu_cut,int
   TLine *line=new TLine(0,1,200,1);
   line->SetLineColor(kRed);
   line->SetLineStyle(9);
-
-
+  
+  
   TCanvas *canvas_bkg=new TCanvas("canvas_bkg","canvas_bkg");
   TPad *pad_fit_bkg=new TPad("pad_fit_bkg","pad_fit_bkg",0,0.3,1,1);
   pad_fit_bkg->SetBottomMargin(0.05);
@@ -189,26 +190,17 @@ int fit_bkg(int const &menu_bkg,int const &menu_pol_bkg,char const *menu_cut,int
 
 
   
-  //  TH1F *hist_bkg=(TH1F*) gPad->GetPrimitive("hist_bkg");
-  //  TH1F *hist_bkg=(TH1F*) tree_bkg->GetHistogram();
   hist_bkg->Sumw2();
   TH1F *ratio_bkg=(TH1F*) model_bkg->createHistogram("ratio_bkg", dipho_pt,RooFit::Binning(hist_bkg->GetNbinsX(),0,200));
 
   cout << ratio_bkg->GetNbinsX() << " " << hist_bkg->GetNbinsX() << endl;
   cout << "created ratio" << endl;
-   ratio_bkg->Scale(hist_bkg->Integral());
-
-
-//   for (int i=1;i<hist_bkg->GetNbinsX()+1;i++) {
-
-//     cout << ratio_bkg->GetBinCenter(i) << " " << hist_bkg->GetBinCenter(i) << " " << ratio_bkg->GetBinContent(i) << " " << hist_bkg->GetBinContent(i) <<  endl;
-//         if (ratio_bkg->GetBinContent(i)>0) ratio_bkg->SetBinContent(i,hist_bkg->GetBinContent(i)/ratio_bkg->GetBinContent(i));
-
-// }
-   ratio_bkg->Divide(hist_bkg);
-
+  ratio_bkg->Scale(hist_bkg->Integral());
+  
+  
+  ratio_bkg->Divide(hist_bkg);
+  
   cout << "modified ratio" << endl;
-  ratio_bkg->Sumw2();
   coef1_logn_bkg.setConstant(1);
   coef2_logn_bkg.setConstant(1);
   coef3_logn_bkg.setConstant(1);
@@ -254,6 +246,7 @@ frame_bkg->Draw();
   stream << buffer_savebkg << "_" << dummy_cut << " " << frame_bkg->chiSquare() << endl;
   stream.close();
 
+  canvas_bkg->Delete();
   file_result->Close();
   return 1;
   }
@@ -452,6 +445,7 @@ int fit_ggh(int const &menu_ggh,int const &menu_pol_ggh,char const *menu_cut){
   stream << buffer_saveggh << "_" << dummy_cut << " " << frame_ggh->chiSquare() << endl;
   stream.close();
 
+  canvas_ggh->Delete();
   file_result->Close();
   return 1;
 
@@ -651,6 +645,7 @@ pad_fit_vbf->cd();
 
   file_result->Close();
 
+  canvas_vbf->Delete();
   return 1;
   }
 
