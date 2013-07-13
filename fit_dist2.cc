@@ -27,8 +27,8 @@ int main() {
       for (int menu_pol=0;menu_pol<3;menu_pol++) {
 	
 	fit_bkg(menu,menu_pol,cutval[cut],3);
-	//fit_ggh(menu,menu_pol,cutval[cut]);
-	//fit_vbf(menu,menu_pol,cutval[cut]);
+	fit_ggh(menu,menu_pol,cutval[cut]);
+	fit_vbf(menu,menu_pol,cutval[cut]);
       }
     }
    }  
