@@ -8,6 +8,7 @@
 #include "TCanvas.h"
 #include "TMath.h"
 #include "TLegend.h"
+#include "TLatex.h"
 
 //Roofit headers
 #include "RooPlot.h"
@@ -38,27 +39,34 @@ int main() {
   int DoSPlot(RooWorkspace*);
   int MakePlot(RooWorkspace*, int const &cut=0);
 
-  RooWorkspace *ws=new RooWorkspace ("ws_hgg","ws_hgg");
+  TFile *root_file=new TFile("WS_SPlot.root","UPDATE");
+  //  TFile *root_file=new TFile("/afs/cern.ch/work/c/cgoudet/private/data/WS_SPlot.root","UPDATE");
+  RooWorkspace *ws=0;
+  char buffer[100];
 
 
-
-
-  if (AddModel(ws,menu_cut[1])) cout << "AddModel failed" << endl;
-  if (AddData(ws,0)) cout << "AddData failed" << endl;
-  if (DoSPlot(ws)) cout << "DoSPlot failes" << endl;
-  cout << "DoSPlot succeded" << endl;
-  if (MakePlot(ws)) cout << "Plotting failed" << endl;
-  // TFile *root_file=new TFile("/afs/cern.ch/work/c/cgoudet/private/data/WS_SPlot.root","UPDATE");
-//   ws->Print();
-//   ws->Write("",TObject::kOverwrite);
-//   root_file->Close();
+  for (int i=0;i<5;i++) {
+    root_file->cd();   
+    if (i)    sprintf(buffer,"ws_hgg_%d",menu_cut[i]);
+    else sprintf(buffer,"ws_hgg");
+    ws=new RooWorkspace (buffer,buffer);
+    if (AddModel(ws,menu_cut[i])) cout << "AddModel failed" << endl;
+    if (AddData(ws,menu_cut[i])) cout << "AddData failed" << endl;
+    if (DoSPlot(ws)) cout << "DoSPlot failes" << endl;
+    cout << "DoSPlot succeded" << endl;
+    if (MakePlot(ws,menu_cut[i])) cout << "Plotting failed" << endl;
+    ws->Write("",TObject::kOverwrite);
+    ws->Delete();  
+  }
+  root_file->Close();
   return 0;
 }
 
 //###############################################"
 int AddModel(RooWorkspace *ws, int  const &cut=0) {
 
-  TFile *file_kin=new TFile("/afs/cern.ch/work/c/cgoudet/private/data/kin_dist.root");
+  TFile *file_kin=new TFile("kin_dist.root");
+  //  TFile *file_kin=new TFile("/afs/cern.ch/work/c/cgoudet/private/data/kin_dist.root");
   
   
   RooRealVar *dipho_mass=new RooRealVar("dipho_mass","m_{#gamma #gamma}",110,180,"GeV/c^{2}");
@@ -84,7 +92,7 @@ int AddModel(RooWorkspace *ws, int  const &cut=0) {
     sim_gen=new RooDataSet("sim_gen","sim_gen",tree , RooArgSet(*dipho_mass,*dipho_ctheta), buffer);
   }
   else sim_gen=new RooDataSet("sim_gen","sim_gen", tree, *dipho_mass);
-    model_mass_ggh->fitTo(*sim_gen);
+  model_mass_ggh->fitTo(*sim_gen);
 
   // set variable range to 0.5 and 1.5 times it's current value to ease splot fitting
   //  mean_mass_ggh->setRange(mean_mass_ggh->getVal()*0.5,mean_mass_ggh->getVal()*1.5);
@@ -158,7 +166,7 @@ int AddModel(RooWorkspace *ws, int  const &cut=0) {
     else 
       sim_gen=new RooDataSet("sim_gen","sim_gen", tree, *dipho_mass);
 
-         model_mass_bkg->fitTo(*sim_gen);
+    model_mass_bkg->fitTo(*sim_gen);
 
   //Check plotting
 //     frame_mass=dipho_mass->frame();
@@ -196,7 +204,7 @@ int AddModel(RooWorkspace *ws, int  const &cut=0) {
     sim_gen=new RooDataSet("sim_gen","sim_gen", tree, RooArgSet(*dipho_pt,*dipho_ctheta),buffer);
   }
   else sim_gen=new RooDataSet("sim_gen","sim_gen", tree, *dipho_pt);
-         model_pt_bkg->fitTo(*sim_gen);
+          model_pt_bkg->fitTo(*sim_gen);
   
 //   coef0_pol_pt_bkg->setRange(coef0_pol_pt_bkg->getVal()*0.5,coef0_pol_pt_bkg->getVal()*1.5);
 //   coef1_pol_pt_bkg->setRange(coef1_pol_pt_bkg->getVal()*0.5,coef1_pol_pt_bkg->getVal()*1.5);
@@ -247,8 +255,8 @@ int AddData(RooWorkspace* ws, int const &cut=0) {
   RooRealVar *dipho_pt=ws->var("dipho_pt");
   RooRealVar *dipho_ctheta=ws->var("dipho_ctheta");
   char buffer[100]="";
-
-  TFile *file_kin=new TFile("/afs/cern.ch/work/c/cgoudet/private/data/kin_dist.root");
+  TFile *file_kin=new TFile("kin_dist.root");
+  //  TFile *file_kin=new TFile("/afs/cern.ch/work/c/cgoudet/private/data/kin_dist.root");
 
   TTree *tree=(TTree*) file_kin->Get("tree_ggh");
     if (cut) sprintf(buffer,"dipho_ctheta > %1.3f",cut/1000.);
@@ -277,7 +285,7 @@ int DoSPlot(RooWorkspace* ws) {
   RooDataSet *sim_gen=(RooDataSet*) ws->data("sim_gen");
   RooRealVar *dipho_mass=ws->var("dipho_mass");  
 
-  model->fitTo(*sim_gen,RooFit::Extended());
+    model->fitTo(*sim_gen,RooFit::Extended());
 
   //Fixing discriminant parameters
   RooRealVar *mean_mass_ggh=ws->var("mean_mass_ggh");
@@ -332,6 +340,9 @@ int MakePlot(RooWorkspace* ws, int const &cut=0) {
   RooAbsPdf *model=ws->pdf("model_both");
   RooDataSet *sim_gen= (RooDataSet*) ws->data("sim_gen");
   RooRealVar *bkg_yield=ws->var("bkg_yield");
+  TLatex latex;
+  latex.SetNDC();  
+  char buffer[100];
   //  model->fitTo(*sim_gen);
 
   TCanvas *canvas=new TCanvas();
@@ -366,7 +377,25 @@ int MakePlot(RooWorkspace* ws, int const &cut=0) {
   legend->AddEntry(frame_up->findObject("model_ggh"),"ggH Component","l");
   legend->AddEntry(frame_up->findObject("model_bkg"),"Bkg component","l");
   legend->Draw();
-  canvas->SaveAs("framefit.pdf");
+  if (cut)  {
+    sprintf(buffer,"cos(#theta*) > %1.3f",cut/1000.);
+    canvas->cd();    
+    latex.DrawLatex(0.4,0.49,buffer);
+    sprintf(buffer,"splot_gen_unweighted_gghbkg%d.pdf",cut);  
+    canvas->SaveAs(buffer);
+    sprintf(buffer,"splot_gen_unweighted_gghbkg%d.png",cut);  
+    canvas->SaveAs(buffer);
+    sprintf(buffer,"splot_gen_unweighted_gghbkg%d.root",cut);  
+    canvas->SaveAs(buffer);
+  }  
+  else {
+    sprintf(buffer,"splot_gen_unweighted_gghbkg.pdf");
+    canvas->SaveAs(buffer);
+    sprintf(buffer,"splot_gen_unweighted_gghbkg.png");
+    canvas->SaveAs(buffer);
+    sprintf(buffer,"splot_gen_unweighted_gghbkg.root");
+    canvas->SaveAs(buffer);
+  }
   frame_up->Delete();
   frame_down->Delete();
   legend->Delete();
@@ -393,9 +422,48 @@ int MakePlot(RooWorkspace* ws, int const &cut=0) {
   legend->AddEntry("model_ggh","Non Weighted ggH Fit","l");
   legend->AddEntry("model_bkg","Non Weighted Bkg Fit","l");
   legend->Draw();
-
+//   if(cut) {
+//     sprintf(buffer,"cos(#theta*) > %1.3f",cut/1000.);
+//     canvas->cd();
+//     latex.DrawLatex(0.4,0.96,buffer);
+//     sprintf(buffer,"/afs/cern.ch/work/c/cgoudet/private/plot/pdf/splot_gen_gghbkg%d.pdf",cut);
+//     canvas->SaveAs(buffer);
+//     sprintf(buffer,"/afs/cern.ch/work/c/cgoudet/private/plot/root/splot_gen_gghbkg%d.root",cut);
+//     canvas->SaveAs(buffer);
+//     sprintf(buffer,"/afs/cern.ch/work/c/cgoudet/private/plot/png/splot_gen_gghbkg%d.png",cut);
+//     canvas->SaveAs(buffer);
+//   }
+//   else {
+//     sprintf(buffer,"/afs/cern.ch/work/c/cgoudet/private/plot/png/splot_gen_gghbkg.png");
+//     canvas->SaveAs(buffer);
+//     sprintf(buffer,"/afs/cern.ch/work/c/cgoudet/private/plot/pdf/splot_gen_gghbkg.pdf");
+//     canvas->SaveAs(buffer);
+//     sprintf(buffer,"/afs/cern.ch/work/c/cgoudet/private/plot/root/splot_gen_gghbkg.root");
+//     canvas->SaveAs(buffer);
+//   }
   cout << "drawn" << endl;
-  canvas->SaveAs("framew.pdf");
+
+  if(cut) {
+    sprintf(buffer,"cos(#theta*) > %1.3f",cut/1000.);
+    canvas->cd();
+    latex.DrawLatex(0.4,0.96,buffer);
+    sprintf(buffer,"splot_gen_gghbkg%d.pdf",cut);
+    canvas->SaveAs(buffer);
+    sprintf(buffer,"splot_gen_gghbkg%d.root",cut);
+    canvas->SaveAs(buffer);
+    sprintf(buffer,"splot_gen_gghbkg%d.png",cut);
+    canvas->SaveAs(buffer);
+  }
+  else {
+    sprintf(buffer,"splot_gen_gghbkg.png");
+    canvas->SaveAs(buffer);
+    sprintf(buffer,"splot_gen_gghbkg.pdf");
+    canvas->SaveAs(buffer);
+    sprintf(buffer,"splot_gen_gghbkg.root");
+    canvas->SaveAs(buffer);
+  }
+
+
 
 
 
