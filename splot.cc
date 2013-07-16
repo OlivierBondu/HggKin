@@ -24,7 +24,7 @@
 //#include "RooGlobalFunc.h"
 #include "RooStats/SPlot.h"
 
-#define BATCH 0 // On batch mode, have to change loading and saving path
+#define BATCH 1 // On batch mode, have to change loading and saving path
 
 using namespace std;
 using namespace RooStats;
@@ -78,7 +78,7 @@ int AddModel(RooWorkspace *ws, int  const &cut=0) {
   RooPlot *frame_mass=0,*frame_pt=0;
   TTree *tree=0;
   RooDataSet *sim_gen=0;
-  TCanvas *canvas=new TCanvas();
+  TCanvas *canvas=new TCanvas("canvas","canvas",800,600);
   char buffer[100];  
 
 
@@ -344,7 +344,7 @@ int MakePlot(RooWorkspace* ws, int const &cut=0) {
   char buffer[100];
 
 
-  TCanvas *canvas=new TCanvas();
+  TCanvas *canvas=new TCanvas("canvas","canvas",800,600);
   TPad *pad_down=new TPad("pad_down","pad_down",0,0,1,0.5);
   TPad *pad_up=new TPad("pad_up","pad_up",0,0.5,1,1);
   TLegend *legend=new TLegend(0.8,0.7,1,1);
