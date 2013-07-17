@@ -107,13 +107,14 @@ int fit_bkg(int const &menu_bkg,int const &menu_pol_bkg,char const *menu_cut,int
     hist_bkg=(TH1F*) gDirectory->Get("hist_bkg");
 }
   else if (strcmp(menu_cut,"")) {
-    sprintf(buffer,"dipho_ctheta>%s/1000.",menu_cut);
-    dataset_bkg=new RooDataSet("dataset_bkg","dataset_bkg",tree_bkg,RooArgSet(dipho_pt,dipho_ctheta),buffer);
+    sprintf(buffer,"dipho_ctheta>%s/1000. && dipho_mass<180 && dipho_mass>100",menu_cut);
+    dataset_bkg=new RooDataSet("dataset_bkg","dataset_bkg",tree_bkg,RooArgSet(dipho_pt,dipho_ctheta,dipho_mass),buffer);
     tree_bkg->Draw("dipho_pt>>hist_bkg(100,0,200)",buffer);  
     hist_bkg=(TH1F*) gDirectory->Get("hist_bkg");
 }
   else {
-    dataset_bkg=new RooDataSet("dataset_bkg","dataset_bkg",tree_bkg,dipho_pt);
+    sprintf(buffer;"dipho_mass>100 && dipho_mass>180")
+      dataset_bkg=new RooDataSet("dataset_bkg","dataset_bkg",tree_bkg,RooArgSet(dipho_pt,dipho_mass),buffer);
     tree_bkg->Draw("dipho_pt>>hist_bkg(100,0,200)");  
     hist_bkg=(TH1F*) gDirectory->Get("hist_bkg");
   }
