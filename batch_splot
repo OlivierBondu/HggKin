@@ -1,5 +1,5 @@
 #! /bin/bash
-c
+
 file_dir=`pwd`
 source /afs/cern.ch/user/c/cgoudet/534.sh
 start="/afs/cern.ch/work/c/cgoudet/private/"
