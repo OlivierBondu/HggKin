@@ -5,7 +5,7 @@
 #include <fstream>
 #include "RooDataSet.h"
 
-
+#define NBINS 100
 
 using namespace std;
 
@@ -94,28 +94,33 @@ int fit_bkg(int const &menu_bkg,int const &menu_pol_bkg,char const *menu_cut,int
   pad_fit_bkg->cd();
   RooDataSet *dataset_bkg=0;
   TH1F *hist_bkg=0;
+  char buffer2[100];
   if (menu_window && !strcmp(menu_cut,"")) {
     sprintf(buffer,"dipho_mass<%3.2f && dipho_mass > %3.2f", 125+menu_window/2.,125-menu_window/2.);
     dataset_bkg=new RooDataSet("dataset_bkg","dataset_bkg",tree_bkg,RooArgSet(dipho_pt,dipho_mass),buffer);
-    tree_bkg->Draw("dipho_pt>>hist_bkg(100,0,200)",buffer);
+    sprintf(buffer2,"dipho_pt>>hist_bkg(%d,0,200)",NBINS);
+    tree_bkg->Draw(buffer2,buffer);
     hist_bkg=(TH1F*) gDirectory->Get("hist_bkg");
 	    }
   else if (menu_window && strcmp(menu_cut,"")) {
     sprintf(buffer,"dipho_mass<%3.2f && dipho_mass > %3.2f && dipho_ctheta>%s/1000.", 125+menu_window/2.,125-menu_window/2.,menu_cut);
     dataset_bkg=new RooDataSet("dataset_bkg","dataset_bkg",tree_bkg,RooArgSet(dipho_pt,dipho_mass,dipho_ctheta),buffer);
-    tree_bkg->Draw("dipho_pt>>hist_bkg(100,0,200)",buffer);  
+    sprintf(buffer2,"dipho_pt>>hist_bkg(%d,0,200)",NBINS);
+    tree_bkg->Draw(buffer2,buffer);  
     hist_bkg=(TH1F*) gDirectory->Get("hist_bkg");
 }
   else if (strcmp(menu_cut,"")) {
     sprintf(buffer,"dipho_ctheta>%s/1000. && dipho_mass<180 && dipho_mass>100",menu_cut);
     dataset_bkg=new RooDataSet("dataset_bkg","dataset_bkg",tree_bkg,RooArgSet(dipho_pt,dipho_ctheta,dipho_mass),buffer);
-    tree_bkg->Draw("dipho_pt>>hist_bkg(100,0,200)",buffer);  
+    sprintf(buffer2,"dipho_pt>>hist_bkg(%d,0,200)",NBINS);
+    tree_bkg->Draw(buffer2,buffer);  
     hist_bkg=(TH1F*) gDirectory->Get("hist_bkg");
 }
   else {
-    sprintf(buffer;"dipho_mass>100 && dipho_mass>180")
-      dataset_bkg=new RooDataSet("dataset_bkg","dataset_bkg",tree_bkg,RooArgSet(dipho_pt,dipho_mass),buffer);
-    tree_bkg->Draw("dipho_pt>>hist_bkg(100,0,200)");  
+    sprintf(buffer,"dipho_mass>100 && dipho_mass>180");
+    dataset_bkg=new RooDataSet("dataset_bkg","dataset_bkg",tree_bkg,RooArgSet(dipho_pt,dipho_mass),buffer);
+    sprintf(buffer2,"dipho_pt>>hist_bkg(%d,0,200)",NBINS);
+    tree_bkg->Draw(buffer2);  
     hist_bkg=(TH1F*) gDirectory->Get("hist_bkg");
   }
   
@@ -309,15 +314,18 @@ int fit_ggh(int const &menu_ggh,int const &menu_pol_ggh,char const *menu_cut){
   RooDataSet *dataset_ggh=0;
   pad_fit_ggh->cd();
   TH1F *hist_ggh=0;
+  char buffer2[100];
   if (strcmp(menu_cut,"")) {
     sprintf(buffer,"dipho_ctheta > %s/1000.", menu_cut);
     dataset_ggh=new RooDataSet("dataset_ggh","dataset_ggh",tree_ggh,RooArgSet(dipho_pt,dipho_ctheta),buffer);
-    tree_ggh->Draw("dipho_pt>>hist_ggh(100,0,200)",buffer);
+    sprintf(buffer2,"dipho_pt>>hist_bkg(%d,0,200)",NBINS);
+    tree_ggh->Draw(buffer2,buffer);
     hist_ggh=(TH1F*) gDirectory->Get("hist_ggh");
   }
   else {
     dataset_ggh=new RooDataSet("dataset_ggh","dataset_ggh",tree_ggh,dipho_pt);
-    tree_ggh->Draw("dipho_pt>>hist_ggh(100,0,200)");
+    sprintf(buffer2,"dipho_pt>>hist_bkg(%d,0,200)",NBINS);
+    tree_ggh->Draw(buffer2);
     hist_ggh=(TH1F*) gDirectory->Get("hist_ggh");
   }
 
@@ -507,15 +515,18 @@ int fit_vbf(int const &menu_vbf,int const &menu_pol_vbf,char const *menu_cut){
   RooDataSet *dataset_vbf=0;
 pad_fit_vbf->cd();
  TH1F *hist_vbf=0;
+ char buffer2[100];
   if (strcmp(menu_cut,"")) {
     sprintf(buffer,"dipho_ctheta > %s/1000.", menu_cut);
     dataset_vbf=new RooDataSet("dataset_vbf","dataset_vbf",tree_vbf,RooArgSet(dipho_pt,dipho_ctheta),buffer);
-    tree_vbf->Draw("dipho_pt>>hist_vbf(100,0,200)",buffer);
+    sprintf(buffer2,"dipho_pt>>hist_bkg(%d,0,200)",NBINS);
+    tree_vbf->Draw(buffer2,buffer);
     hist_vbf=(TH1F*) gDirectory->Get("hist_vbf");
   }
   else {
     dataset_vbf=new RooDataSet("dataset_vbf","dataset_vbf",tree_vbf,dipho_pt);
-    tree_vbf->Draw("dipho_pt>>hist_vbf(100,0,200)");
+    sprintf(buffer2,"dipho_pt>>hist_bkg(%d,0,200)",NBINS);
+    tree_vbf->Draw(buffer2);
     hist_vbf=(TH1F*) gDirectory->Get("hist_vbf");
   }
   
