@@ -112,14 +112,14 @@ int main() {
 
     //Normalizing simulated event to expected number of events
     for (int kinvar=0;kinvar<n_kinvar;kinvar++) {
-      hist_ggh_gen[0][kinvar]->Scale(0.019629*2.28e-3*19.52*96290/hist_ggh_gen[0][kinvar]->GetEntries());//BR*L*sig*br/Ngen
+      hist_ggh_gen[0][kinvar]->Scale(19620*2.28e-3*19.52/96290);//BR*L*sig*br/Ngen
       stream_integral <<   hist_ggh_gen[0][kinvar]->GetTitle() << " " << hist_ggh_gen[0][kinvar]->Integral() << endl;
       hist_ggh_gen[0][kinvar]->Write("",TObject::kOverwrite);
     }
 
     for (int study=0;study<n_study;study++) {
       for (int i=0;i<n_cuttheta;i++) {
-	hist_cuttheta[study][i]->Scale(0.019629*2.28e-3*19.52*96290/hist_ggh_gen[0][study]->GetEntries());
+	hist_cuttheta[study][i]->Scale(19620*2.28e-3*19.52/96290);
 	stream_integral <<   hist_cuttheta[study][i]->GetTitle() << " " << hist_cuttheta[study][i]->Integral() << endl;
 	hist_cuttheta[study][i]->Write("",TObject::kOverwrite);
 	hist_cuttheta[study][i]->Delete();    
@@ -202,13 +202,13 @@ int main() {
 
     //Normalizing simulated event to expected number of events
     for (int kinvar=0;kinvar<n_kinvar;kinvar++) {
-      hist_vbf_gen[0][kinvar]->Scale(0.019629*2.28e-3*1.578*99855/hist_vbf_gen[0][kinvar]->GetEntries());//BR*L*sig*br/Ngen
+      hist_vbf_gen[0][kinvar]->Scale(19620*2.28e-3*1.578/99855);//BR*L*sig*br/Ngen
       stream_integral <<   hist_vbf_gen[0][kinvar]->GetTitle() << " " << hist_vbf_gen[0][kinvar]->Integral() << endl;
       hist_vbf_gen[0][kinvar]->Write("",TObject::kOverwrite); 
     }    
     for (int study=0;study<n_study;study++) {
       for (int i=0;i<n_cuttheta;i++) {
-	hist_cuttheta[study][i]->Scale(0.019629*2.28e-3*1.578*99855/hist_vbf_gen[0][study]->GetEntries());
+	hist_cuttheta[study][i]->Scale(19620*2.28e-3*1.578/99855);
 	stream_integral <<   hist_cuttheta[study][i]->GetTitle() << " " << hist_cuttheta[study][i]->Integral() << endl;
 	hist_cuttheta[study][i]->Write("",TObject::kOverwrite);
 	hist_cuttheta[study][i]->Delete();    
@@ -326,13 +326,13 @@ int main() {
     //Scaling and normalizing hist to expected number of event
 	for (int cut=0;cut<n_cuttheta;cut++) {
 	  for (int study=0;study<n_study;study++) {
-	      hist_cuttheta[study][cut]->Scale(2.28e-3*1.15*75.39*1133995/hist_bkg[study]->GetEntries()); //BR*L*sigma/Ngen	  
+	      hist_cuttheta[study][cut]->Scale(19620*1.15*75.39/1133995); //BR*L*sigma/Ngen	  
 	      stream_integral <<   hist_cuttheta[study][cut]->GetTitle() << " " << hist_cuttheta[study][cut]->Integral() << endl;
 	      hist_cuttheta[study][cut]->Write("",TObject::kOverwrite);
 	      hist_cuttheta[study][cut]->Delete();
 	  }
 	  for (int window=0;window<n_window;window++) {
-	      hist_bkg_cut[window][cut]->Scale(2.28e-3*1.15*75.39*1133995/hist_bkg[0]->GetEntries()); //BR*L*sigma/Ngen	  
+	      hist_bkg_cut[window][cut]->Scale(19620*1.15*75.39/1133995); //BR*L*sigma/Ngen	  
 	      stream_integral <<   hist_bkg_cut[window][cut]->GetTitle() << " " << hist_bkg_cut[window][cut]->Integral() << endl;
 	      hist_bkg_cut[window][cut]->Write("",TObject::kOverwrite);
 	      hist_bkg_cut[window][cut]->Delete();
@@ -342,12 +342,12 @@ int main() {
 	  for (int kinvar=0;kinvar<n_kinvar;kinvar++) {    
 	    if(kinvar) 
 	      for (int window=0;window<n_window;window++) {
-		hist_bkg_window[window][kinvar-1]->Scale(2.28e-3*1.15*75.39*1133995/hist_bkg[kinvar]->GetEntries()); //BR*L*sigma/Ngen	  
+		hist_bkg_window[window][kinvar-1]->Scale(19620*75.39*1.15/1133995); //BR*L*sigma/Ngen	  
 		stream_integral <<   hist_bkg_window[window][kinvar-1]->GetTitle() << " " << hist_bkg_window[window][kinvar-1]->Integral() << endl;
 		hist_bkg_window[window][kinvar-1]->Write("",TObject::kOverwrite);
 		hist_bkg_window[window][kinvar-1]->Delete();
 	      }
-	    hist_bkg[kinvar]->Scale(2.28e-3*1.15*75.39*1133995/hist_bkg[kinvar]->GetEntries()); //BR*L*sigma/Ngen	  
+	    hist_bkg[kinvar]->Scale(19620*1.15*75.39/1133995); //BR*L*sigma/Ngen	  
 	    stream_integral <<   hist_bkg[kinvar]->GetTitle() << " " << hist_bkg[kinvar]->Integral() << endl;
 	    hist_bkg[kinvar]->Write("",TObject::kOverwrite);
 	    hist_bkg[kinvar]->Delete();
