@@ -5,7 +5,8 @@
 #include <fstream>
 #include "RooDataSet.h"
 
-#define NBINS 100
+#define NBINS 110
+#define BATCH 1
 
 using namespace std;
 
@@ -21,21 +22,20 @@ int main() {
   
   char* cutval[5]={"","200","375","550","750"};
 
-  //  fit_bkg(2,2,"750",3);
+  //  fit_bkg(2,2,"",0);
    for (int cut=0;cut<5;cut++) {
     for (int menu=0;menu<3;menu++) {
       for (int menu_pol=0;menu_pol<3;menu_pol++) {
 	
-	fit_bkg(menu,menu_pol,cutval[cut],3);
-	fit_ggh(menu,menu_pol,cutval[cut]);
-	fit_vbf(menu,menu_pol,cutval[cut]);
+	fit_bkg(menu,menu_pol,cutval[cut],0);
+	//	fit_ggh(menu,menu_pol,cutval[cut]);
+	//fit_vbf(menu,menu_pol,cutval[cut]);
       }
     }
    }  
    cout << "Went up to the end" << endl;   
  
   return 0;
-
 }
 //#################################################################################################
 //#################################################################################################
@@ -43,8 +43,9 @@ int main() {
 int fit_bkg(int const &menu_bkg,int const &menu_pol_bkg,char const *menu_cut,int const &menu_window){
 
   setTDRStyle();
-  TFile *file_result=new TFile("kin_dist.root");
-  //  TFile *file_result=new TFile("../../data/kin_dist.root");
+  TFile *file_result=0;
+  if (BATCH) file_result=new TFile("kin_dist.root");
+  else file_result=new TFile("/afs/cern.ch/work/c/cgoudet/private/data/kin_dist.root");
   RooRealVar dipho_pt("dipho_pt","p_{T #gamma #gamma}",0,200,"GeV");
   RooRealVar dipho_mass("dipho_mass","m_{#gamma#gamma}",0,600, "GeV");
   RooRealVar dipho_ctheta("dipho_ctheta","cos(#theta *)",0,1);
@@ -120,7 +121,7 @@ int fit_bkg(int const &menu_bkg,int const &menu_pol_bkg,char const *menu_cut,int
     sprintf(buffer,"dipho_mass>100 && dipho_mass>180");
     dataset_bkg=new RooDataSet("dataset_bkg","dataset_bkg",tree_bkg,RooArgSet(dipho_pt,dipho_mass),buffer);
     sprintf(buffer2,"dipho_pt>>hist_bkg(%d,0,200)",NBINS);
-    tree_bkg->Draw(buffer2);  
+    tree_bkg->Draw(buffer2,buffer);  
     hist_bkg=(TH1F*) gDirectory->Get("hist_bkg");
   }
   
@@ -201,10 +202,10 @@ int fit_bkg(int const &menu_bkg,int const &menu_pol_bkg,char const *menu_cut,int
 
   cout << ratio_bkg->GetNbinsX() << " " << hist_bkg->GetNbinsX() << endl;
   cout << "created ratio" << endl;
-  ratio_bkg->Scale(hist_bkg->Integral());
+  ratio_bkg->Scale(hist_bkg->Integral(0,200));
   
   
-  ratio_bkg->Divide(hist_bkg);
+    ratio_bkg->Divide(hist_bkg);
   
   cout << "modified ratio" << endl;
   coef1_logn_bkg.setConstant(1);
@@ -223,7 +224,8 @@ int fit_bkg(int const &menu_bkg,int const &menu_pol_bkg,char const *menu_cut,int
   
   ratio_pad_bkg->cd();
   ratio_bkg->GetYaxis()->SetRangeUser(0,2);
-  ratio_bkg->Draw("P");
+
+    ratio_bkg->Draw("P");
   line->Draw("SAME");
 
   pad_fit_bkg->cd();
@@ -239,20 +241,29 @@ frame_bkg->Draw();
 
   char dummy_cut[40]="";
   if (strcmp(menu_cut,"")) sprintf(dummy_cut,"cuttheta%s",menu_cut);
-  
-  sprintf(buffer,"fit%s_%s.png",dummy_cut,buffer_savebkg);
-  canvas_bkg->SaveAs(buffer);
-  sprintf(buffer,"fit%s_%s.pdf",dummy_cut,buffer_savebkg);
-  canvas_bkg->SaveAs(buffer);
-  sprintf(buffer,"fit%s_%s.root",dummy_cut,buffer_savebkg);
-  canvas_bkg->SaveAs(buffer);
-  
+  if (BATCH) {
+    sprintf(buffer,"fit%s_%s.png",dummy_cut,buffer_savebkg);
+    canvas_bkg->SaveAs(buffer);
+    sprintf(buffer,"fit%s_%s.pdf",dummy_cut,buffer_savebkg);
+    canvas_bkg->SaveAs(buffer);
+    sprintf(buffer,"fit%s_%s.root",dummy_cut,buffer_savebkg);
+    canvas_bkg->SaveAs(buffer);
+  }
+  else {
+    sprintf(buffer,"/afs/cern.ch/work/c/cgoudet/private/plot/png/fit%s_%s.png",dummy_cut,buffer_savebkg);
+    canvas_bkg->SaveAs(buffer);
+    sprintf(buffer,"/afs/cern.ch/work/c/cgoudet/private/plot/pdf/fit%s_%s.pdf",dummy_cut,buffer_savebkg);
+    canvas_bkg->SaveAs(buffer);
+    sprintf(buffer,"/afs/cern.ch/work/c/cgoudet/private/plot/root/fit%s_%s.root",dummy_cut,buffer_savebkg);
+    canvas_bkg->SaveAs(buffer);
+
+  }
   fstream stream;
   stream.open("result_fit_bkg.txt", fstream::out | fstream::app);
   stream << buffer_savebkg << "_" << dummy_cut << " " << frame_bkg->chiSquare() << endl;
   stream.close();
 
-  canvas_bkg->Delete();
+ 
   file_result->Close();
   return 1;
   }
@@ -263,7 +274,9 @@ frame_bkg->Draw();
 
 int fit_ggh(int const &menu_ggh,int const &menu_pol_ggh,char const *menu_cut){
   setTDRStyle();
-  TFile *file_result=new TFile("kin_dist.root");
+  TFile *file_result=0;
+  if (BATCH) file_result=new TFile("kin_dist.root");
+  else file_result=new TFile("/afs/cern.ch/work/c/cgoudet/private/data/kin_dist.root");
   RooRealVar dipho_pt("dipho_pt","p_{T #gamma #gamma}",0,200,"GeV");
   RooRealVar dipho_mass("dipho_mass","m_{#gamma#gamma}",0,600, "GeV");
   RooRealVar dipho_ctheta("dipho_ctheta","cos(#theta *)",0,1);
@@ -465,7 +478,9 @@ int fit_ggh(int const &menu_ggh,int const &menu_pol_ggh,char const *menu_cut){
   //########VBF
 int fit_vbf(int const &menu_vbf,int const &menu_pol_vbf,char const *menu_cut){
   setTDRStyle();
-  TFile *file_result=new TFile("kin_dist.root");
+  TFile *file_result=0;
+  if (BATCH) file_result=new TFile("kin_dist.root");
+  else file_result=new TFile("/afs/cern.ch/work/c/cgoudet/private/data/kin_dist.root");
   RooRealVar dipho_pt("dipho_pt","p_{T #gamma #gamma}",0,200,"GeV");
   RooRealVar dipho_mass("dipho_mass","m_{#gamma#gamma}",0,600, "GeV");
   RooRealVar dipho_ctheta("dipho_ctheta","cos(#theta *)",0,1);
@@ -657,7 +672,7 @@ pad_fit_vbf->cd();
 
   file_result->Close();
 
-  canvas_vbf->Delete();
+
   return 1;
   }
 
