@@ -118,7 +118,7 @@ int fit_bkg(int const &menu_bkg,int const &menu_pol_bkg,char const *menu_cut,int
     hist_bkg=(TH1F*) gDirectory->Get("hist_bkg");
 }
   else {
-    sprintf(buffer,"dipho_mass>100 && dipho_mass>180");
+    sprintf(buffer,"dipho_mass>100 && dipho_mass<180");
     dataset_bkg=new RooDataSet("dataset_bkg","dataset_bkg",tree_bkg,RooArgSet(dipho_pt,dipho_mass),buffer);
     sprintf(buffer2,"dipho_pt>>hist_bkg(%d,0,200)",NBINS);
     tree_bkg->Draw(buffer2,buffer);  
