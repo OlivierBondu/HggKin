@@ -56,7 +56,7 @@ int main() {
     if (AddData(ws,menu_cut[i])) cout << "AddData failed" << endl;
        if (DoSPlot(ws)) cout << "DoSPlot failes" << endl;
     cout << "DoSPlot succeded" << endl;
-    // if (MakePlot(ws,menu_cut[i])) cout << "Plotting failed" << endl;
+    if (MakePlot(ws,menu_cut[i])) cout << "Plotting failed" << endl;
     root_file->cd();
     ws->Write("",TObject::kOverwrite);
     ws->Delete();  
@@ -88,7 +88,7 @@ int AddModel(RooWorkspace *ws, int  const &cut=0) {
 
   //Model of ggh =gauss_mass * tsallispol1_pt
   cout << "#####  Model ggH" << endl;
-  //create model of backgrounf and fit  
+  //create model of background and fit  
   RooRealVar *mean_mass_ggh=new RooRealVar("mean_mass_ggh","mean_mass_ggh",123,120,130);
   RooRealVar *sigma_mass_ggh=new RooRealVar("sigma_mass_ggh","sigma_mass_ggh",3e-2,0,1);
   RooGaussian *model_mass_ggh=new RooGaussian("model_mass_ggh","model_mass_ggh",*dipho_mass,*mean_mass_ggh,*sigma_mass_ggh);
@@ -101,10 +101,8 @@ int AddModel(RooWorkspace *ws, int  const &cut=0) {
   else sim_gen=new RooDataSet("sim_gen","sim_gen", tree, RooArgSet(*dipho_mass,*weight),"","weight");
   model_mass_ggh->fitTo(*sim_gen);
 
-  // set variable range to 0.5 and 1.5 times it's current value to ease splot fitting
-  //  mean_mass_ggh->setRange(mean_mass_ggh->getVal()*0.5,mean_mass_ggh->getVal()*1.5);
-  //sigma_mass_ggh->setRange(sigma_mass_ggh->getVal()*0.5,sigma_mass_ggh->getVal()*1.5);
-
+  //set variable range to +-3 sigmas to ease splot fitting
+  
   
   //Check plot
   frame_mass=dipho_mass->frame();
@@ -142,6 +140,10 @@ int AddModel(RooWorkspace *ws, int  const &cut=0) {
 //   coefM_tsallis_pt_ggh->setRange(coefM_tsallis_pt_ggh->getVal()*0.5,coefM_tsallis_pt_ggh->getVal()*1.5);
 //   coefN_tsallis_pt_ggh->setRange(coefN_tsallis_pt_ggh->getVal()*0.5,coefN_tsallis_pt_ggh->getVal()*1.5);
 //   coefT_tsallis_pt_ggh->setRange(coefT_tsallis_pt_ggh->getVal()*0.5,coefT_tsallis_pt_ggh->getVal()*1.5);
+  coef0_pol_pt_ggh->setConstant(1);
+  coefM_tsallis_pt_ggh->setConstant(1);
+  coefN_tsallis_pt_ggh->setConstant(1);
+  coefT_tsallis_pt_ggh->setConstant(1);
 
 
   //Check plot
@@ -179,11 +181,10 @@ int AddModel(RooWorkspace *ws, int  const &cut=0) {
     model_mass_bkg->fitTo(*sim_gen);
 
 
-    coef0_bern_mass_bkg->setRange(coef0_bern_mass_bkg->getVal()- 3*coef0_bern_mass_bkg->getError(),coef0_bern_mass_bkg->getVal()+ 3*coef0_bern_mass_bkg->getError());
-    coef1_bern_mass_bkg->setRange(coef1_bern_mass_bkg->getVal()- 3*coef1_bern_mass_bkg->getError(),coef1_bern_mass_bkg->getVal()+ 3*coef1_bern_mass_bkg->getError());
-    coef2_bern_mass_bkg->setRange(coef2_bern_mass_bkg->getVal()- 3*coef2_bern_mass_bkg->getError(),coef2_bern_mass_bkg->getVal()+ 3*coef2_bern_mass_bkg->getError());
-    coef3_bern_mass_bkg->setRange(coef3_bern_mass_bkg->getVal()- 3*coef3_bern_mass_bkg->getError(),coef3_bern_mass_bkg->getVal()+ 3*coef3_bern_mass_bkg->getError());
-
+    coef0_bern_mass_bkg->setRange(coef0_bern_mass_bkg->getVal()- 2*coef0_bern_mass_bkg->getError(),coef0_bern_mass_bkg->getVal()+ 2*coef0_bern_mass_bkg->getError());
+    coef1_bern_mass_bkg->setRange(coef1_bern_mass_bkg->getVal()- 2*coef1_bern_mass_bkg->getError(),coef1_bern_mass_bkg->getVal()+ 2*coef1_bern_mass_bkg->getError());
+    coef2_bern_mass_bkg->setRange(coef2_bern_mass_bkg->getVal()- 2*coef2_bern_mass_bkg->getError(),coef2_bern_mass_bkg->getVal()+ 2*coef2_bern_mass_bkg->getError());
+    coef3_bern_mass_bkg->setRange(coef3_bern_mass_bkg->getVal()- 2*coef3_bern_mass_bkg->getError(),coef3_bern_mass_bkg->getVal()+ 2*coef3_bern_mass_bkg->getError());
 
   //Check plot
     frame_mass=dipho_mass->frame();
@@ -226,11 +227,11 @@ int AddModel(RooWorkspace *ws, int  const &cut=0) {
   }
    model_pt_bkg->fitTo(*sim_gen);
   
-  //   coef0_pol_pt_bkg->setRange(coef0_pol_pt_bkg->getVal()*0.5,coef0_pol_pt_bkg->getVal()*1.5);
-  //   coef1_pol_pt_bkg->setRange(coef1_pol_pt_bkg->getVal()*0.5,coef1_pol_pt_bkg->getVal()*1.5);
-  //   coefM_tsallis_pt_bkg->setRange(coefM_tsallis_pt_bkg->getVal()*0.5,coefM_tsallis_pt_bkg->getVal()*1.5);
-  //   coefN_tsallis_pt_bkg->setRange(coefN_tsallis_pt_bkg->getVal()*0.5,coefN_tsallis_pt_bkg->getVal()*1.5);
-  //   coefT_tsallis_pt_bkg->setRange(coefT_tsallis_pt_bkg->getVal()*0.5,coefT_tsallis_pt_bkg->getVal()*1.5);
+   coef0_pol_pt_bkg->setConstant(1);
+   coef1_pol_pt_bkg->setConstant(1);
+   coefM_tsallis_pt_bkg->setConstant(1);
+   coefN_tsallis_pt_bkg->setConstant(1);
+   coefT_tsallis_pt_bkg->setConstant(1);
 
   
   
@@ -347,15 +348,28 @@ int DoSPlot(RooWorkspace* ws) {
   frame_mass=dipho_mass->frame();
   sim_gen->plotOn(frame_mass);
   model->plotOn(frame_mass);
+  model->plotOn(frame_mass, Components("model_ggh"), LineColor(kGreen), LineStyle(kDashed));
+  model->plotOn(frame_mass, Components("model_bkg"), LineColor(kRed), LineStyle(kDashed));
   frame_mass->Draw();
-  canvas->SaveAs("frameDoSplot.pdf");
+  canvas->SaveAs("frameDoSplotMass.pdf");
   frame_mass->Delete();
+  //  canvas->Close();
+
+  RooPlot* frame_pt=dipho_pt->frame();
+  frame_pt=dipho_pt->frame();
+  sim_gen->plotOn(frame_pt);
+  model->plotOn(frame_pt);
+  model->plotOn(frame_pt, Components("model_ggh"), LineColor(kGreen), LineStyle(kDashed));
+  model->plotOn(frame_pt, Components("model_bkg"), LineColor(kRed), LineStyle(kDashed));
+  frame_pt->Draw();
+  canvas->SaveAs("frameDoSplotPt.pdf");
+  frame_pt->Delete();
   canvas->Close();
 
 
 
   cout << "Is sim_gen weighted : " << sim_gen->isWeighted() << endl;
-  //    SPlot *splot_gen=new SPlot("splot_gen","splot_gen", *sim_genW, model, RooArgList(*ggh_yield, *bkg_yield));  //Create splot
+  //  SPlot *splot_gen=new SPlot("splot_gen","splot_gen", *sim_genW, model, RooArgList(*ggh_yield, *bkg_yield));  //Create splot
   ws->import(*sim_genW,Rename("sim_genW"));
   cout << "Is sim_gen weighted : " << sim_gen->isWeighted() << endl;
   return 0;
@@ -469,7 +483,7 @@ int MakePlot(RooWorkspace* ws, int const &cut=0) {
 
   // plot weighted events and first fit
   frame_up=dipho_pt->frame();
-  RooDataSet *sim_gen_Wbkg=new RooDataSet("sim_gen_Wbkg","sim_gen_Wbkg",sim_genW,*sim_genW->get(),0,"bkg_yield_sw");
+   RooDataSet *sim_gen_Wbkg=new RooDataSet("sim_gen_Wbkg","sim_gen_Wbkg",sim_genW,*sim_genW->get(),0,"bkg_yield_sw");
   sim_gen_Wbkg->plotOn(frame_up,MarkerColor(1),DataError(RooAbsData::SumW2),Name("sim_gen_Wbkg"),Binning(100,0,200)); // plot weighted background events
   RooDataSet *sim_gen_Wggh=new RooDataSet("sim_gen_Wggh","sim_gen_Wggh",sim_genW,*sim_genW->get(),0,"ggh_yield_sw");
   sim_gen_Wggh->plotOn(frame_up,MarkerColor(2),DataError(RooAbsData::SumW2),Name("sim_gen_Wggh"),Binning(100,0,200));// plot weighted ggh events
@@ -478,7 +492,7 @@ int MakePlot(RooWorkspace* ws, int const &cut=0) {
   cout << "Redo Normalisation" << endl;
 
   canvas->cd();
-   canvas->SetLogy();
+  //   canvas->SetLogy();
   frame_up->UseCurrentStyle();
   frame_up->Draw();
   legend=new TLegend(0.8,0.7,1,1);
