@@ -295,6 +295,7 @@ int main() {
       gamma1->SetPtEtaPhiM(variables[0],variables[1],variables[2],variables[3]);
       gamma2->SetPtEtaPhiM(variables[4],variables[5],variables[6],variables[7]);
       *gamma_pair=*gamma1+*gamma2;
+      if (gamma_pair->M() > 180 || gamma_pair->M() < 100) continue;
       dipho_ctheta=GetCosTheta(gamma1,gamma2);
       dipho_mass=gamma_pair->M();
       dipho_pt=gamma_pair->Pt();
