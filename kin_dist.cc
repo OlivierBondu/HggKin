@@ -1,19 +1,23 @@
-#include "include_root.h"
+#include "TFile.h"
+#include "TTree.h"
+#include "TH1F.h"
+#include "TLorentzVector.h"
+
+
 #include <fstream>
 #include "param_kin.h"
 #include <iostream>
 using namespace std;
 
-#define GGH_GEN 1
-#define VBF_GEN 1
-#define BKG_GEN 1
+#define GGH_GEN 0
+#define VBF_GEN 0
+#define BKG_GEN 0
 #define GGH_REC 1
-#define VBF_REC 1
+#define VBF_REC 0
 #define BKG_REC 0
 
 
 int main() {
-
 
   fstream stream_integral;
   stream_integral.open("/afs/cern.ch/work/c/cgoudet/private/data/hist_integral.txt",fstream::out);
@@ -25,32 +29,37 @@ int main() {
   
   TTree *tree=0;
   TTree *tree_result=0;
-  
 
   //Creating variables for the analysis
   TLorentzVector *gamma1=new TLorentzVector();
   TLorentzVector *gamma2=new TLorentzVector();
   TLorentzVector *gamma_pair=new TLorentzVector();
+  float dipho_pt,dipho_mass,dipho_ctheta, weight, r91, r92;
+  int isEB1,isEB2;
   TH1F *hist_cuttheta[n_study][n_cuttheta]={{0}};
   
   int nentry=0;
   char buffer [100],dummy[100];
-  char const *gen_variables[8]={"gh_g1_p4_pt","gh_g1_p4_eta","gh_g1_p4_phi","gh_g1_p4_mass","gh_g2_p4_pt","gh_g2_p4_eta","gh_g2_p4_phi","gh_g2_p4_mass"};//useful variables
-  float variables[8];//g1_pt,g1_eta,g1_phi,g1_mass,g2_pt,g2_eta,g2_phi,g2_mass;
-  float dipho_pt,dipho_mass,dipho_ctheta;
+  
+char const *gen_variables[8]={"gh_g1_p4_pt","gh_g1_p4_eta","gh_g1_p4_phi","gh_g1_p4_mass","gh_g2_p4_pt","gh_g2_p4_eta","gh_g2_p4_phi","gh_g2_p4_mass"};//useful variables
+  float gen_values[8];//g1_pt,g1_eta,g1_phi,g1_mass,g2_pt,g2_eta,g2_phi,g2_mass;
+  char const *reco_variables[17]={"ph1_pt","ph1_eta","ph1_phi","ph1_e","ph1_r9","ph2_pt","ph2_eta","ph2_phi","ph2_e","ph2_r9","PhotonsMass","weight","pu_weight","ph1_ciclevel","ph1_isEB","ph2_ciclevel","ph2_isEB"};
+  float reco_fvalues[13];
+  int reco_ivalues[4];
 
   float GetCosTheta(TLorentzVector *g1, TLorentzVector *g2) ;
 
 
-
-  //#######################GGH
+  //###########################################################
+  //#######################GGH_GEN
+  //#############################################################
   if (GGH_GEN) {
     file = new TFile("/afs/cern.ch/work/c/cgoudet/private/data/SMHiggs_m125.root");
     file_result->cd();
     tree  =(TTree *) file->Get("ggh_m125_8TeV");
 
 
-    tree_result=new TTree("tree_ggh","tree_ggh");
+    tree_result=new TTree("tree_gen_ggh","tree_gen_ggh");
     tree_result->Branch("dipho_mass",&dipho_mass,"dipho_mass/F");
     tree_result->Branch("dipho_pt",&dipho_pt,"dipho_pt/F");
     tree_result->Branch("dipho_ctheta",&dipho_ctheta,"dipho_ctheta/F");
@@ -83,14 +92,14 @@ int main() {
     for (int i=0; i<8; i++) {
       sprintf(buffer,"%s",gen_variables[i]);
       tree->SetBranchStatus(buffer,1);  
-      tree->SetBranchAddress(buffer,&variables[i]);
+      tree->SetBranchAddress(buffer,&gen_values[i]);
     }
     
 
     for (int i=0; i<nentry; i++) {
       tree->GetEntry(i);
-      gamma1->SetPtEtaPhiM(variables[0],variables[1],variables[2],variables[3]);
-      gamma2->SetPtEtaPhiM(variables[4],variables[5],variables[6],variables[7]);
+      gamma1->SetPtEtaPhiM(gen_values[0],gen_values[1],gen_values[2],gen_values[3]);
+      gamma2->SetPtEtaPhiM(gen_values[4],gen_values[5],gen_values[6],gen_values[7]);
       *gamma_pair=*gamma1+*gamma2;//contains kinematical properties of the Diphoton system
       dipho_ctheta=GetCosTheta(gamma1,gamma2);
       dipho_mass=gamma_pair->M();
@@ -132,18 +141,23 @@ int main() {
 
     tree_result->Write("",TObject::kOverwrite);
     tree_result->Delete();
+
+
+
     tree->Delete();
     file->Close();
     file->Delete();
     cout << "ggh_gen done" << endl;
   }
+  //######################################################
   //#######################VBF_GEN#########################
+  //#######################################################
   if (VBF_GEN) {
     file = new TFile("/afs/cern.ch/work/c/cgoudet/private/data/SMHiggs_m125.root");
     file_result->cd();
     tree  =(TTree *) file->Get("vbf_m125_8TeV");
     
-    tree_result=new TTree("tree_vbf","tree_vbf");
+    tree_result=new TTree("tree_gen_vbf","tree_gen_vbf");
     tree_result->Branch("dipho_mass",&dipho_mass,"dipho_mass/F");
     tree_result->Branch("dipho_pt",&dipho_pt,"dipho_pt/F");
     tree_result->Branch("dipho_ctheta",&dipho_ctheta,"dipho_ctheta/F");
@@ -172,14 +186,14 @@ int main() {
     for (int i=0; i<8; i++) {
       sprintf(buffer,"%s",gen_variables[i]);
       tree->SetBranchStatus(buffer,1);  
-      tree->SetBranchAddress(buffer,&variables[i]);
+      tree->SetBranchAddress(buffer,&gen_values[i]);
     }
 
 
     for (int i=0; i<nentry; i++) {
       tree->GetEntry(i);
-      gamma1->SetPtEtaPhiM(variables[0],variables[1],variables[2],variables[3]);
-      gamma2->SetPtEtaPhiM(variables[4],variables[5],variables[6],variables[7]);
+      gamma1->SetPtEtaPhiM(gen_values[0],gen_values[1],gen_values[2],gen_values[3]);
+      gamma2->SetPtEtaPhiM(gen_values[4],gen_values[5],gen_values[6],gen_values[7]);
       *gamma_pair=*gamma1+*gamma2;//contains kinematical properties of the Diphoton system
       dipho_ctheta=GetCosTheta(gamma1,gamma2);
       dipho_mass=gamma_pair->M();
@@ -228,14 +242,16 @@ int main() {
 
     cout << "vbf_gen done" << endl;
   }
-  //#####################################BKG
+  //###################################################################
+  //#####################################BKG_GEN
+  //####################################################################
   if (BKG_GEN) {
     
     file = new TFile("/afs/cern.ch/work/c/cgoudet/private/data/DiPhotons.root");
     file_result->cd();
     tree =(TTree *) file->Get("diphojet_8TeV");
 
-    tree_result=new TTree("tree_bkg","tree_bkg");
+    tree_result=new TTree("tree_gen_bkg","tree_gen_bkg");
     tree_result->Branch("dipho_mass",&dipho_mass,"dipho_mass/F");
     tree_result->Branch("dipho_pt",&dipho_pt,"dipho_pt/F");
     tree_result->Branch("dipho_ctheta",&dipho_ctheta,"dipho_ctheta/F");
@@ -286,14 +302,14 @@ int main() {
     for (int i=0; i<8; i++) {
       sprintf(buffer,"%s",gen_variables[i]);
       tree->SetBranchStatus(buffer,1);  
-      tree->SetBranchAddress(buffer,&variables[i]);
+      tree->SetBranchAddress(buffer,&gen_values[i]);
     }
     
 
     for (int i=0; i<nentry; i++) {
       tree->GetEntry(i);
-      gamma1->SetPtEtaPhiM(variables[0],variables[1],variables[2],variables[3]);
-      gamma2->SetPtEtaPhiM(variables[4],variables[5],variables[6],variables[7]);
+      gamma1->SetPtEtaPhiM(gen_values[0],gen_values[1],gen_values[2],gen_values[3]);
+      gamma2->SetPtEtaPhiM(gen_values[4],gen_values[5],gen_values[6],gen_values[7]);
       *gamma_pair=*gamma1+*gamma2;
       dipho_ctheta=GetCosTheta(gamma1,gamma2);
       dipho_mass=gamma_pair->M();
@@ -363,15 +379,88 @@ int main() {
 	  
 	  
   }	  
-	  stream_integral.close();
-	  file_result->Close();
-	  
-	  
- 
+  stream_integral.close();
+
+  
+  
+  
+  //####################################################################
+  //##################################GGH_RECO
+  //###################################################################  
+  if (GGH_REC)
+  file=new TFile("/afs/cern.ch/work/c/cgoudet/private/data/SMHiggs_m125.root");
+  file_result->cd();
+  tree  =(TTree *) file->Get("ggh_m125_8TeV");
+  
+  tree_result=new TTree("tree_reco_ggh","tree_reco_ggh");
+  tree_result->Branch("dipho_mass",&dipho_mass,"dipho_mass/F");
+  tree_result->Branch("dipho_pt",&dipho_pt,"dipho_pt/F");
+  tree_result->Branch("dipho_ctheta",&dipho_ctheta,"dipho_ctheta/F");
+  tree_result->Branch("weight",&weight,"weight/F");
+  tree_result->Branch("isEB1",&isEB1,"isEB1/I");
+  tree_result->Branch("isEB2",&isEB2,"isEB2/I");
+  tree_result->Branch("r91",&r91,"r91/F");
+  tree_result->Branch("r92",&r92,"r92/F");
+
+
+
+
+
+  nentry=tree->GetEntries();
+  tree->SetBranchStatus("*",0);// selection of useful branches
+  for (int i=0; i<13; i++) {
+    sprintf(buffer,"%s",reco_variables[i]);
+    tree->SetBranchStatus(buffer,1);  
+    tree->SetBranchAddress(buffer,&reco_fvalues[i]);
+  }
+  for (int i=0;i<4;i++) {
+    sprintf(buffer,"%s",reco_variables[13+i]);
+    tree->SetBranchStatus(buffer,1);  
+    tree->SetBranchAddress(buffer,&reco_ivalues[i]);
+  }
+
+
+  for (int i=0;i<nentry;i++) {
+    tree->GetEntry(i);
+    if (reco_fvalues[0]<40.*reco_fvalues[10]/120.) continue; //ph1_pt< 40*PhotonsMass/120.
+    if (reco_fvalues[5]<25.) continue; //ph2_pt<25.
+    if ((reco_ivalues[0]<4) || (reco_ivalues[2]<4) ) continue; //(ph1_ciclevel<4 ) || (phi2_ciclevel<4)
+    if (reco_fvalues[10]<100. || reco_fvalues[10]>180.) continue;// 100<mgg<180
+
+    gamma1->SetPtEtaPhiE(reco_fvalues[0],reco_fvalues[1],reco_fvalues[2],reco_fvalues[3]);
+    gamma2->SetPtEtaPhiE(reco_fvalues[5],reco_fvalues[6],reco_fvalues[7],reco_fvalues[8]);
+    *gamma_pair=*gamma1+*gamma2;
+    dipho_mass=gamma_pair->M();
+    dipho_pt=gamma_pair->Pt();
+    dipho_ctheta=GetCosTheta(gamma1,gamma2);
+    weight=reco_fvalues[11]*reco_fvalues[12];
+    isEB1=reco_ivalues[1];
+    isEB2=reco_ivalues[3];
+    r91=reco_fvalues[4];
+    r92=reco_fvalues[9];
+
+    tree_result->Fill();
+  }
+
+
+  tree_result->Write("",TObject::kOverwrite);
+  tree_result->Delete();
+  file->Close();
+  file->Delete();
+
+
+  cout << "ggh reco done" << endl; 
+
+
+
+
+
+
+  file_result->Close();
 	  return 0;
   }
-  
-//#############################################################
+//################################################################  
+//################################################################
 //################################################################
 float GetCosTheta(TLorentzVector *g1, TLorentzVector *g2) {
   
