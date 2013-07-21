@@ -1,6 +1,7 @@
 #include "RooRealVar.h"
 #include "RooPlot.h"
 
+#include "RooBernstein.h"
 #include "RooGaussian.h"
 #include "RooLandau.h"
 #include "RooGenericPdf.h"

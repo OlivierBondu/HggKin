@@ -4,7 +4,7 @@ int const windowval[n_window]={2,3};
 
 // cos(theta*) cuts
 int const n_cuttheta=4;
-float const cuttheta[n_cuttheta]={0.2,0.375,0.550,0.75};
+int const cuttheta[n_cuttheta]={200,375,550,750};
 
 //Variables used in the study
 int const n_kinvar=3;
