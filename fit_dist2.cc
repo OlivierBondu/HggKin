@@ -1,9 +1,20 @@
-#include "include_roofit.h"
-#include "include_root.h"
 #include "setTDRStyle.h"
 #include <iostream>
 #include <fstream>
 #include "RooDataSet.h"
+#include "RooRealVar.h"
+#include "TTree.h"
+#include "RooBernstein.h"
+#include "RooGenericPdf.h"
+#include "RooProdPdf.h"
+#include "RooPlot.h"
+#include "TLine.h"
+#include "TFile.h"
+#include "TCanvas.h"
+#include "RooLandau.h"
+#include "TPad.h"
+#include "TH1F.h"
+#include "TLatex.h"
 
 #define NBINS 100
 #define BATCH 1
@@ -13,7 +24,7 @@ using namespace std;
 
 
 int main() {
-
+  cout << "in main" << endl;
 
   int fit_bkg(int const &menu_bkg,int const &menu_pol_bkg,char const *menu_cut,int const &menu_window);
   int fit_ggh(int const &menu_ggh,int const &menu_pol_ggh,char const *menu_cut);
@@ -22,15 +33,16 @@ int main() {
   
   char* cutval[5]={"","200","375","550","750"};
 
-  //  fit_bkg(2,2,"",0);
-   for (int cut=0;cut<5;cut++) {
+  //  fit_ggh(0,0,"");
+   
+for (int cut=0;cut<5;cut++) {
     for (int menu=0;menu<3;menu++) {
       for (int menu_pol=0;menu_pol<3;menu_pol++) {
 	//fit_bkg(menu,menu_pol,cutval[cut],0);
 	//fit_bkg(menu,menu_pol,cutval[cut],2);
-	fit_bkg(menu,menu_pol,cutval[cut],3);
+	//fit_bkg(menu,menu_pol,cutval[cut],3);
 	//fit_ggh(menu,menu_pol,cutval[cut]);
-	//fit_vbf(menu,menu_pol,cutval[cut]);
+	fit_vbf(menu,menu_pol,cutval[cut]);
       }
     }
    }  
@@ -42,7 +54,7 @@ int main() {
 //#################################################################################################
 
 int fit_bkg(int const &menu_bkg,int const &menu_pol_bkg,char const *menu_cut,int const &menu_window){
-
+  cout << "fit bkg" << endl;
   setTDRStyle();
   TFile *file_result=0;
   if (BATCH) file_result=new TFile("kin_dist.root");
@@ -91,7 +103,7 @@ int fit_bkg(int const &menu_bkg,int const &menu_pol_bkg,char const *menu_cut,int
   RooRealVar coef3_pol_bkg("coef3_pol_bkg","coef3_pol_bkg",3,0,100);
   RooBernstein *pol2_bkg;
 
-  TTree *tree_bkg=(TTree*) file_result->Get("tree_bkg");
+  TTree *tree_bkg=(TTree*) file_result->Get("tree_gen_bkg");
   tree_bkg->Print();
   pad_fit_bkg->cd();
   RooDataSet *dataset_bkg=0;
@@ -128,7 +140,7 @@ int fit_bkg(int const &menu_bkg,int const &menu_pol_bkg,char const *menu_cut,int
   
   dataset_bkg->plotOn(frame_bkg);
   RooProdPdf *model_bkg;
-
+  cout << "created data" << endl;
 
   char buffer_savebkg[100];
   switch (3*menu_pol_bkg+menu_bkg) {
@@ -190,7 +202,7 @@ int fit_bkg(int const &menu_bkg,int const &menu_pol_bkg,char const *menu_cut,int
     break;  
 }
 
-
+  cout << "chose model" << endl;
   model_bkg->fitTo(*dataset_bkg);
   model_bkg->plotOn(frame_bkg);
   cout << "plotted" << endl;  
@@ -326,7 +338,7 @@ int fit_ggh(int const &menu_ggh,int const &menu_pol_ggh,char const *menu_cut){
   RooBernstein *pol2_ggh;
 
   sprintf(buffer,"hist_dipho_pt%s_ggh_gen",menu_cut);
-  TTree *tree_ggh=(TTree*) file_result->Get("tree_ggh");
+  TTree *tree_ggh=(TTree*) file_result->Get("tree_gen_ggh");
   RooDataSet *dataset_ggh=0;
   pad_fit_ggh->cd();
   TH1F *hist_ggh=0;
@@ -334,15 +346,17 @@ int fit_ggh(int const &menu_ggh,int const &menu_pol_ggh,char const *menu_cut){
   if (strcmp(menu_cut,"")) {
     sprintf(buffer,"dipho_ctheta > %s/1000.", menu_cut);
     dataset_ggh=new RooDataSet("dataset_ggh","dataset_ggh",tree_ggh,RooArgSet(dipho_pt,dipho_ctheta),buffer);
-    sprintf(buffer2,"dipho_pt>>hist_bkg(%d,0,200)",NBINS);
+    sprintf(buffer2,"dipho_pt>>hist_ggh(%d,0,200)",NBINS);
     tree_ggh->Draw(buffer2,buffer);
     hist_ggh=(TH1F*) gDirectory->Get("hist_ggh");
   }
   else {
     dataset_ggh=new RooDataSet("dataset_ggh","dataset_ggh",tree_ggh,dipho_pt);
-    sprintf(buffer2,"dipho_pt>>hist_bkg(%d,0,200)",NBINS);
+    sprintf(buffer2,"dipho_pt>>hist_ggh(%d,0,200)",NBINS);
+    cout << buffer2 << endl;
     tree_ggh->Draw(buffer2);
-    hist_ggh=(TH1F*) gDirectory->Get("hist_ggh");
+    gDirectory->ls();    
+hist_ggh=(TH1F*) gDirectory->Get("hist_ggh");
   }
 
   dataset_ggh->plotOn(frame_ggh);
@@ -400,17 +414,17 @@ int fit_ggh(int const &menu_ggh,int const &menu_pol_ggh,char const *menu_cut){
 }
 
 
-  model_ggh->fitTo(*dataset_ggh);
+  //  model_ggh->fitTo(*dataset_ggh);
   model_ggh->plotOn(frame_ggh);
   cout << "plotted" << endl;  
+  cout << hist_ggh->GetEntries() << endl;
+  cout << "test hist_ggh" << endl;
 
 
-
-  hist_ggh->Sumw2();
   TH1F *ratio_ggh=(TH1F*) model_ggh->createHistogram("ratio_ggh", dipho_pt,RooFit::Binning(hist_ggh->GetNbinsX(),0,200));
-  
+  cout << "created ratio" << endl;  
   cout << ratio_ggh->GetNbinsX() << " " << hist_ggh->GetNbinsX() << endl;
-  cout << "created ratio" << endl;
+
   ratio_ggh->Scale(hist_ggh->Integral());
 //   for (int i=0;i<hist_ggh->GetNbinsX()+1;i++) {
     
@@ -529,7 +543,7 @@ int fit_vbf(int const &menu_vbf,int const &menu_pol_vbf,char const *menu_cut){
   RooBernstein *pol2_vbf;
 
   sprintf(buffer,"hist_dipho_pt%s_vbf_gen",menu_cut);
-  TTree *tree_vbf=(TTree*) file_result->Get("tree_vbf");
+  TTree *tree_vbf=(TTree*) file_result->Get("tree_gen_vbf");
   RooDataSet *dataset_vbf=0;
 pad_fit_vbf->cd();
  TH1F *hist_vbf=0;
@@ -537,13 +551,13 @@ pad_fit_vbf->cd();
   if (strcmp(menu_cut,"")) {
     sprintf(buffer,"dipho_ctheta > %s/1000.", menu_cut);
     dataset_vbf=new RooDataSet("dataset_vbf","dataset_vbf",tree_vbf,RooArgSet(dipho_pt,dipho_ctheta),buffer);
-    sprintf(buffer2,"dipho_pt>>hist_bkg(%d,0,200)",NBINS);
+    sprintf(buffer2,"dipho_pt>>hist_vbf(%d,0,200)",NBINS);
     tree_vbf->Draw(buffer2,buffer);
     hist_vbf=(TH1F*) gDirectory->Get("hist_vbf");
   }
   else {
     dataset_vbf=new RooDataSet("dataset_vbf","dataset_vbf",tree_vbf,dipho_pt);
-    sprintf(buffer2,"dipho_pt>>hist_bkg(%d,0,200)",NBINS);
+    sprintf(buffer2,"dipho_pt>>hist_vbf(%d,0,200)",NBINS);
     tree_vbf->Draw(buffer2);
     hist_vbf=(TH1F*) gDirectory->Get("hist_vbf");
   }
