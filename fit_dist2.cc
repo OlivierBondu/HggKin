@@ -27,8 +27,8 @@ int main() {
     for (int menu=0;menu<3;menu++) {
       for (int menu_pol=0;menu_pol<3;menu_pol++) {
 	//fit_bkg(menu,menu_pol,cutval[cut],0);
-	fit_bkg(menu,menu_pol,cutval[cut],2);
-	//fit_bkg(menu,menu_pol,cutval[cut],3);
+	//fit_bkg(menu,menu_pol,cutval[cut],2);
+	fit_bkg(menu,menu_pol,cutval[cut],3);
 	//fit_ggh(menu,menu_pol,cutval[cut]);
 	//fit_vbf(menu,menu_pol,cutval[cut]);
       }
