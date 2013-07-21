@@ -9,15 +9,16 @@
 #include <iostream>
 using namespace std;
 
-#define GGH_GEN 0
-#define VBF_GEN 0
-#define BKG_GEN 0
+#define GGH_GEN 1
+#define VBF_GEN 1
+#define BKG_GEN 1
 #define GGH_REC 1
-#define VBF_REC 0
+#define VBF_REC 1
 #define BKG_REC 0
 
 
 int main() {
+
 
   fstream stream_integral;
   stream_integral.open("/afs/cern.ch/work/c/cgoudet/private/data/hist_integral.txt",fstream::out);
@@ -36,13 +37,12 @@ int main() {
   TLorentzVector *gamma_pair=new TLorentzVector();
   float dipho_pt,dipho_mass,dipho_ctheta, weight, r91, r92;
   int isEB1,isEB2;
-  TH1F *hist_cuttheta[n_study][n_cuttheta]={{0}};
-  
+  TH1F *hist_cuttheta[n_study][n_cuttheta]={{0}}; 
   int nentry=0;
   char buffer [100],dummy[100];
   
-char const *gen_variables[8]={"gh_g1_p4_pt","gh_g1_p4_eta","gh_g1_p4_phi","gh_g1_p4_mass","gh_g2_p4_pt","gh_g2_p4_eta","gh_g2_p4_phi","gh_g2_p4_mass"};//useful variables
-  float gen_values[8];//g1_pt,g1_eta,g1_phi,g1_mass,g2_pt,g2_eta,g2_phi,g2_mass;
+  char const *gen_variables[9]={"gh_g1_p4_pt","gh_g1_p4_eta","gh_g1_p4_phi","gh_g1_p4_mass","gh_g2_p4_pt","gh_g2_p4_eta","gh_g2_p4_phi","gh_g2_p4_mass","weight"};//useful variables
+  float gen_values[9];//g1_pt,g1_eta,g1_phi,g1_mass,g2_pt,g2_eta,g2_phi,g2_mass,weight;
   char const *reco_variables[17]={"ph1_pt","ph1_eta","ph1_phi","ph1_e","ph1_r9","ph2_pt","ph2_eta","ph2_phi","ph2_e","ph2_r9","PhotonsMass","weight","pu_weight","ph1_ciclevel","ph1_isEB","ph2_ciclevel","ph2_isEB"};
   float reco_fvalues[13];
   int reco_ivalues[4];
@@ -63,33 +63,33 @@ char const *gen_variables[8]={"gh_g1_p4_pt","gh_g1_p4_eta","gh_g1_p4_phi","gh_g1
     tree_result->Branch("dipho_mass",&dipho_mass,"dipho_mass/F");
     tree_result->Branch("dipho_pt",&dipho_pt,"dipho_pt/F");
     tree_result->Branch("dipho_ctheta",&dipho_ctheta,"dipho_ctheta/F");
+    tree_result->Branch("weight",&weight,"weight/F");
 
-
-
+    //definitions of all histograms
     TH1F *hist_ggh_gen[1][n_kinvar];
     for (int kinvar=0;kinvar<n_kinvar;kinvar++) {
       sprintf(dummy,"hist_%s_ggh_gen",kinvarval[kinvar]);
       hist_ggh_gen[0][kinvar]=new TH1F(dummy,dummy,n_bins[kinvar],binning[kinvar][0],binning[kinvar][1]);
       hist_ggh_gen[0][kinvar]->Sumw2();
-      hist_ggh_gen[0][kinvar]->GetXaxis()->SetTitle(kinvarval[kinvar]);
-      hist_ggh_gen[0][kinvar]->GetYaxis()->SetTitle("events");
+      hist_ggh_gen[0][kinvar]->GetXaxis()->SetTitle(kinvartitle[kinvar]);
+      sprintf(dummy,"dN/d%s",kinvartitle[kinvar]);
+      hist_ggh_gen[0][kinvar]->GetYaxis()->SetTitle(dummy);
     }
-    
     for (int study=0;study<n_study;study++) {
       for (int i=0;i<n_cuttheta;i++) {
 	
-
 	sprintf(dummy,"hist_%scuttheta%d_ggh_gen",kinvarval[study], cuttheta[i]);
 	hist_cuttheta[study][i]=new TH1F(dummy,dummy,n_bins[study],binning[study][0],binning[study][1]);
 	hist_cuttheta[study][i]->Sumw2();
-	hist_cuttheta[study][i]->GetXaxis()->SetTitle(kinvarval[study]);
-	hist_cuttheta[study][i]->GetYaxis()->SetTitle("events");
+	hist_cuttheta[study][i]->GetXaxis()->SetTitle(kinvartitle[study]);
+	sprintf(dummy,"dN/d%s",kinvartitle[study]);
+	hist_cuttheta[study][i]->GetYaxis()->SetTitle(dummy);
       }
     }
     
     nentry=tree->GetEntries();
     tree->SetBranchStatus("*",0);// selection of useful branches
-    for (int i=0; i<8; i++) {
+    for (int i=0; i<9; i++) {
       sprintf(buffer,"%s",gen_variables[i]);
       tree->SetBranchStatus(buffer,1);  
       tree->SetBranchAddress(buffer,&gen_values[i]);
@@ -101,19 +101,21 @@ char const *gen_variables[8]={"gh_g1_p4_pt","gh_g1_p4_eta","gh_g1_p4_phi","gh_g1
       gamma1->SetPtEtaPhiM(gen_values[0],gen_values[1],gen_values[2],gen_values[3]);
       gamma2->SetPtEtaPhiM(gen_values[4],gen_values[5],gen_values[6],gen_values[7]);
       *gamma_pair=*gamma1+*gamma2;//contains kinematical properties of the Diphoton system
+      if (gamma_pair->M()>180 || gamma_pair->M()<100) continue;
       dipho_ctheta=GetCosTheta(gamma1,gamma2);
       dipho_mass=gamma_pair->M();
       dipho_pt=gamma_pair->Pt();
+      weight=gen_values[8];
       tree_result->Fill();
 
       hist_ggh_gen[0][1]->Fill(dipho_pt);
       hist_ggh_gen[0][0]->Fill(dipho_mass);
       hist_ggh_gen[0][2]->Fill(dipho_ctheta);
-	for (int k=0;k<n_cuttheta;k++) {
+	for (int cut=0;cut<n_cuttheta;cut++) {
 
-	  if (dipho_ctheta > cuttheta[k]/1000.){
-	    hist_cuttheta[1][k]->Fill(dipho_pt);//Fill histograms with cutted data
-	    hist_cuttheta[0][k]->Fill(dipho_mass);//Fill histograms with cutted data
+	  if (dipho_ctheta > cuttheta[cut]/1000.){
+	    hist_cuttheta[1][cut]->Fill(dipho_pt);//Fill histograms with cutted data
+	    hist_cuttheta[0][cut]->Fill(dipho_mass);//Fill histograms with cutted data
 
 	  }
 	}
@@ -121,14 +123,13 @@ char const *gen_variables[8]={"gh_g1_p4_pt","gh_g1_p4_eta","gh_g1_p4_phi","gh_g1
 
     //Normalizing simulated event to expected number of events
     for (int kinvar=0;kinvar<n_kinvar;kinvar++) {
-      hist_ggh_gen[0][kinvar]->Scale(19620*2.28e-3*19.52/96290);//BR*L*sig*br/Ngen
+      hist_ggh_gen[0][kinvar]->Scale(19.52*2.28e-3*19620/96290);//sigma*BR*L/Ngen
       stream_integral <<   hist_ggh_gen[0][kinvar]->GetTitle() << " " << hist_ggh_gen[0][kinvar]->Integral() << endl;
       hist_ggh_gen[0][kinvar]->Write("",TObject::kOverwrite);
     }
-
     for (int study=0;study<n_study;study++) {
       for (int i=0;i<n_cuttheta;i++) {
-	hist_cuttheta[study][i]->Scale(19620*2.28e-3*19.52/96290);
+	hist_cuttheta[study][i]->Scale(19.52*2.28e-3*19620/96290);//sigma*BR*L/Hgen
 	stream_integral <<   hist_cuttheta[study][i]->GetTitle() << " " << hist_cuttheta[study][i]->Integral() << endl;
 	hist_cuttheta[study][i]->Write("",TObject::kOverwrite);
 	hist_cuttheta[study][i]->Delete();    
@@ -161,29 +162,32 @@ char const *gen_variables[8]={"gh_g1_p4_pt","gh_g1_p4_eta","gh_g1_p4_phi","gh_g1
     tree_result->Branch("dipho_mass",&dipho_mass,"dipho_mass/F");
     tree_result->Branch("dipho_pt",&dipho_pt,"dipho_pt/F");
     tree_result->Branch("dipho_ctheta",&dipho_ctheta,"dipho_ctheta/F");
+    tree_result->Branch("weight",&weight,"weight/F");
 
+    //definitions of all histograms
     TH1F *hist_vbf_gen[1][n_kinvar]={{0}};
     for (int kinvar=0;kinvar<n_kinvar;kinvar++) {
       sprintf(dummy,"hist_%s_vbf_gen",kinvarval[kinvar]);
       hist_vbf_gen[0][kinvar]=new TH1F(dummy,dummy,n_bins[kinvar],binning[kinvar][0],binning[kinvar][1]);
       hist_vbf_gen[0][kinvar]->Sumw2();
-      hist_vbf_gen[0][kinvar]->GetXaxis()->SetTitle(kinvarval[kinvar]);
-      hist_vbf_gen[0][kinvar]->GetYaxis()->SetTitle("events");
+      hist_vbf_gen[0][kinvar]->GetXaxis()->SetTitle(kinvartitle[kinvar]);
+      sprintf(dummy,"dN/d%s",kinvartitle[kinvar]);
+      hist_vbf_gen[0][kinvar]->GetYaxis()->SetTitle(dummy);
     }
     for (int study=0;study<n_study;study++) {
       for (int i=0;i<n_cuttheta;i++) {
-
 	sprintf(dummy,"hist_%scuttheta%d_vbf_gen",kinvarval[study],cuttheta[i]);
 	hist_cuttheta[study][i]=new TH1F(dummy,dummy,n_bins[study],binning[study][0],binning[study][1]);
 	hist_cuttheta[study][i]->Sumw2();
 	hist_cuttheta[study][i]->GetXaxis()->SetTitle(kinvarval[study]);
-	hist_cuttheta[study][i]->GetYaxis()->SetTitle("events");
+	sprintf(dummy,"dN/d%s",kinvartitle[study]);
+	hist_cuttheta[study][i]->GetYaxis()->SetTitle(dummy);
       }
     }
     
     nentry=tree->GetEntries();
     tree->SetBranchStatus("*",0);// selection of useful branches
-    for (int i=0; i<8; i++) {
+    for (int i=0; i<9; i++) {
       sprintf(buffer,"%s",gen_variables[i]);
       tree->SetBranchStatus(buffer,1);  
       tree->SetBranchAddress(buffer,&gen_values[i]);
@@ -195,20 +199,20 @@ char const *gen_variables[8]={"gh_g1_p4_pt","gh_g1_p4_eta","gh_g1_p4_phi","gh_g1
       gamma1->SetPtEtaPhiM(gen_values[0],gen_values[1],gen_values[2],gen_values[3]);
       gamma2->SetPtEtaPhiM(gen_values[4],gen_values[5],gen_values[6],gen_values[7]);
       *gamma_pair=*gamma1+*gamma2;//contains kinematical properties of the Diphoton system
+      if (gamma_pair->M()<100 || gamma_pair->M()>180) continue;
       dipho_ctheta=GetCosTheta(gamma1,gamma2);
       dipho_mass=gamma_pair->M();
       dipho_pt=gamma_pair->Pt();
+      weight=gen_values[8];
       tree_result->Fill();
       
       hist_vbf_gen[0][1]->Fill(dipho_pt);
       hist_vbf_gen[0][0]->Fill(dipho_mass);
       hist_vbf_gen[0][2]->Fill(dipho_ctheta);
-      for (int k=0;k<n_cuttheta;k++) {
-
-	if (dipho_ctheta > cuttheta[k]/1000.) {
-	  hist_cuttheta[1][k]->Fill(dipho_pt);//Fill histograms with cutted data
-	  hist_cuttheta[0][k]->Fill(dipho_mass);
-
+      for (int cut=0;cut<n_cuttheta;cut++) {
+	if (dipho_ctheta > cuttheta[cut]/1000.) {
+	  hist_cuttheta[1][cut]->Fill(dipho_pt);//Fill histograms with cutted data
+	  hist_cuttheta[0][cut]->Fill(dipho_mass);
 	}
       }
     }
@@ -216,19 +220,18 @@ char const *gen_variables[8]={"gh_g1_p4_pt","gh_g1_p4_eta","gh_g1_p4_phi","gh_g1
 
     //Normalizing simulated event to expected number of events
     for (int kinvar=0;kinvar<n_kinvar;kinvar++) {
-      hist_vbf_gen[0][kinvar]->Scale(19620*2.28e-3*1.578/99855);//BR*L*sig*br/Ngen
+      hist_vbf_gen[0][kinvar]->Scale(1.578*2.28e-3*19620/99855);//sigma*BR*L/Ngen
       stream_integral <<   hist_vbf_gen[0][kinvar]->GetTitle() << " " << hist_vbf_gen[0][kinvar]->Integral() << endl;
       hist_vbf_gen[0][kinvar]->Write("",TObject::kOverwrite); 
     }    
     for (int study=0;study<n_study;study++) {
       for (int i=0;i<n_cuttheta;i++) {
-	hist_cuttheta[study][i]->Scale(19620*2.28e-3*1.578/99855);
+	hist_cuttheta[study][i]->Scale(1.578*2.28e-3*19620/99855);
 	stream_integral <<   hist_cuttheta[study][i]->GetTitle() << " " << hist_cuttheta[study][i]->Integral() << endl;
 	hist_cuttheta[study][i]->Write("",TObject::kOverwrite);
 	hist_cuttheta[study][i]->Delete();    
       }
     }
-
     for (int kinvar=0;kinvar<n_kinvar;kinvar++) {
       hist_vbf_gen[0][kinvar]->Delete();
     }
@@ -255,6 +258,7 @@ char const *gen_variables[8]={"gh_g1_p4_pt","gh_g1_p4_eta","gh_g1_p4_phi","gh_g1
     tree_result->Branch("dipho_mass",&dipho_mass,"dipho_mass/F");
     tree_result->Branch("dipho_pt",&dipho_pt,"dipho_pt/F");
     tree_result->Branch("dipho_ctheta",&dipho_ctheta,"dipho_ctheta/F");
+    tree_result->Branch("weight",&weight,"weight/F");
 
     TH1F* hist_bkg[n_kinvar]; //Distribution of inclusive data
     TH1F* hist_bkg_window[n_window][n_kinvar-1];// Distributions of variables with mass windows centered on 125GeV
@@ -265,26 +269,27 @@ char const *gen_variables[8]={"gh_g1_p4_pt","gh_g1_p4_eta","gh_g1_p4_phi","gh_g1
       sprintf(dummy,"hist_%s_bkg_gen",kinvarval[kinvar]);
       hist_bkg[kinvar]=new TH1F(dummy,dummy,n_bins[kinvar],binning[kinvar][0],binning[kinvar][1]);
       hist_bkg[kinvar]->Sumw2();
-      hist_bkg[kinvar]->GetXaxis()->SetTitle(kinvarval[kinvar]);
-      hist_bkg[kinvar]->GetYaxis()->SetTitle("events");
+      hist_bkg[kinvar]->GetXaxis()->SetTitle(kinvartitle[kinvar]);
+      sprintf(dummy,"dN/d%s",kinvartitle[kinvar]);
+      hist_bkg[kinvar]->GetYaxis()->SetTitle(dummy);
       if (kinvar) {
 	for (int window=0;window<n_window;window++) {
 	  sprintf(dummy,"hist_%s_bkg%d_gen",kinvarval[kinvar],windowval[window]);
 	  hist_bkg_window[window][kinvar-1]=new TH1F(dummy,dummy,n_bins[kinvar],binning[kinvar][0],binning[kinvar][1]);
 	  hist_bkg_window[window][kinvar-1]->Sumw2();
-	  hist_bkg_window[window][kinvar-1]->GetXaxis()->SetTitle(kinvarval[kinvar]);
-	  hist_bkg_window[window][kinvar-1]->GetYaxis()->SetTitle("events");
+	  hist_bkg_window[window][kinvar-1]->GetXaxis()->SetTitle(kinvartitle[kinvar]);
+	  sprintf(dummy,"dN/d%s",kinvartitle[kinvar]);
+	  hist_bkg_window[window][kinvar-1]->GetYaxis()->SetTitle(dummy);
 	}
       }
     }
-
     for (int cut=0;cut <n_cuttheta;cut++) {
       for (int window=0;window<n_window;window++) {
-
 	sprintf(dummy,"hist_%scuttheta%d_bkg%d_gen","pt",cuttheta[cut],windowval[window]);
 	hist_bkg_cut[window][cut]=new TH1F(dummy,dummy,n_bins[1],binning[1][0],binning[1][1]);
 	hist_bkg_cut[window][cut]->Sumw2();
-	hist_bkg_cut[window][cut]->GetXaxis()->SetTitle("pT");
+	hist_bkg_cut[window][cut]->GetXaxis()->SetTitle(kinvartitle[1]);
+	sprintf(dummy,"dN/d%s",kinvartitle[1]);
 	hist_bkg_cut[window][cut]->GetYaxis()->SetTitle("events");      
       }
       for (int study=0;study<n_study;study++) {
@@ -292,14 +297,15 @@ char const *gen_variables[8]={"gh_g1_p4_pt","gh_g1_p4_eta","gh_g1_p4_phi","gh_g1
 	hist_cuttheta[study][cut]=new TH1F(dummy,dummy,n_bins[study],binning[study][0],binning[study][1]);
 	hist_cuttheta[study][cut]->Sumw2();
 	hist_cuttheta[study][cut]->GetXaxis()->SetTitle(kinvarval[study]);
-	hist_cuttheta[study][cut]->GetYaxis()->SetTitle("events");      
+	sprintf(dummy,"dN/d%s",kinvartitle[1]);
+	hist_cuttheta[study][cut]->GetYaxis()->SetTitle(dummy);      
       }
     }
 
     
     nentry=tree->GetEntries();
     tree->SetBranchStatus("*",0);// selection of useful branches
-    for (int i=0; i<8; i++) {
+    for (int i=0; i<9; i++) {
       sprintf(buffer,"%s",gen_variables[i]);
       tree->SetBranchStatus(buffer,1);  
       tree->SetBranchAddress(buffer,&gen_values[i]);
@@ -311,9 +317,11 @@ char const *gen_variables[8]={"gh_g1_p4_pt","gh_g1_p4_eta","gh_g1_p4_phi","gh_g1
       gamma1->SetPtEtaPhiM(gen_values[0],gen_values[1],gen_values[2],gen_values[3]);
       gamma2->SetPtEtaPhiM(gen_values[4],gen_values[5],gen_values[6],gen_values[7]);
       *gamma_pair=*gamma1+*gamma2;
+      if (gamma_pair->M() <100 || gamma_pair->M()>180) continue;
       dipho_ctheta=GetCosTheta(gamma1,gamma2);
       dipho_mass=gamma_pair->M();
       dipho_pt=gamma_pair->Pt();
+      weight=gen_values[8];
       tree_result->Fill();
 
       
@@ -325,7 +333,6 @@ char const *gen_variables[8]={"gh_g1_p4_pt","gh_g1_p4_eta","gh_g1_p4_phi","gh_g1
 	hist_bkg_window[window][0]->Fill(dipho_pt);
 	hist_bkg_window[window][1]->Fill(dipho_ctheta);
       }
-
       for (int cut=0;cut<n_cuttheta;cut++){
 	if (dipho_ctheta>cuttheta[cut]/1000.) {
 	  hist_cuttheta[0][cut]->Fill(dipho_mass);
@@ -342,13 +349,13 @@ char const *gen_variables[8]={"gh_g1_p4_pt","gh_g1_p4_eta","gh_g1_p4_phi","gh_g1
     //Scaling and normalizing hist to expected number of event
 	for (int cut=0;cut<n_cuttheta;cut++) {
 	  for (int study=0;study<n_study;study++) {
-	      hist_cuttheta[study][cut]->Scale(19620*1.15*75.39/1133995); //BR*L*sigma/Ngen	  
+	      hist_cuttheta[study][cut]->Scale(75.39*1.15*19620/1133995); //sigma*k*L/Ngen	  
 	      stream_integral <<   hist_cuttheta[study][cut]->GetTitle() << " " << hist_cuttheta[study][cut]->Integral() << endl;
 	      hist_cuttheta[study][cut]->Write("",TObject::kOverwrite);
 	      hist_cuttheta[study][cut]->Delete();
 	  }
 	  for (int window=0;window<n_window;window++) {
-	      hist_bkg_cut[window][cut]->Scale(19620*1.15*75.39/1133995); //BR*L*sigma/Ngen	  
+	      hist_bkg_cut[window][cut]->Scale(75.39*1.15*19620/1133995); //sigma*k*L/Ngen
 	      stream_integral <<   hist_bkg_cut[window][cut]->GetTitle() << " " << hist_bkg_cut[window][cut]->Integral() << endl;
 	      hist_bkg_cut[window][cut]->Write("",TObject::kOverwrite);
 	      hist_bkg_cut[window][cut]->Delete();
@@ -358,12 +365,12 @@ char const *gen_variables[8]={"gh_g1_p4_pt","gh_g1_p4_eta","gh_g1_p4_phi","gh_g1
 	  for (int kinvar=0;kinvar<n_kinvar;kinvar++) {    
 	    if(kinvar) 
 	      for (int window=0;window<n_window;window++) {
-		hist_bkg_window[window][kinvar-1]->Scale(19620*75.39*1.15/1133995); //BR*L*sigma/Ngen	  
+		hist_bkg_window[window][kinvar-1]->Scale(75.39*1.15*19620/1133995); //sigma*k*L/Ngen
 		stream_integral <<   hist_bkg_window[window][kinvar-1]->GetTitle() << " " << hist_bkg_window[window][kinvar-1]->Integral() << endl;
 		hist_bkg_window[window][kinvar-1]->Write("",TObject::kOverwrite);
 		hist_bkg_window[window][kinvar-1]->Delete();
 	      }
-	    hist_bkg[kinvar]->Scale(19620*1.15*75.39/1133995); //BR*L*sigma/Ngen	  
+	    hist_bkg[kinvar]->Scale(75.39*1.15*19620/1133995); //sigma*k*L/Ngen
 	    stream_integral <<   hist_bkg[kinvar]->GetTitle() << " " << hist_bkg[kinvar]->Integral() << endl;
 	    hist_bkg[kinvar]->Write("",TObject::kOverwrite);
 	    hist_bkg[kinvar]->Delete();
@@ -379,7 +386,7 @@ char const *gen_variables[8]={"gh_g1_p4_pt","gh_g1_p4_eta","gh_g1_p4_phi","gh_g1
 	  
 	  
   }	  
-  stream_integral.close();
+  
 
   
   
@@ -403,7 +410,28 @@ char const *gen_variables[8]={"gh_g1_p4_pt","gh_g1_p4_eta","gh_g1_p4_phi","gh_g1
   tree_result->Branch("r92",&r92,"r92/F");
 
 
+  TH1F* hist_ggh_reco[5][n_kinvar]={{0}};//0:inclusive; 1:EBEB (both_photons r9>.94); 2:EBEB !(r9); 3:!(EBEB) (r9); 4:!(EBEB) !(r9)
+  for (int categ=0; categ<5; categ++) {
+    for (int kinvar=0; kinvar<n_kinvar ; kinvar++) {
+      sprintf(buffer,"hist_%s_categ%d_ggh_reco",kinvarval[kinvar],categ);
+      hist_ggh_reco[categ][kinvar]=new TH1F(buffer,buffer,n_bins[kinvar],binning[kinvar][0],binning[kinvar][1]);
+      hist_ggh_reco[categ][kinvar]->Sumw2();
+      hist_ggh_reco[categ][kinvar]->GetXaxis()->SetTitle(kinvartitle[kinvar]);
+      sprintf(buffer,"dN/d%s",kinvartitle[kinvar]);
+      hist_ggh_reco[categ][kinvar]->GetYaxis()->SetTitle(buffer);
+    }}
 
+  TH1F* histcuttheta_ggh_reco[n_study][n_cuttheta][5]={{{0}}};
+  for (int study=0; study<n_study; study++) {
+    for (int cut=0; cut<n_cuttheta; cut++) {
+      for (int categ=0; categ<5; categ++) {//0:inclusive; 1:EBEB (both_photons r9>.94); 2:EBEB !(r9); 3:!(EBEB) (r9); 4:!(EBEB) !(r9)
+	sprintf(buffer,"hist_%scuttheta%d_categ%d_ggh_reco",kinvarval[study],cuttheta[cut],categ);
+	histcuttheta_ggh_reco[study][cut][categ]=new TH1F(buffer,buffer,n_bins[study],binning[study][0],binning[study][1]);
+	histcuttheta_ggh_reco[study][cut][categ]->Sumw2();
+	histcuttheta_ggh_reco[study][cut][categ]->GetXaxis()->SetTitle(kinvartitle[study]);
+	sprintf(buffer,"dN/d%s",kinvartitle[study]);
+	histcuttheta_ggh_reco[study][cut][categ]->GetYaxis()->SetTitle(buffer);
+      }}}
 
 
   nentry=tree->GetEntries();
@@ -438,10 +466,77 @@ char const *gen_variables[8]={"gh_g1_p4_pt","gh_g1_p4_eta","gh_g1_p4_phi","gh_g1
     isEB2=reco_ivalues[3];
     r91=reco_fvalues[4];
     r92=reco_fvalues[9];
-
     tree_result->Fill();
+
+
+    int switchr9=0;
+    if (r91>0.94 && r92>0.94) switchr9=2;
+    
+    hist_ggh_reco[0][0]->Fill(dipho_mass,weight);
+    hist_ggh_reco[0][1]->Fill(dipho_mass,weight);
+    hist_ggh_reco[0][2]->Fill(dipho_ctheta,weight);
+    switch (4-isEB1*isEB2- switchr9) // the result is the category number 
+      {
+      case 1: 
+	hist_ggh_reco[1][0]->Fill(dipho_mass,weight);
+	hist_ggh_reco[1][1]->Fill(dipho_pt,weight);
+	hist_ggh_reco[1][2]->Fill(dipho_ctheta,weight);
+	break;
+      case 2: 
+	hist_ggh_reco[2][0]->Fill(dipho_mass,weight);
+	hist_ggh_reco[2][1]->Fill(dipho_pt,weight);
+	hist_ggh_reco[2][2]->Fill(dipho_ctheta,weight);
+	break;
+      case 3: 
+	hist_ggh_reco[3][0]->Fill(dipho_mass,weight);
+	hist_ggh_reco[3][1]->Fill(dipho_pt,weight);
+	hist_ggh_reco[3][2]->Fill(dipho_ctheta,weight);
+	break;
+      case 4: 
+	hist_ggh_reco[4][0]->Fill(dipho_mass,weight);
+	hist_ggh_reco[4][1]->Fill(dipho_pt,weight);
+	hist_ggh_reco[4][2]->Fill(dipho_ctheta,weight);
+	break;
+      }
+    
+    for (int cut=0; cut<n_cuttheta; cut++) {
+      if (dipho_ctheta>cuttheta[cut]/1000.) {
+	histcuttheta_ggh_reco[0][cut][0]->Fill(dipho_mass,weight);
+	histcuttheta_ggh_reco[1][cut][0]->Fill(dipho_mass,weight);
+	switch (4-isEB1*isEB2- switchr9) // the result is the category number 
+	  {
+	  case 1: histcuttheta_ggh_reco[0][cut][1]->Fill(dipho_mass,weight);
+	    histcuttheta_ggh_reco[1][cut][1]->Fill(dipho_pt,weight);
+	    break;
+	  case 2: histcuttheta_ggh_reco[0][cut][2]->Fill(dipho_mass,weight);
+	    histcuttheta_ggh_reco[1][cut][2]->Fill(dipho_pt,weight);
+	    break;
+	  case 3: histcuttheta_ggh_reco[0][cut][3]->Fill(dipho_mass,weight);
+	      histcuttheta_ggh_reco[1][cut][3]->Fill(dipho_pt,weight);
+	      break;
+	  case 4: histcuttheta_ggh_reco[0][cut][4]->Fill(dipho_mass,weight);
+	    histcuttheta_ggh_reco[1][cut][4]->Fill(dipho_pt,weight);
+	    break;
+	  }
+	}
+      }
+    
   }
 
+  for (int categ=0; categ<5; categ++) {
+    for (int kinvar; kinvar<n_kinvar; kinvar++) {
+      stream_integral << hist_ggh_reco[categ][kinvar]->GetTitle() << " " << hist_ggh_reco[categ][kinvar]->Integral() << endl;
+      hist_ggh_reco[categ][kinvar]->Write("",TObject::kOverwrite);
+      hist_ggh_reco[categ][kinvar]->Delete();
+    }
+    for (int cut=0; cut<n_cuttheta; cut++) {
+      for (int study=0; study<n_study; study++) {
+	stream_integral << histcuttheta_ggh_reco[study][cut][categ]->GetTitle() << " " << histcuttheta_ggh_reco[study][cut][categ]->Integral() << endl;
+	histcuttheta_ggh_reco[study][cut][categ]->Write("",TObject::kOverwrite);
+	histcuttheta_ggh_reco[study][cut][categ]->Delete();
+      }
+    }
+  }
 
   tree_result->Write("",TObject::kOverwrite);
   tree_result->Delete();
@@ -451,14 +546,171 @@ char const *gen_variables[8]={"gh_g1_p4_pt","gh_g1_p4_eta","gh_g1_p4_phi","gh_g1
 
   cout << "ggh reco done" << endl; 
 
+  //####################################################################
+  //##################################VBF_RECO
+  //###################################################################  
+  if (VBF_REC)
+  file=new TFile("/afs/cern.ch/work/c/cgoudet/private/data/SMHiggs_m125.root");
+  file_result->cd();
+  tree  =(TTree *) file->Get("vbf_m125_8TeV");
+  
+  tree_result=new TTree("tree_reco_vbf","tree_reco_vbf");
+  tree_result->Branch("dipho_mass",&dipho_mass,"dipho_mass/F");
+  tree_result->Branch("dipho_pt",&dipho_pt,"dipho_pt/F");
+  tree_result->Branch("dipho_ctheta",&dipho_ctheta,"dipho_ctheta/F");
+  tree_result->Branch("weight",&weight,"weight/F");
+  tree_result->Branch("isEB1",&isEB1,"isEB1/I");
+  tree_result->Branch("isEB2",&isEB2,"isEB2/I");
+  tree_result->Branch("r91",&r91,"r91/F");
+  tree_result->Branch("r92",&r92,"r92/F");
+
+
+  TH1F* hist_vbf_reco[5][n_kinvar]={{0}};//0:inclusive; 1:EBEB (both_photons r9>.94); 2:EBEB !(r9); 3:!(EBEB) (r9); 4:!(EBEB) !(r9)
+  for (int categ=0; categ<5; categ++) {
+    for (int kinvar=0; kinvar<n_kinvar ; kinvar++) {
+      sprintf(buffer,"hist_%s_categ%d_vbf_reco",kinvarval[kinvar],categ);
+      hist_vbf_reco[categ][kinvar]=new TH1F(buffer,buffer,n_bins[kinvar],binning[kinvar][0],binning[kinvar][1]);
+      hist_vbf_reco[categ][kinvar]->Sumw2();
+      hist_vbf_reco[categ][kinvar]->GetXaxis()->SetTitle(kinvartitle[kinvar]);
+      sprintf(buffer,"dN/d%s",kinvartitle[kinvar]);
+      hist_vbf_reco[categ][kinvar]->GetYaxis()->SetTitle(buffer);
+    }}
+
+  TH1F* histcuttheta_vbf_reco[n_study][n_cuttheta][5]={{{0}}};
+  for (int study=0; study<n_study; study++) {
+    for (int cut=0; cut<n_cuttheta; cut++) {
+      for (int categ=0; categ<5; categ++) {//0:inclusive; 1:EBEB (both_photons r9>.94); 2:EBEB !(r9); 3:!(EBEB) (r9); 4:!(EBEB) !(r9)
+	sprintf(buffer,"hist_%scuttheta%d_categ%d_vbf_reco",kinvarval[study],cuttheta[cut],categ);
+	histcuttheta_vbf_reco[study][cut][categ]=new TH1F(buffer,buffer,n_bins[study],binning[study][0],binning[study][1]);
+	histcuttheta_vbf_reco[study][cut][categ]->Sumw2();
+	histcuttheta_vbf_reco[study][cut][categ]->GetXaxis()->SetTitle(kinvartitle[study]);
+	sprintf(buffer,"dN/d%s",kinvartitle[study]);
+	histcuttheta_vbf_reco[study][cut][categ]->GetYaxis()->SetTitle(buffer);
+      }}}
+
+
+  nentry=tree->GetEntries();
+  tree->SetBranchStatus("*",0);// selection of useful branches
+  for (int i=0; i<13; i++) {
+    sprintf(buffer,"%s",reco_variables[i]);
+    tree->SetBranchStatus(buffer,1);  
+    tree->SetBranchAddress(buffer,&reco_fvalues[i]);
+  }
+  for (int i=0;i<4;i++) {
+    sprintf(buffer,"%s",reco_variables[13+i]);
+    tree->SetBranchStatus(buffer,1);  
+    tree->SetBranchAddress(buffer,&reco_ivalues[i]);
+  }
+
+
+  for (int i=0;i<nentry;i++) {
+    tree->GetEntry(i);
+    if (reco_fvalues[0]<40.*reco_fvalues[10]/120.) continue; //ph1_pt< 40*PhotonsMass/120.
+    if (reco_fvalues[5]<25.) continue; //ph2_pt<25.
+    if ((reco_ivalues[0]<4) || (reco_ivalues[2]<4) ) continue; //(ph1_ciclevel<4 ) || (phi2_ciclevel<4)
+    if (reco_fvalues[10]<100. || reco_fvalues[10]>180.) continue;// 100<mgg<180
+
+    gamma1->SetPtEtaPhiE(reco_fvalues[0],reco_fvalues[1],reco_fvalues[2],reco_fvalues[3]);
+    gamma2->SetPtEtaPhiE(reco_fvalues[5],reco_fvalues[6],reco_fvalues[7],reco_fvalues[8]);
+    *gamma_pair=*gamma1+*gamma2;
+    dipho_mass=gamma_pair->M();
+    dipho_pt=gamma_pair->Pt();
+    dipho_ctheta=GetCosTheta(gamma1,gamma2);
+    weight=reco_fvalues[11]*reco_fvalues[12];
+    isEB1=reco_ivalues[1];
+    isEB2=reco_ivalues[3];
+    r91=reco_fvalues[4];
+    r92=reco_fvalues[9];
+    tree_result->Fill();
+
+
+    int switchr9=0;
+    if (r91>0.94 && r92>0.94) switchr9=2;
+    
+    hist_vbf_reco[0][0]->Fill(dipho_mass,weight);
+    hist_vbf_reco[0][1]->Fill(dipho_mass,weight);
+    hist_vbf_reco[0][2]->Fill(dipho_ctheta,weight);
+    switch (4-isEB1*isEB2- switchr9) // the result is the category number 
+      {
+      case 1: 
+	hist_vbf_reco[1][0]->Fill(dipho_mass,weight);
+	hist_vbf_reco[1][1]->Fill(dipho_pt,weight);
+	hist_vbf_reco[1][2]->Fill(dipho_ctheta,weight);
+	break;
+      case 2: 
+	hist_vbf_reco[2][0]->Fill(dipho_mass,weight);
+	hist_vbf_reco[2][1]->Fill(dipho_pt,weight);
+	hist_vbf_reco[2][2]->Fill(dipho_ctheta,weight);
+	break;
+      case 3: 
+	hist_vbf_reco[3][0]->Fill(dipho_mass,weight);
+	hist_vbf_reco[3][1]->Fill(dipho_pt,weight);
+	hist_vbf_reco[3][2]->Fill(dipho_ctheta,weight);
+	break;
+      case 4: 
+	hist_vbf_reco[4][0]->Fill(dipho_mass,weight);
+	hist_vbf_reco[4][1]->Fill(dipho_pt,weight);
+	hist_vbf_reco[4][2]->Fill(dipho_ctheta,weight);
+	break;
+      }
+    
+    for (int cut=0; cut<n_cuttheta; cut++) {
+      if (dipho_ctheta>cuttheta[cut]/1000.) {
+	histcuttheta_vbf_reco[0][cut][0]->Fill(dipho_mass,weight);
+	histcuttheta_vbf_reco[1][cut][0]->Fill(dipho_mass,weight);
+	switch (4-isEB1*isEB2- switchr9) // the result is the category number 
+	  {
+	  case 1: histcuttheta_vbf_reco[0][cut][1]->Fill(dipho_mass,weight);
+	    histcuttheta_vbf_reco[1][cut][1]->Fill(dipho_pt,weight);
+	    break;
+	  case 2: histcuttheta_vbf_reco[0][cut][2]->Fill(dipho_mass,weight);
+	    histcuttheta_vbf_reco[1][cut][2]->Fill(dipho_pt,weight);
+	    break;
+	  case 3: histcuttheta_vbf_reco[0][cut][3]->Fill(dipho_mass,weight);
+	      histcuttheta_vbf_reco[1][cut][3]->Fill(dipho_pt,weight);
+	      break;
+	  case 4: histcuttheta_vbf_reco[0][cut][4]->Fill(dipho_mass,weight);
+	    histcuttheta_vbf_reco[1][cut][4]->Fill(dipho_pt,weight);
+	    break;
+	  }
+	}
+      }
+    
+  }
+
+  for (int categ=0; categ<5; categ++) {
+    for (int kinvar; kinvar<n_kinvar; kinvar++) {
+      stream_integral << hist_vbf_reco[categ][kinvar]->GetTitle() << " " << hist_vbf_reco[categ][kinvar]->Integral() << endl;
+      hist_vbf_reco[categ][kinvar]->Write("",TObject::kOverwrite);
+      hist_vbf_reco[categ][kinvar]->Delete();
+    }
+    for (int cut=0; cut<n_cuttheta; cut++) {
+      for (int study=0; study<n_study; study++) {
+	stream_integral << histcuttheta_vbf_reco[study][cut][categ]->GetTitle() << " " << histcuttheta_vbf_reco[study][cut][categ]->Integral() << endl;
+	histcuttheta_vbf_reco[study][cut][categ]->Write("",TObject::kOverwrite);
+	histcuttheta_vbf_reco[study][cut][categ]->Delete();
+      }
+    }
+  }
+
+  tree_result->Write("",TObject::kOverwrite);
+  tree_result->Delete();
+  file->Close();
+  file->Delete();
+
+
+  cout << "vbf reco done" << endl; 
 
 
 
 
-
+stream_integral.close();
   file_result->Close();
 	  return 0;
   }
+
+
+
 //################################################################  
 //################################################################
 //################################################################
