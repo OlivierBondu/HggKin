@@ -6,7 +6,7 @@ source ~cgoudet/534.sh
 cd ${batchdir}
 
 cp /afs/cern.ch/work/c/cgoudet/private/data/kin_dist.root .
-cp /afs/cern.ch/work/c/cgoudet/private/codes/HggKin2/compare_dist2.exe .
+cp /afs/cern.ch/work/c/cgoudet/private/codes/exec/compare_dist2.exe .
 
 
 ./compare_dist2.exe 1>logcompare.txt 2>logerrorcompare.txt
