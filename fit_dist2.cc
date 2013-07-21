@@ -5,7 +5,7 @@
 #include <fstream>
 #include "RooDataSet.h"
 
-#define NBINS 110
+#define NBINS 100
 #define BATCH 1
 
 using namespace std;
@@ -26,9 +26,10 @@ int main() {
    for (int cut=0;cut<5;cut++) {
     for (int menu=0;menu<3;menu++) {
       for (int menu_pol=0;menu_pol<3;menu_pol++) {
-	
-	fit_bkg(menu,menu_pol,cutval[cut],0);
-	//	fit_ggh(menu,menu_pol,cutval[cut]);
+	//fit_bkg(menu,menu_pol,cutval[cut],0);
+	fit_bkg(menu,menu_pol,cutval[cut],2);
+	//fit_bkg(menu,menu_pol,cutval[cut],3);
+	//fit_ggh(menu,menu_pol,cutval[cut]);
 	//fit_vbf(menu,menu_pol,cutval[cut]);
       }
     }
@@ -259,7 +260,9 @@ frame_bkg->Draw();
 
   }
   fstream stream;
-  stream.open("result_fit_bkg.txt", fstream::out | fstream::app);
+  if (menu_window) sprintf(buffer,"result_fit_bkg%d.txt", menu_window);
+  else sprintf(buffer,"result_fit_bkg.txt");
+  stream.open(buffer, fstream::out | fstream::app);
   stream << buffer_savebkg << "_" << dummy_cut << " " << frame_bkg->chiSquare() << endl;
   stream.close();
 
