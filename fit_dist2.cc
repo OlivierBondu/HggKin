@@ -33,15 +33,16 @@ int main() {
   
   char* cutval[5]={"","200","375","550","750"};
 
-  //  fit_bkg(2,2,"",0);
-   for (int cut=0;cut<5;cut++) {
+  //  fit_ggh(0,0,"");
+   
+for (int cut=0;cut<5;cut++) {
     for (int menu=0;menu<3;menu++) {
       for (int menu_pol=0;menu_pol<3;menu_pol++) {
 	//fit_bkg(menu,menu_pol,cutval[cut],0);
 	//fit_bkg(menu,menu_pol,cutval[cut],2);
-	fit_bkg(menu,menu_pol,cutval[cut],3);
+	//fit_bkg(menu,menu_pol,cutval[cut],3);
 	//fit_ggh(menu,menu_pol,cutval[cut]);
-	//	fit_vbf(menu,menu_pol,cutval[cut]);
+	fit_vbf(menu,menu_pol,cutval[cut]);
       }
     }
    }  
@@ -206,7 +207,7 @@ int fit_bkg(int const &menu_bkg,int const &menu_pol_bkg,char const *menu_cut,int
   model_bkg->plotOn(frame_bkg);
   cout << "plotted" << endl;  
 
-  cout << "fitted" << endl;
+
 
   
   hist_bkg->Sumw2();
@@ -345,15 +346,17 @@ int fit_ggh(int const &menu_ggh,int const &menu_pol_ggh,char const *menu_cut){
   if (strcmp(menu_cut,"")) {
     sprintf(buffer,"dipho_ctheta > %s/1000.", menu_cut);
     dataset_ggh=new RooDataSet("dataset_ggh","dataset_ggh",tree_ggh,RooArgSet(dipho_pt,dipho_ctheta),buffer);
-    sprintf(buffer2,"dipho_pt>>hist_bkg(%d,0,200)",NBINS);
+    sprintf(buffer2,"dipho_pt>>hist_ggh(%d,0,200)",NBINS);
     tree_ggh->Draw(buffer2,buffer);
     hist_ggh=(TH1F*) gDirectory->Get("hist_ggh");
   }
   else {
     dataset_ggh=new RooDataSet("dataset_ggh","dataset_ggh",tree_ggh,dipho_pt);
-    sprintf(buffer2,"dipho_pt>>hist_bkg(%d,0,200)",NBINS);
+    sprintf(buffer2,"dipho_pt>>hist_ggh(%d,0,200)",NBINS);
+    cout << buffer2 << endl;
     tree_ggh->Draw(buffer2);
-    hist_ggh=(TH1F*) gDirectory->Get("hist_ggh");
+    gDirectory->ls();    
+hist_ggh=(TH1F*) gDirectory->Get("hist_ggh");
   }
 
   dataset_ggh->plotOn(frame_ggh);
@@ -411,17 +414,17 @@ int fit_ggh(int const &menu_ggh,int const &menu_pol_ggh,char const *menu_cut){
 }
 
 
-  model_ggh->fitTo(*dataset_ggh);
+  //  model_ggh->fitTo(*dataset_ggh);
   model_ggh->plotOn(frame_ggh);
   cout << "plotted" << endl;  
+  cout << hist_ggh->GetEntries() << endl;
+  cout << "test hist_ggh" << endl;
 
 
-
-  hist_ggh->Sumw2();
   TH1F *ratio_ggh=(TH1F*) model_ggh->createHistogram("ratio_ggh", dipho_pt,RooFit::Binning(hist_ggh->GetNbinsX(),0,200));
-  
+  cout << "created ratio" << endl;  
   cout << ratio_ggh->GetNbinsX() << " " << hist_ggh->GetNbinsX() << endl;
-  cout << "created ratio" << endl;
+
   ratio_ggh->Scale(hist_ggh->Integral());
 //   for (int i=0;i<hist_ggh->GetNbinsX()+1;i++) {
     
@@ -548,13 +551,13 @@ pad_fit_vbf->cd();
   if (strcmp(menu_cut,"")) {
     sprintf(buffer,"dipho_ctheta > %s/1000.", menu_cut);
     dataset_vbf=new RooDataSet("dataset_vbf","dataset_vbf",tree_vbf,RooArgSet(dipho_pt,dipho_ctheta),buffer);
-    sprintf(buffer2,"dipho_pt>>hist_bkg(%d,0,200)",NBINS);
+    sprintf(buffer2,"dipho_pt>>hist_vbf(%d,0,200)",NBINS);
     tree_vbf->Draw(buffer2,buffer);
     hist_vbf=(TH1F*) gDirectory->Get("hist_vbf");
   }
   else {
     dataset_vbf=new RooDataSet("dataset_vbf","dataset_vbf",tree_vbf,dipho_pt);
-    sprintf(buffer2,"dipho_pt>>hist_bkg(%d,0,200)",NBINS);
+    sprintf(buffer2,"dipho_pt>>hist_vbf(%d,0,200)",NBINS);
     tree_vbf->Draw(buffer2);
     hist_vbf=(TH1F*) gDirectory->Get("hist_vbf");
   }
