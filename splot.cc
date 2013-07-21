@@ -47,7 +47,7 @@ int main() {
   RooWorkspace *ws=0;
   char buffer[100];
 
-  int i=0;
+  //  int i=0;
   for (int i=0;i<5;i++) {
     root_file->cd();   
     if (i)    sprintf(buffer,"ws_hgg_%d",menu_cut[i]);
@@ -95,7 +95,7 @@ int AddModel(RooWorkspace *ws, int  const &cut=0) {
   RooGaussian *model_mass_ggh=new RooGaussian("model_mass_ggh","model_mass_ggh",*dipho_mass,*mean_mass_ggh,*sigma_mass_ggh);
 
 
-  tree=(TTree*) file_kin->Get("tree_ggh");
+  tree=(TTree*) file_kin->Get("tree_gen_ggh");
 
   if (cut) {  //select data according cuts on theta
     sprintf(buffer, "dipho_ctheta > %1.3f",cut/1000.);   
@@ -173,7 +173,7 @@ int AddModel(RooWorkspace *ws, int  const &cut=0) {
   RooRealVar *coef3_bern_mass_bkg=new RooRealVar("coef3_bern_mass_bkg","coef3_bern_mass_bkg",10,0,100);
   RooBernstein *model_mass_bkg=new RooBernstein("model_mass_bkg","model_mass_bkg",*dipho_mass,RooArgSet(*coef0_bern_mass_bkg,*coef1_bern_mass_bkg,*coef2_bern_mass_bkg,*coef3_bern_mass_bkg));
   
-  tree=(TTree*) file_kin->Get("tree_bkg");
+  tree=(TTree*) file_kin->Get("tree_gen_bkg");
     if (cut) {
       sprintf(buffer,"dipho_ctheta > %1.3f",cut/1000.);
       sim_gen=new RooDataSet("data","data", tree, RooArgSet( *dipho_mass, *dipho_ctheta,*weight), buffer,"weight");
@@ -266,7 +266,7 @@ int AddModel(RooWorkspace *ws, int  const &cut=0) {
   ws->import(*model_tot);
   file_kin->Close();
 
-
+  cout << "end AddModel" <<  endl;
 
   return 0;
 }
@@ -285,12 +285,12 @@ int AddData(RooWorkspace* ws, int const &cut=0) {
   if (BATCH) file_kin=new TFile("kin_dist.root");
   else file_kin=new TFile("/afs/cern.ch/work/c/cgoudet/private/data/kin_dist.root");
 
-  TTree *tree=(TTree*) file_kin->Get("tree_ggh");
+  TTree *tree=(TTree*) file_kin->Get("tree_gen_ggh");
   if (cut) sprintf(buffer,"%s &&dipho_ctheta > %1.3f",buffer,cut/1000.); // create cut string for data set
   RooDataSet *sim_gen_ggh=new RooDataSet("sim_gen_ggh","sim_gen_ggh",tree,RooArgSet(*dipho_mass,*dipho_pt,*dipho_ctheta,*weight),buffer, "weight"); //Put cut tree into the dataset with weight
   tree->Delete();
 
-  tree=(TTree*) file_kin->Get("tree_bkg");
+  tree=(TTree*) file_kin->Get("tree_gen_bkg");
   RooDataSet *sim_gen=new RooDataSet("sim_gen","sim_gen",tree,RooArgSet(*dipho_mass,*dipho_pt,*dipho_ctheta,*weight),buffer,"weight");
   sim_gen->append(*sim_gen_ggh);//Add background to the ggh dataset
 
