@@ -6,7 +6,7 @@ start="/afs/cern.ch/work/c/cgoudet/private/"
 cd ${file_dir}
 
 cp -v "${start}data/kin_dist.root" ${file_dir}
-cp -v "${start}codes/HggKin/splot.exe" ${file_dir}
+cp -v "${start}codes/exec/splot.exe" ${file_dir}
 cp -v "${start}data/WS_SPlot.root" ${file_dir}
 
 ./splot.exe 2>logerrorsplot.txt 1>logsplot.txt
