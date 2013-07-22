@@ -14,7 +14,7 @@ using namespace std;
 #define BKG_GEN 1
 #define GGH_REC 1
 #define VBF_REC 1
-#define BKG_REC 0
+#define BKG_REC 1
 
 
 int main() {
@@ -701,7 +701,161 @@ int main() {
 
   cout << "vbf reco done" << endl; 
 
+  //################################################################################################################
+  //###########################################  BKG_RECO #######################################################
+  //#######################################################################################################################
+  if (BKG_REC) {
+    file = new TFile("/afs/cern.ch/work/c/cgoudet/private/data/DiPhotons.root");
+    file_result->cd();
+    tree  =(TTree *) file->Get("diphojet_8TeV");
+    
+    tree_result=new TTree("tree_reco_bkg","tree_reco_bkg");
+    tree_result->Branch("dipho_mass",&dipho_mass,"dipho_mass/F");
+    tree_result->Branch("dipho_pt",&dipho_pt,"dipho_pt/F");
+    tree_result->Branch("dipho_ctheta",&dipho_ctheta,"dipho_ctheta/F");
+    tree_result->Branch("weight",&weight,"weight/F");
+    tree_result->Branch("isEB1",&isEB1,"isEB1/I");
+    tree_result->Branch("isEB2",&isEB2,"isEB2/I");
+    tree_result->Branch("r91",&r91,"r91/F");
+    tree_result->Branch("r92",&r92,"r92/F");
+    
+    
+    TH1F* hist_bkg_reco[5][n_kinvar]={{0}};//0:inclusive; 1:EBEB (both_photons r9>.94); 2:EBEB !(r9); 3:!(EBEB) (r9); 4:!(EBEB) !(r9)
+    for (int categ=0; categ<5; categ++) {
+      for (int kinvar=0; kinvar<n_kinvar ; kinvar++) {
+	sprintf(buffer,"hist_%s_categ%d_bkg_reco",kinvarval[kinvar],categ);
+	hist_bkg_reco[categ][kinvar]=new TH1F(buffer,buffer,n_bins[kinvar],binning[kinvar][0],binning[kinvar][1]);
+	hist_bkg_reco[categ][kinvar]->Sumw2();
+	hist_bkg_reco[categ][kinvar]->GetXaxis()->SetTitle(kinvartitle[kinvar]);
+	sprintf(buffer,"dN/d%s",kinvartitle[kinvar]);
+	hist_bkg_reco[categ][kinvar]->GetYaxis()->SetTitle(buffer);
+      }}
+    
+    TH1F* histcuttheta_bkg_reco[n_study][n_cuttheta][5]={{{0}}};
+    for (int study=0; study<n_study; study++) {
+      for (int cut=0; cut<n_cuttheta; cut++) {
+	for (int categ=0; categ<5; categ++) {//0:inclusive; 1:EBEB (both_photons r9>.94); 2:EBEB !(r9); 3:!(EBEB) (r9); 4:!(EBEB) !(r9)
+	  sprintf(buffer,"hist_%scuttheta%d_categ%d_bkg_reco",kinvarval[study],cuttheta[cut],categ);
+	  histcuttheta_bkg_reco[study][cut][categ]=new TH1F(buffer,buffer,n_bins[study],binning[study][0],binning[study][1]);
+	  histcuttheta_bkg_reco[study][cut][categ]->Sumw2();
+	histcuttheta_bkg_reco[study][cut][categ]->GetXaxis()->SetTitle(kinvartitle[study]);
+	sprintf(buffer,"dN/d%s",kinvartitle[study]);
+	histcuttheta_bkg_reco[study][cut][categ]->GetYaxis()->SetTitle(buffer);
+      }}}
 
+
+  nentry=tree->GetEntries();
+  tree->SetBranchStatus("*",0);// selection of useful branches
+  for (int i=0; i<13; i++) {
+    sprintf(buffer,"%s",reco_variables[i]);
+    tree->SetBranchStatus(buffer,1);  
+    tree->SetBranchAddress(buffer,&reco_fvalues[i]);
+  }
+  for (int i=0;i<4;i++) {
+    sprintf(buffer,"%s",reco_variables[13+i]);
+    tree->SetBranchStatus(buffer,1);  
+    tree->SetBranchAddress(buffer,&reco_ivalues[i]);
+  }
+
+
+  for (int i=0;i<nentry;i++) {
+    tree->GetEntry(i);
+    if (reco_fvalues[0]<40.*reco_fvalues[10]/120.) continue; //ph1_pt< 40*PhotonsMass/120.
+    if (reco_fvalues[5]<25.) continue; //ph2_pt<25.
+    if ((reco_ivalues[0]<4) || (reco_ivalues[2]<4) ) continue; //(ph1_ciclevel<4 ) || (phi2_ciclevel<4)
+    if (reco_fvalues[10]<100. || reco_fvalues[10]>180.) continue;// 100<mgg<180
+
+    gamma1->SetPtEtaPhiE(reco_fvalues[0],reco_fvalues[1],reco_fvalues[2],reco_fvalues[3]);
+    gamma2->SetPtEtaPhiE(reco_fvalues[5],reco_fvalues[6],reco_fvalues[7],reco_fvalues[8]);
+    *gamma_pair=*gamma1+*gamma2;
+    dipho_mass=gamma_pair->M();
+    dipho_pt=gamma_pair->Pt();
+    dipho_ctheta=GetCosTheta(gamma1,gamma2);
+    weight=reco_fvalues[11]*reco_fvalues[12];
+    isEB1=reco_ivalues[1];
+    isEB2=reco_ivalues[3];
+    r91=reco_fvalues[4];
+    r92=reco_fvalues[9];
+    tree_result->Fill();
+
+
+    int switchr9=0;
+    if (r91>0.94 && r92>0.94) switchr9=2;
+    
+    hist_bkg_reco[0][0]->Fill(dipho_mass,weight);
+    hist_bkg_reco[0][1]->Fill(dipho_mass,weight);
+    hist_bkg_reco[0][2]->Fill(dipho_ctheta,weight);
+    switch (4-isEB1*isEB2- switchr9) // the result is the category number 
+      {
+      case 1: 
+	hist_bkg_reco[1][0]->Fill(dipho_mass,weight);
+	hist_bkg_reco[1][1]->Fill(dipho_pt,weight);
+	hist_bkg_reco[1][2]->Fill(dipho_ctheta,weight);
+	break;
+      case 2: 
+	hist_bkg_reco[2][0]->Fill(dipho_mass,weight);
+	hist_bkg_reco[2][1]->Fill(dipho_pt,weight);
+	hist_bkg_reco[2][2]->Fill(dipho_ctheta,weight);
+	break;
+      case 3: 
+	hist_bkg_reco[3][0]->Fill(dipho_mass,weight);
+	hist_bkg_reco[3][1]->Fill(dipho_pt,weight);
+	hist_bkg_reco[3][2]->Fill(dipho_ctheta,weight);
+	break;
+      case 4: 
+	hist_bkg_reco[4][0]->Fill(dipho_mass,weight);
+	hist_bkg_reco[4][1]->Fill(dipho_pt,weight);
+	hist_bkg_reco[4][2]->Fill(dipho_ctheta,weight);
+	break;
+      }
+    
+    for (int cut=0; cut<n_cuttheta; cut++) {
+      if (dipho_ctheta>cuttheta[cut]/1000.) {
+	histcuttheta_bkg_reco[0][cut][0]->Fill(dipho_mass,weight);
+	histcuttheta_bkg_reco[1][cut][0]->Fill(dipho_mass,weight);
+	switch (4-isEB1*isEB2- switchr9) // the result is the category number 
+	  {
+	  case 1: histcuttheta_bkg_reco[0][cut][1]->Fill(dipho_mass,weight);
+	    histcuttheta_bkg_reco[1][cut][1]->Fill(dipho_pt,weight);
+	    break;
+	  case 2: histcuttheta_bkg_reco[0][cut][2]->Fill(dipho_mass,weight);
+	    histcuttheta_bkg_reco[1][cut][2]->Fill(dipho_pt,weight);
+	    break;
+	  case 3: histcuttheta_bkg_reco[0][cut][3]->Fill(dipho_mass,weight);
+	      histcuttheta_bkg_reco[1][cut][3]->Fill(dipho_pt,weight);
+	      break;
+	  case 4: histcuttheta_bkg_reco[0][cut][4]->Fill(dipho_mass,weight);
+	    histcuttheta_bkg_reco[1][cut][4]->Fill(dipho_pt,weight);
+	    break;
+	  }
+	}
+      }
+    
+  }
+
+  for (int categ=0; categ<5; categ++) {
+    for (int kinvar; kinvar<n_kinvar; kinvar++) {
+      stream_integral << hist_bkg_reco[categ][kinvar]->GetTitle() << " " << hist_bkg_reco[categ][kinvar]->Integral() << endl;
+      hist_bkg_reco[categ][kinvar]->Write("",TObject::kOverwrite);
+      hist_bkg_reco[categ][kinvar]->Delete();
+    }
+    for (int cut=0; cut<n_cuttheta; cut++) {
+      for (int study=0; study<n_study; study++) {
+	stream_integral << histcuttheta_bkg_reco[study][cut][categ]->GetTitle() << " " << histcuttheta_bkg_reco[study][cut][categ]->Integral() << endl;
+	histcuttheta_bkg_reco[study][cut][categ]->Write("",TObject::kOverwrite);
+	histcuttheta_bkg_reco[study][cut][categ]->Delete();
+      }
+    }
+  }
+
+  tree_result->Write("",TObject::kOverwrite);
+  tree_result->Delete();
+  file->Close();
+  file->Delete();
+
+
+  cout << "bkg reco done" << endl; 
+  }
 
 
 stream_integral.close();
