@@ -5,7 +5,7 @@
 *.exe
 *~
 *.out
-*.sh
+
 
 # Compiled Dynamic libraries
 *.so
