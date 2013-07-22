@@ -417,7 +417,7 @@ hist_ggh=(TH1F*) gDirectory->Get("hist_ggh");
   model_ggh->fitTo(*dataset_ggh);
   model_ggh->plotOn(frame_ggh);
   cout << "plotted" << endl;  
-  cout << hist_ggh->GetEntries() << endl;
+  hist_ggh->Sumw2();
   cout << "test hist_ggh" << endl;
 
 
