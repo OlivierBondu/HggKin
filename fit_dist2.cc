@@ -41,8 +41,8 @@ for (int cut=0;cut<5;cut++) {
 	//fit_bkg(menu,menu_pol,cutval[cut],0);
 	//fit_bkg(menu,menu_pol,cutval[cut],2);
 	//fit_bkg(menu,menu_pol,cutval[cut],3);
-	//fit_ggh(menu,menu_pol,cutval[cut]);
-	fit_vbf(menu,menu_pol,cutval[cut]);
+	fit_ggh(menu,menu_pol,cutval[cut]);
+	//fit_vbf(menu,menu_pol,cutval[cut]);
       }
     }
    }  
@@ -414,7 +414,7 @@ hist_ggh=(TH1F*) gDirectory->Get("hist_ggh");
 }
 
 
-  //  model_ggh->fitTo(*dataset_ggh);
+  model_ggh->fitTo(*dataset_ggh);
   model_ggh->plotOn(frame_ggh);
   cout << "plotted" << endl;  
   cout << hist_ggh->GetEntries() << endl;
