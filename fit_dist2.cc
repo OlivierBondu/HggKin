@@ -43,11 +43,16 @@ int main() {
 	//fit_gen("vbf",menu,menu_pol,cutval[cut],0);
 	for (int window=0; window<4;window++) {
 	  if (window==1) continue;	  	
-	  //fit_gen("bkg",menu,menu_pol,cutval[cut],3);
-	  for (int categ=0;categ<5;categ++) {
+	  fit_gen("bkg",menu,menu_pol,cutval[cut],window);
+	  for (int categ=0;categ<3;categ++) {
 	    //fit_reco("ggh",menu,menu_pol,cutval[cut],window,categ);
 	    //fit_reco("vbf",menu,menu_pol,cutval[cut],window,categ);
-	    fit_reco("bkg",menu,menu_pol,cutval[cut],window,categ);
+	    //fit_reco("bkg",menu,menu_pol,cutval[cut],window,categ);
+	  }
+	  for (int categ=3;categ<5;categ++) {
+	    //fit_reco("ggh",menu,menu_pol,cutval[cut],window,categ);
+	    //fit_reco("vbf",menu,menu_pol,cutval[cut],window,categ);
+	    //fit_reco("bkg",menu,menu_pol,cutval[cut],window,categ);
 	  }
 	}
       }
@@ -118,7 +123,7 @@ int fit_gen(char const *process,int const &menu,int const &menu_pol,char const *
   RooRealVar coef3_pol("coef3_pol","coef3_pol",3,0,100);
   RooBernstein *pol2;
 
-  sprintf(buffer,"tree_reco_%s",process);
+  sprintf(buffer,"tree_gen_%s",process);
   TTree *tree=(TTree*) file_result->Get(buffer);
   tree->GetEntries();
   cout << "got tree" << endl;
@@ -475,7 +480,7 @@ int fit_reco(char const *process,int const &menu,int const &menu_pol,char const 
   latex.DrawLatex(0.25,0.96,buffer);
   
   fstream stream; 
-  char bufferpng[20]="",bufferpdf[20]="",bufferroot[20]="",bufferdata[20]="",bufferaddress[100]="";
+  char bufferpng[20]="",bufferpdf[20]="",bufferroot[20]="",bufferdata[20]="",bufferaddress[100]="",buffercat[20]="";
   sprintf(buffer,""); 
   if (! BATCH) {
     sprintf(bufferaddress,"/afs/cern.ch/work/c/cgoudet/private/");
@@ -485,11 +490,12 @@ int fit_reco(char const *process,int const &menu,int const &menu_pol,char const 
     sprintf(bufferdata,"data/");
   }
   if (strcmp(menu_cut,""))   sprintf(buffer2,"_cuttheta%s",menu_cut);
-  sprintf(buffer,"%s%sfit_%s%s_reco.png",bufferaddress,bufferpng,buffer_save,buffer2);
+  if (categ) sprintf(buffercat,"_categ%d",categ);
+  sprintf(buffer,"%s%sfit_%s%s%s_reco.png",bufferaddress,bufferpng,buffer_save,buffer2,buffercat);
   canvas->SaveAs(buffer);
-  sprintf(buffer,"%s%sfit_%s%s_reco.pdf",bufferaddress,bufferpdf,buffer_save,buffer2);
+  sprintf(buffer,"%s%sfit_%s%s%s_reco.pdf",bufferaddress,bufferpdf,buffer_save,buffer2,buffercat);
   canvas->SaveAs(buffer);
-  sprintf(buffer,"%s%sfit_%s%s_reco.root",bufferaddress,bufferroot,buffer_save,buffer2);
+  sprintf(buffer,"%s%sfit_%s%s%s_reco.root",bufferaddress,bufferroot,buffer_save,buffer2,buffercat);
   canvas->SaveAs(buffer);
 
   sprintf(buffer,"%s%sresult_fit_%s_reco.txt",bufferaddress,bufferdata,tmp_process);
