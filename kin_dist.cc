@@ -9,9 +9,9 @@
 #include <iostream>
 using namespace std;
 
-#define GGH_GEN 0 
-#define VBF_GEN 0
-#define BKG_GEN 0
+#define GGH_GEN 1 
+#define VBF_GEN 1
+#define BKG_GEN 1
 #define RECO 1
 
 
@@ -272,6 +272,7 @@ int main() {
       hist_bkg[kinvar]->GetYaxis()->SetTitle(dummy);
       if (kinvar) {
 	for (int window=0;window<n_window;window++) {
+	  if (! kinvar) continue;
 	  sprintf(dummy,"hist_%s_bkg%d_gen",kinvarval[kinvar],windowval[window]);
 	  hist_bkg_window[window][kinvar-1]=new TH1F(dummy,dummy,n_bins[kinvar],binning[kinvar][0],binning[kinvar][1]);
 	  hist_bkg_window[window][kinvar-1]->Sumw2();
@@ -328,15 +329,17 @@ int main() {
       hist_bkg[2]->Fill(dipho_ctheta);
     
       for (int window=0;window<n_window; window++) {
-	hist_bkg_window[window][0]->Fill(dipho_pt);
-	hist_bkg_window[window][1]->Fill(dipho_ctheta);
+	if (dipho_mass > 125 - windowval[window]/2. && dipho_mass < 125+windowval[window]/2.) {
+	  hist_bkg_window[window][0]->Fill(dipho_pt);
+	  hist_bkg_window[window][1]->Fill(dipho_ctheta);
+	}
       }
       for (int cut=0;cut<n_cuttheta;cut++){
 	if (dipho_ctheta>cuttheta[cut]/1000.) {
 	  hist_cuttheta[0][cut]->Fill(dipho_mass);
 	  hist_cuttheta[1][cut]->Fill(dipho_pt);
 	  for (int window=0;window<n_window;window++) {
-	    if (dipho_mass > 125-windowval[window]/2. && dipho_mass < 125+windowval[window]/2.)
+	    if (dipho_mass < 125-windowval[window]/2. && dipho_mass > 125+windowval[window]/2.) continue;
 	      hist_bkg_cut[window][cut]->Fill(dipho_pt);
 	  }
 	}
@@ -522,12 +525,11 @@ int main() {
     hist_reco[category][1]->Fill(dipho_pt,weight);
     hist_reco[category][2]->Fill(dipho_ctheta,weight);
     for (int cut=0; cut<n_cuttheta; cut++) {
-      if (dipho_ctheta>cuttheta[cut]/1000.) {
+      if (dipho_ctheta<cuttheta[cut]/1000.) continue;
 	histcut_reco[0][cut][0]->Fill(dipho_mass,weight);
 	histcut_reco[1][cut][0]->Fill(dipho_pt,weight);
 	histcut_reco[0][cut][category]->Fill(dipho_mass,weight);
 	histcut_reco[1][cut][category]->Fill(dipho_pt,weight);
-      }
     }
     
     for (int window=0; window<n_window; window++) {

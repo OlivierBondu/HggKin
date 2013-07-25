@@ -43,9 +43,9 @@ int main() {
 	//fit_gen("vbf",menu,menu_pol,cutval[cut],0);
 	for (int window=0; window<4;window++) {
 	  if (window==1) continue;	  	
-	  fit_gen("bkg",menu,menu_pol,cutval[cut],window);
+	  //fit_gen("bkg",menu,menu_pol,cutval[cut],window);
 	  for (int categ=0;categ<3;categ++) {
-	    //fit_reco("ggh",menu,menu_pol,cutval[cut],window,categ);
+	    fit_reco("ggh",menu,menu_pol,cutval[cut],window,categ);
 	    //fit_reco("vbf",menu,menu_pol,cutval[cut],window,categ);
 	    //fit_reco("bkg",menu,menu_pol,cutval[cut],window,categ);
 	  }
@@ -259,7 +259,7 @@ int fit_gen(char const *process,int const &menu,int const &menu_pol,char const *
 
   fstream stream; 
   char bufferpng[20]="",bufferpdf[20]="",bufferroot[20]="",bufferdata[20]="",bufferaddress[100]="";
-  sprintf(buffer,""); 
+  sprintf(buffer,""); sprintf(buffer2,"");
   if (! BATCH) {
     sprintf(bufferaddress,"/afs/cern.ch/work/c/cgoudet/private/");
     sprintf(bufferpdf,"plot/pdf/");
@@ -481,7 +481,7 @@ int fit_reco(char const *process,int const &menu,int const &menu_pol,char const 
   
   fstream stream; 
   char bufferpng[20]="",bufferpdf[20]="",bufferroot[20]="",bufferdata[20]="",bufferaddress[100]="",buffercat[20]="";
-  sprintf(buffer,""); 
+  sprintf(buffer,"");sprintf(buffer2,"");
   if (! BATCH) {
     sprintf(bufferaddress,"/afs/cern.ch/work/c/cgoudet/private/");
     sprintf(bufferpdf,"plot/pdf/");
@@ -498,7 +498,7 @@ int fit_reco(char const *process,int const &menu,int const &menu_pol,char const 
   sprintf(buffer,"%s%sfit_%s%s%s_reco.root",bufferaddress,bufferroot,buffer_save,buffer2,buffercat);
   canvas->SaveAs(buffer);
 
-  sprintf(buffer,"%s%sresult_fit_%s_reco.txt",bufferaddress,bufferdata,tmp_process);
+  sprintf(buffer,"%s%sresult_fit_%s%s_reco.txt",bufferaddress,bufferdata,tmp_process,buffercat);
   stream.open(buffer, fstream::out | fstream::app );
   stream << buffer_save  << buffer2 << " " << frame->chiSquare() << endl;
   stream.close();
@@ -506,8 +506,6 @@ int fit_reco(char const *process,int const &menu,int const &menu_pol,char const 
   canvas->Delete();
   file_result->Close();
   cout << "end fit_reco" << endl;
-  return 1;
-
-
-  }
+  return 1;}
+  
 
