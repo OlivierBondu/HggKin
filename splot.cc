@@ -47,7 +47,7 @@ int main() {
   RooWorkspace *ws=0;
   char buffer[100];
 
-  //  int i=0;
+  //      int i=3;
   for (int i=0;i<5;i++) {
     root_file->cd();   
     if (i)    sprintf(buffer,"ws_hgg_%d",menu_cut[i]);
@@ -142,21 +142,21 @@ int AddModel(RooWorkspace *ws, int  const &cut=0) {
   else sim_gen=new RooDataSet("sim_gen","sim_gen", tree, RooArgSet(*dipho_pt,*weight),"","weight");
   model_pt_ggh->fitTo(*sim_gen);
 
-  // coef0_pol_pt_ggh->setRange(coef0_pol_pt_ggh->getVal()-2*coef0_pol_pt_ggh->getError(),coef0_pol_pt_ggh->getVal()+2*coef0_pol_pt_ggh->getError());
-//   coef1_pol_pt_ggh->setRange(coef1_pol_pt_ggh->getVal()-2*coef1_pol_pt_ggh->getError(),coef1_pol_pt_ggh->getVal()+2*coef1_pol_pt_ggh->getError());
-//   coef2_pol_pt_ggh->setRange(coef2_pol_pt_ggh->getVal()-2*coef2_pol_pt_ggh->getError(),coef2_pol_pt_ggh->getVal()+2*coef2_pol_pt_ggh->getError());
-//   coefM_tsallis_pt_ggh->setRange(coefM_tsallis_pt_ggh->getVal()-2*coefM_tsallis_pt_ggh->getError(),coefM_tsallis_pt_ggh->getVal()+2*coefM_tsallis_pt_ggh->getError());
-//   coefN_tsallis_pt_ggh->setRange(coefN_tsallis_pt_ggh->getVal()-2*coefN_tsallis_pt_ggh->getError(),coefN_tsallis_pt_ggh->getVal()+2*coefN_tsallis_pt_ggh->getError());
-//   coefT_tsallis_pt_ggh->setRange(coefT_tsallis_pt_ggh->getVal()-2*coefT_tsallis_pt_ggh->getError(),coefT_tsallis_pt_ggh->getVal()+2*coefT_tsallis_pt_ggh->getError());
+  coef0_pol_pt_ggh->setRange(coef0_pol_pt_ggh->getVal()-2*coef0_pol_pt_ggh->getError(),coef0_pol_pt_ggh->getVal()+2*coef0_pol_pt_ggh->getError());
+  coef1_pol_pt_ggh->setRange(coef1_pol_pt_ggh->getVal()-2*coef1_pol_pt_ggh->getError(),coef1_pol_pt_ggh->getVal()+2*coef1_pol_pt_ggh->getError());
+  coef2_pol_pt_ggh->setRange(coef2_pol_pt_ggh->getVal()-2*coef2_pol_pt_ggh->getError(),coef2_pol_pt_ggh->getVal()+2*coef2_pol_pt_ggh->getError());
+  coefM_tsallis_pt_ggh->setRange(coefM_tsallis_pt_ggh->getVal()-2*coefM_tsallis_pt_ggh->getError(),coefM_tsallis_pt_ggh->getVal()+2*coefM_tsallis_pt_ggh->getError());
+  coefN_tsallis_pt_ggh->setRange(coefN_tsallis_pt_ggh->getVal()-2*coefN_tsallis_pt_ggh->getError(),coefN_tsallis_pt_ggh->getVal()+2*coefN_tsallis_pt_ggh->getError());
+  coefT_tsallis_pt_ggh->setRange(coefT_tsallis_pt_ggh->getVal()-2*coefT_tsallis_pt_ggh->getError(),coefT_tsallis_pt_ggh->getVal()+2*coefT_tsallis_pt_ggh->getError());
   
 
   //Check plot
-//     frame_pt=dipho_pt->frame();
-//     sim_gen->plotOn(frame_pt);
-//     model_pt_ggh->plotOn(frame_pt);
-//     frame_pt->Draw();
-//     canvas->SaveAs("frame_ptggh.pdf");
-//     frame_pt->Delete();
+    frame_pt=dipho_pt->frame();
+    sim_gen->plotOn(frame_pt);
+    model_pt_ggh->plotOn(frame_pt);
+    frame_pt->Draw();
+    canvas->SaveAs("frame_ptggh.pdf");
+    frame_pt->Delete();
   
   sim_gen->Delete();
   tree->Delete();
@@ -232,22 +232,22 @@ int AddModel(RooWorkspace *ws, int  const &cut=0) {
    model_pt_bkg->fitTo(*sim_gen);
   
 
-//   coef0_pol_pt_bkg->setRange(coef0_pol_pt_bkg->getVal()-2*coef0_pol_pt_bkg->getError(),coef0_pol_pt_bkg->getVal()+2*coef0_pol_pt_bkg->getError());
-//   coef1_pol_pt_bkg->setRange(coef1_pol_pt_bkg->getVal()-2*coef1_pol_pt_bkg->getError(),coef1_pol_pt_bkg->getVal()+2*coef1_pol_pt_bkg->getError());
-//   coef2_pol_pt_bkg->setRange(coef2_pol_pt_bkg->getVal()-2*coef2_pol_pt_bkg->getError(),coef2_pol_pt_bkg->getVal()+2*coef2_pol_pt_bkg->getError());
-//   coefM_tsallis_pt_bkg->setRange(coefM_tsallis_pt_bkg->getVal()-2*coefM_tsallis_pt_bkg->getError(),coefM_tsallis_pt_bkg->getVal()+2*coefM_tsallis_pt_bkg->getError());
-//   coefN_tsallis_pt_bkg->setRange(coefN_tsallis_pt_bkg->getVal()-2*coefN_tsallis_pt_bkg->getError(),coefN_tsallis_pt_bkg->getVal()+2*coefN_tsallis_pt_bkg->getError());
-//   coefT_tsallis_pt_bkg->setRange(coefT_tsallis_pt_bkg->getVal()-2*coefT_tsallis_pt_bkg->getError(),coefT_tsallis_pt_bkg->getVal()+2*coefT_tsallis_pt_bkg->getError());
-  
+  coef0_pol_pt_bkg->setRange(coef0_pol_pt_bkg->getVal()-2*coef0_pol_pt_bkg->getError(),coef0_pol_pt_bkg->getVal()+2*coef0_pol_pt_bkg->getError());
+  coef1_pol_pt_bkg->setRange(coef1_pol_pt_bkg->getVal()-2*coef1_pol_pt_bkg->getError(),coef1_pol_pt_bkg->getVal()+2*coef1_pol_pt_bkg->getError());
+  coef2_pol_pt_bkg->setRange(coef2_pol_pt_bkg->getVal()-2*coef2_pol_pt_bkg->getError(),coef2_pol_pt_bkg->getVal()+2*coef2_pol_pt_bkg->getError());
+  coefM_tsallis_pt_bkg->setRange(coefM_tsallis_pt_bkg->getVal()-2*coefM_tsallis_pt_bkg->getError(),coefM_tsallis_pt_bkg->getVal()+2*coefM_tsallis_pt_bkg->getError());
+  coefN_tsallis_pt_bkg->setRange(coefN_tsallis_pt_bkg->getVal()-2*coefN_tsallis_pt_bkg->getError(),coefN_tsallis_pt_bkg->getVal()+2*coefN_tsallis_pt_bkg->getError());
+  coefT_tsallis_pt_bkg->setRange(coefT_tsallis_pt_bkg->getVal()-2*coefT_tsallis_pt_bkg->getError(),coefT_tsallis_pt_bkg->getVal()+2*coefT_tsallis_pt_bkg->getError());
+     
   
 
   //Check plot
-//   frame_pt=dipho_pt->frame();
-//   sim_gen->plotOn(frame_pt);
-//   model_pt_bkg->plotOn(frame_pt);
-//   frame_pt->Draw();
-//   canvas->SaveAs("frame_otbkg.pdf");
-//   frame_pt->Delete();
+  frame_pt=dipho_pt->frame();
+  sim_gen->plotOn(frame_pt);
+  model_pt_bkg->plotOn(frame_pt);
+  frame_pt->Draw();
+  canvas->SaveAs("frame_otbkg.pdf");
+  frame_pt->Delete();
 
   sim_gen->Delete();
   tree->Delete();
@@ -348,30 +348,30 @@ int DoSPlot(RooWorkspace* ws) {
   model->fitTo(*sim_gen);
 
   // Check plot
-//   TLatex latex; latex.SetNDC(1); char buffer[100];
-//   TCanvas *canvas=new TCanvas();
-//   RooPlot* frame_mass=dipho_mass->frame(); frame_mass->UseCurrentStyle();
-//   frame_mass=dipho_mass->frame();
-//   sim_gen->plotOn(frame_mass);
-//   model->plotOn(frame_mass);
-//   model->plotOn(frame_mass, Components("model_ggh"), LineColor(kGreen), LineStyle(kDashed));
-//   model->plotOn(frame_mass, Components("model_bkg"), LineColor(kRed), LineStyle(kDashed));
-//   frame_mass->Draw();
-//   sprintf(buffer,"ggh_yields=%3.2f   #chi^2=%3.2f",ggh_yield->getVal(),frame_mass->chiSquare()); 
-//   latex.DrawLatex(0.1,0.96,buffer);
-//   canvas->SaveAs("frameDoSplotMass.pdf");
-//   frame_mass->Delete();
+  TLatex latex; latex.SetNDC(1); char buffer[100];
+  TCanvas *canvas=new TCanvas();
+  RooPlot* frame_mass=dipho_mass->frame(); frame_mass->UseCurrentStyle();
+  frame_mass=dipho_mass->frame();
+  sim_gen->plotOn(frame_mass);
+  model->plotOn(frame_mass);
+  model->plotOn(frame_mass, Components("model_ggh"), LineColor(kGreen), LineStyle(kDashed));
+  model->plotOn(frame_mass, Components("model_bkg"), LineColor(kRed), LineStyle(kDashed));
+  frame_mass->Draw();
+  sprintf(buffer,"ggh_yields=%3.2f   #chi^2=%3.2f",ggh_yield->getVal(),frame_mass->chiSquare()); 
+  latex.DrawLatex(0.1,0.96,buffer);
+  canvas->SaveAs("frameDoSplotMass.pdf");
+  frame_mass->Delete();
 
-//   RooPlot* frame_pt=dipho_pt->frame();
-//   frame_pt=dipho_pt->frame();
-//   sim_gen->plotOn(frame_pt);
-//   model->plotOn(frame_pt);
-//   model->plotOn(frame_pt, Components("model_ggh"), LineColor(kGreen), LineStyle(kDashed));
-//   model->plotOn(frame_pt, Components("model_bkg"), LineColor(kRed), LineStyle(kDashed));
-//   frame_pt->Draw();
-//   canvas->SaveAs("frameDoSplotPt.pdf");
-//   frame_pt->Delete();
-//   canvas->Close();
+  RooPlot* frame_pt=dipho_pt->frame();
+  frame_pt=dipho_pt->frame();
+  sim_gen->plotOn(frame_pt);
+  model->plotOn(frame_pt);
+  model->plotOn(frame_pt, Components("model_ggh"), LineColor(kGreen), LineStyle(kDashed));
+  model->plotOn(frame_pt, Components("model_bkg"), LineColor(kRed), LineStyle(kDashed));
+  frame_pt->Draw();
+  canvas->SaveAs("frameDoSplotPt.pdf");
+  frame_pt->Delete();
+  canvas->Close();
 
 
 
@@ -408,7 +408,20 @@ int MakePlot(RooWorkspace* ws, int const &cut=0) {
   pad_down->Draw();
   pad_up->Draw();
 
-  cout << "sim_gen->IsWeighted() " << sim_gen->isWeighted() << endl;  
+  //define path prefixes  for saving canvas
+  char buffer_path[100]="",buffer_file[2][3][10]={{""}},buffercut[10]="";
+  sprintf(buffer_file[1][0],"png");
+  sprintf(buffer_file[1][1],"pdf");
+  sprintf(buffer_file[1][2],"root");
+  if (! BATCH) {
+    sprintf(buffer_path,"/afs/cern.ch/work/c/cgoudet/private/plot/");
+    sprintf(buffer_file[0][0],"png/");
+    sprintf(buffer_file[0][1],"pdf/");
+    sprintf(buffer_file[0][2],"root/");
+  }
+  if (cut) sprintf(buffercut,"%d",cut);
+
+
   //Check plots of the fit before splot
   RooPlot *frame_up=dipho_pt->frame();
   RooPlot *frame_down=dipho_mass->frame();
@@ -435,54 +448,23 @@ int MakePlot(RooWorkspace* ws, int const &cut=0) {
   legend->AddEntry(frame_up->findObject("model"),"Inclusive Fit","l");
   legend->AddEntry(frame_up->findObject("model_ggh"),"ggH Component","l");
   legend->AddEntry(frame_up->findObject("model_bkg"),"bkg Component","l");
-
   legend->Draw();
 
   sprintf(buffer,"signal yields = %3.2f",ggh_yield->getVal());
   latex.DrawLatex(0.2,0.96,buffer);
-  if (BATCH) {
-    if (cut)  {
-      sprintf(buffer,"cos(#theta*) > %1.3f",cut/1000.);
-      canvas->cd();    
-      latex.DrawLatex(0.4,0.49,buffer);
-      sprintf(buffer,"splot_gen_unweighted_gghbkg%d.pdf",cut);  
-      canvas->SaveAs(buffer);
-      sprintf(buffer,"splot_gen_unweighted_gghbkg%d.png",cut);  
-      canvas->SaveAs(buffer);
-      sprintf(buffer,"splot_gen_unweighted_gghbkg%d.root",cut);  
-      canvas->SaveAs(buffer);
-    }  
-    else {
-      sprintf(buffer,"splot_gen_unweighted_gghbkg.pdf");
-      canvas->SaveAs(buffer);
-      sprintf(buffer,"splot_gen_unweighted_gghbkg.png");
-      canvas->SaveAs(buffer);
-      sprintf(buffer,"splot_gen_unweighted_gghbkg.root");
-      canvas->SaveAs(buffer);
-    }
+  if (cut)  {
+    sprintf(buffer,"cos(#theta*) > %1.3f",cut/1000.);
+    canvas->cd();    
+    latex.DrawLatex(0.4,0.49,buffer);
   }
+  
+    
+  //saving canvas
+  for (int file=0;file<3;file++) {
+    sprintf(buffer,"%s%ssplot_gen_unweighted_gghbkg%s.%s",buffer_path,buffer_file[0][file],buffercut,buffer_file[1][file]);  
+    canvas->SaveAs(buffer);
+    }  
 
-  else {
-    if (cut)  {
-      sprintf(buffer,"cos(#theta*) > %1.3f",cut/1000.);
-      canvas->cd();    
-      latex.DrawLatex(0.4,0.49,buffer);
-      sprintf(buffer,"/afs/cern.ch/work/c/cgoudet/private/plot/pdf/splot_gen_unweighted_gghbkg%d.pdf",cut);  
-      canvas->SaveAs(buffer);
-      sprintf(buffer,"/afs/cern.ch/work/c/cgoudet/private/plot/png/splot_gen_unweighted_gghbkg%d.png",cut);  
-      canvas->SaveAs(buffer);
-      sprintf(buffer,"/afs/cern.ch/work/c/cgoudet/private/plot/root/splot_gen_unweighted_gghbkg%d.root",cut);  
-      canvas->SaveAs(buffer);
-    }  
-    else {
-      sprintf(buffer,"/afs/cern.ch/work/c/cgoudet/private/plot/pdf/splot_gen_unweighted_gghbkg.pdf");
-      canvas->SaveAs(buffer);
-      sprintf(buffer,"/afs/cern.ch/work/c/cgoudet/private/plot/png/splot_gen_unweighted_gghbkg.png");
-      canvas->SaveAs(buffer);
-      sprintf(buffer,"/afs/cern.ch/work/c/cgoudet/private/plot/root/splot_gen_unweighted_gghbkg.root");
-      canvas->SaveAs(buffer);
-    }
-  }
     frame_up->Delete();
     frame_down->Delete();
     legend->Delete();
@@ -512,56 +494,25 @@ int MakePlot(RooWorkspace* ws, int const &cut=0) {
   legend->AddEntry("model_bkg","Non Weighted Bkg Fit","l");
   legend->Draw();
 
-  if (BATCH) {
-    if(cut) {
+  if (cut) {
       sprintf(buffer,"cos(#theta*) > %1.3f",cut/1000.);
       canvas->cd();
       latex.DrawLatex(0.4,0.96,buffer);
-      sprintf(buffer,"splot_gen_gghbkg%d.pdf",cut);
-      canvas->SaveAs(buffer);
-      sprintf(buffer,"splot_gen_gghbkg%d.root",cut);
-      canvas->SaveAs(buffer);
-      sprintf(buffer,"splot_gen_gghbkg%d.png",cut);
-      canvas->SaveAs(buffer);
-    }
-    else {
-      sprintf(buffer,"splot_gen_gghbkg.png");
-      canvas->SaveAs(buffer);
-      sprintf(buffer,"splot_gen_gghbkg.pdf");
-      canvas->SaveAs(buffer);
-      sprintf(buffer,"splot_gen_gghbkg.root");
-      canvas->SaveAs(buffer);
-    }
   }
-  else {
-    if(cut) {
-      sprintf(buffer,"cos(#theta*) > %1.3f",cut/1000.);
-      canvas->cd();
-      latex.DrawLatex(0.4,0.96,buffer);
-      sprintf(buffer,"/afs/cern.ch/work/c/cgoudet/private/plot/pdf/splot_gen_gghbkg%d.pdf",cut);
+
+  //saving canvas
+  for (int file=0; file<3; file++ ) {
+    sprintf(buffer,"%s%ssplot_gen_gghbkg%s.%s",buffer_path,buffer_file[0][file],buffercut,buffer_file[1][file]);
       canvas->SaveAs(buffer);
-      sprintf(buffer,"/afs/cern.ch/work/c/cgoudet/private/plot/root/splot_gen_gghbkg%d.root",cut);
-      canvas->SaveAs(buffer);
-      sprintf(buffer,"/afs/cern.ch/work/c/cgoudet/private/plot/png/splot_gen_gghbkg%d.png",cut);
-      canvas->SaveAs(buffer);
-    }
-    else {
-      sprintf(buffer,"/afs/cern.ch/work/c/cgoudet/private/plot/png/splot_gen_gghbkg.png");
-      canvas->SaveAs(buffer);
-      sprintf(buffer,"/afs/cern.ch/work/c/cgoudet/private/plot/pdf/splot_gen_gghbkg.pdf");
-      canvas->SaveAs(buffer);
-      sprintf(buffer,"/afs/cern.ch/work/c/cgoudet/private/plot/root/splot_gen_gghbkg.root");
-      canvas->SaveAs(buffer);
-    }
   }
-  cout << "drawn" << endl;
+  cout << "wieghted drawn" << endl;
 
   frame_up->Delete();
 
   // plot weighted signal events and first fit
   frame_up=dipho_pt->frame();
   sim_gen_Wggh->plotOn(frame_up,MarkerColor(2),DataError(RooAbsData::SumW2),Name("sim_gen_Wggh"),Binning(100,0,200));// plot weighted ggh events
-  model->plotOn(frame_up,Components("model_ggh"),LineColor(5),Normalization(sim_gen_Wbkg->sumEntries(),RooAbsReal::NumEvent),Name("model_ggh"));//ggh component of total fit 
+  model->plotOn(frame_up,Components("model_ggh"),LineColor(3),Normalization(sim_gen_Wbkg->sumEntries(),RooAbsReal::NumEvent),Name("model_ggh"));//ggh component of total fit 
   //cout << "sim_gen_ggh sum entries " << sim_gen_Wggh->sumEntries() << endl;
   canvas->cd();
   //   canvas->SetLogy();
@@ -572,49 +523,18 @@ int MakePlot(RooWorkspace* ws, int const &cut=0) {
   legend->AddEntry("model_ggh","Non Weighted ggH Fit","l");
   legend->Draw();
 
-  if (BATCH) {
-    if(cut) {
+ if(cut) {
       sprintf(buffer,"cos(#theta*) > %1.3f",cut/1000.);
       canvas->cd();
       latex.DrawLatex(0.4,0.96,buffer);
-      sprintf(buffer,"splot_gen_ggh%d.pdf",cut);
+ }
+
+  for (int file=0; file<3; file++ ) {
+    sprintf(buffer,"%s%ssplot_gen_ggh%s.%s",buffer_path,buffer_file[0][file],buffercut,buffer_file[1][file]);
       canvas->SaveAs(buffer);
-      sprintf(buffer,"splot_gen_ggh%d.root",cut);
-      canvas->SaveAs(buffer);
-      sprintf(buffer,"splot_gen_ggh%d.png",cut);
-      canvas->SaveAs(buffer);
-    }
-    else {
-      sprintf(buffer,"splot_gen_ggh.png");
-      canvas->SaveAs(buffer);
-      sprintf(buffer,"splot_gen_ggh.pdf");
-      canvas->SaveAs(buffer);
-      sprintf(buffer,"splot_gen_ggh.root");
-      canvas->SaveAs(buffer);
-    }
   }
-  else {
-    if(cut) {
-      sprintf(buffer,"cos(#theta*) > %1.3f",cut/1000.);
-      canvas->cd();
-      latex.DrawLatex(0.4,0.96,buffer);
-      sprintf(buffer,"/afs/cern.ch/work/c/cgoudet/private/plot/pdf/splot_gen_ggh%d.pdf",cut);
-      canvas->SaveAs(buffer);
-      sprintf(buffer,"/afs/cern.ch/work/c/cgoudet/private/plot/root/splot_gen_ggh%d.root",cut);
-      canvas->SaveAs(buffer);
-      sprintf(buffer,"/afs/cern.ch/work/c/cgoudet/private/plot/png/splot_gen_ggh%d.png",cut);
-      canvas->SaveAs(buffer);
-    }
-    else {
-      sprintf(buffer,"/afs/cern.ch/work/c/cgoudet/private/plot/png/splot_gen_ggh.png");
-      canvas->SaveAs(buffer);
-      sprintf(buffer,"/afs/cern.ch/work/c/cgoudet/private/plot/pdf/splot_gen_ggh.pdf");
-      canvas->SaveAs(buffer);
-      sprintf(buffer,"/afs/cern.ch/work/c/cgoudet/private/plot/root/splot_gen_ggh.root");
-      canvas->SaveAs(buffer);
-    }
-  }
-  cout << "drawn" << endl;
+
+  cout << "weigthed ggh drawn" << endl;
 
 
 
