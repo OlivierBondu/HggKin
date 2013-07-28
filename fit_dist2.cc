@@ -33,7 +33,7 @@ int main() {
   
   char* cutval[5]={"","200","375","550","750"};
 
-  //  fit_gen("ggh",0,0,"",0);
+  //  fit_gen("vbf",2,1,"",0);
   //  fit_reco("ggh",0,0,"",3,0);
 
   for (int cut=0;cut<5;cut++) {
@@ -45,14 +45,14 @@ int main() {
 	  if (window==1) continue;	  	
 	  //fit_gen("bkg",menu,menu_pol,cutval[cut],window);
 	  for (int categ=0;categ<3;categ++) {
-	    fit_reco("ggh",menu,menu_pol,cutval[cut],window,categ);
+	    //fit_reco("ggh",menu,menu_pol,cutval[cut],window,categ);
 	    //fit_reco("vbf",menu,menu_pol,cutval[cut],window,categ);
 	    //fit_reco("bkg",menu,menu_pol,cutval[cut],window,categ);
 	  }
 	  for (int categ=3;categ<5;categ++) {
 	    //fit_reco("ggh",menu,menu_pol,cutval[cut],window,categ);
 	    //fit_reco("vbf",menu,menu_pol,cutval[cut],window,categ);
-	    //fit_reco("bkg",menu,menu_pol,cutval[cut],window,categ);
+	    fit_reco("bkg",menu,menu_pol,cutval[cut],window,categ);
 	  }
 	}
       }
@@ -259,7 +259,9 @@ int fit_gen(char const *process,int const &menu,int const &menu_pol,char const *
 
   fstream stream; 
   char bufferpng[20]="",bufferpdf[20]="",bufferroot[20]="",bufferdata[20]="",bufferaddress[100]="";
-  sprintf(buffer,""); sprintf(buffer2,"");
+  sprintf(buffer,""); 
+  sprintf(buffer2,"");
+  
   if (! BATCH) {
     sprintf(bufferaddress,"/afs/cern.ch/work/c/cgoudet/private/");
     sprintf(bufferpdf,"plot/pdf/");
