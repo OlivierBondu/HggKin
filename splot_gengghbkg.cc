@@ -55,11 +55,13 @@ int main() {
   if (AddModel(ws,menu_cut[i])) cout << "AddModel failed" << endl;
   if (AddData(ws,menu_cut[i])) cout << "AddData failed" << endl;
   if (DoSPlot(ws)) cout << "DoSPlot failes" << endl;
-  //    if (MakePlot(ws,menu_cut[i])) cout << "Plotting failed" << endl;
+  if (MakePlot(ws,menu_cut[i])) cout << "Plotting failed" << endl;
+  root_file->cd();
   ws->Write("",TObject::kOverwrite);
   ws->Delete();  
   //}
   root_file->Close();
+  cout << "Went up to the end" << endl;
   return 0;
 }
 
@@ -364,9 +366,6 @@ int DoSPlot(RooWorkspace* ws) {
   //   frame_pt->Delete();
   //   canvas->Close();
 
-  canvas->SaveAs("frameDoSplotMass.pdf");
-  frame_mass->Delete();
-
 			 
 			 
   SPlot *splot_gghbkg=new SPlot("splot_gghbkg","splot_gghbkg", *sim_genW_gghbkg, model_gghbkg, RooArgList(*ggh_yield, *bkg_yield));  //Create splot
@@ -388,10 +387,10 @@ int MakePlot(RooWorkspace* ws, int const &cut=0) {
   RooRealVar *dipho_mass=ws->var("dipho_mass");
   RooRealVar *dipho_pt=ws->var("dipho_pt");
   RooAbsPdf *model=ws->pdf("model_gghbkg");
-  RooDataSet *sim_gen= (RooDataSet*) ws->data("sim_gen");
-  RooDataSet *sim_genW=(RooDataSet*) ws->data("sim_genW");
+  RooDataSet *sim_gen= (RooDataSet*) ws->data("sim_gen_gghbkg");
+  RooDataSet *sim_genW=(RooDataSet*) ws->data("sim_genW_gghbkg");
   RooRealVar *bkg_yield=ws->var("bkg_yield");
-   RooRealVar *ggh_yield=ws->var("ggh_yield");
+  RooRealVar *ggh_yield=ws->var("ggh_yield");
   TLatex latex;
   latex.SetNDC();  
   char buffer[100];
@@ -457,7 +456,7 @@ int MakePlot(RooWorkspace* ws, int const &cut=0) {
     
   //saving canvas
   for (int file=0;file<3;file++) {
-    sprintf(buffer,"%s%ssplot_gen_unweighted_gghbkgA%s.%s",buffer_path,buffer_file[0][file],buffercut,buffer_file[1][file]);  
+    sprintf(buffer,"%s%ssplot_gen_unweighted_gghbkg%s.%s",buffer_path,buffer_file[0][file],buffercut,buffer_file[1][file]);  
     canvas->SaveAs(buffer);
     }  
 
