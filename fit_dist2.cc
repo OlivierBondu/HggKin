@@ -47,7 +47,7 @@ int main() {
 	  for (int categ=0;categ<3;categ++) {
 	    //fit_reco("ggh",menu,menu_pol,cutval[cut],window,categ);
 	    //fit_reco("vbf",menu,menu_pol,cutval[cut],window,categ);
-	    //fit_reco("bkg",menu,menu_pol,cutval[cut],window,categ);
+	    fit_reco("bkg",menu,menu_pol,cutval[cut],window,categ);
 	  }
 	  for (int categ=3;categ<5;categ++) {
 	    //fit_reco("ggh",menu,menu_pol,cutval[cut],window,categ);
@@ -367,7 +367,7 @@ int fit_reco(char const *process,int const &menu,int const &menu_pol,char const 
     sprintf(buffer,"%s %s dipho_mass > 125-%d/2. && dipho_mass < 125+%d/2.",buffer,buffer2,window,window);
     sprintf(buffer2, " && ");
   }
-  if (categ) sprintf(buffer,"%s %s category<%d+0.1 && category > %d-0.1",buffer,buffer2,categ,categ);
+  if (categ<3.5) sprintf(buffer,"%s %s category<%d+0.1 && category > %d-0.1",buffer,buffer2,categ,categ);
 
 
   dataset=new RooDataSet("dataset","dataset",tree,RooArgSet(dipho_mass,weight,dipho_mass,dipho_ctheta,dipho_pt,category),buffer,"weight");
@@ -492,7 +492,7 @@ int fit_reco(char const *process,int const &menu,int const &menu_pol,char const 
     sprintf(bufferdata,"data/");
   }
   if (strcmp(menu_cut,""))   sprintf(buffer2,"_cuttheta%s",menu_cut);
-  if (categ) sprintf(buffercat,"_categ%d",categ);
+  if (categ<3.5) sprintf(buffercat,"_categ%d",categ);
   sprintf(buffer,"%s%sfit_%s%s%s_reco.png",bufferaddress,bufferpng,buffer_save,buffer2,buffercat);
   canvas->SaveAs(buffer);
   sprintf(buffer,"%s%sfit_%s%s%s_reco.pdf",bufferaddress,bufferpdf,buffer_save,buffer2,buffercat);

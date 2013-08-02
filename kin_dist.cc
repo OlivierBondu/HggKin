@@ -9,10 +9,10 @@
 #include <iostream>
 using namespace std;
 
-#define GGH_GEN 1 
-#define VBF_GEN 1
+#define GGH_GEN 0 
+#define VBF_GEN 0
 #define BKG_GEN 1
-#define RECO 1
+#define RECO 0
 
 
 int main() {
@@ -110,12 +110,9 @@ int main() {
       hist_ggh_gen[0][0]->Fill(dipho_mass);
       hist_ggh_gen[0][2]->Fill(dipho_ctheta);
 	for (int cut=0;cut<n_cuttheta;cut++) {
-
-	  if (dipho_ctheta > cuttheta[cut]/1000.){
+	  if (dipho_ctheta < cuttheta[cut]/1000.) continue;
 	    hist_cuttheta[1][cut]->Fill(dipho_pt);//Fill histograms with cutted data
 	    hist_cuttheta[0][cut]->Fill(dipho_mass);//Fill histograms with cutted data
-
-	  }
 	}
     }
 
@@ -309,7 +306,7 @@ int main() {
       tree->SetBranchStatus(buffer,1);  
       tree->SetBranchAddress(buffer,&gen_values[i]);
     }
-    
+
 
     for (int i=0; i<nentry; i++) {
       tree->GetEntry(i);
@@ -322,25 +319,24 @@ int main() {
       dipho_pt=gamma_pair->Pt();
       weight=gen_values[8];
       tree_result->Fill();
-
+      
       
       hist_bkg[0]->Fill(dipho_mass);
       hist_bkg[1]->Fill(dipho_pt);
       hist_bkg[2]->Fill(dipho_ctheta);
-    
+      
       for (int window=0;window<n_window; window++) {
-	if (dipho_mass > 125 - windowval[window]/2. && dipho_mass < 125+windowval[window]/2.) {
-	  hist_bkg_window[window][0]->Fill(dipho_pt);
-	  hist_bkg_window[window][1]->Fill(dipho_ctheta);
-	}
+	if (dipho_mass < 125 - windowval[window]/2. || dipho_mass > 125+windowval[window]/2.) continue;
+	hist_bkg_window[window][0]->Fill(dipho_pt);
+	hist_bkg_window[window][1]->Fill(dipho_ctheta);
       }
       for (int cut=0;cut<n_cuttheta;cut++){
 	if (dipho_ctheta>cuttheta[cut]/1000.) {
 	  hist_cuttheta[0][cut]->Fill(dipho_mass);
 	  hist_cuttheta[1][cut]->Fill(dipho_pt);
 	  for (int window=0;window<n_window;window++) {
-	    if (dipho_mass < 125-windowval[window]/2. && dipho_mass > 125+windowval[window]/2.) continue;
-	      hist_bkg_cut[window][cut]->Fill(dipho_pt);
+	    if (dipho_mass < 125-windowval[window]/2. || dipho_mass > 125+windowval[window]/2.) continue;
+	    hist_bkg_cut[window][cut]->Fill(dipho_pt);
 	  }
 	}
       }
@@ -399,7 +395,7 @@ int main() {
   TH1F *hist_reco[5][n_kinvar]={{0}};// distributions without mass or theta cut
   TH1F* histcut_reco[n_study][n_cuttheta][5]={{{0}}};// mass and pt with cut theta
   TH1F* histwindow_reco[n_window][n_cuttheta][5]={{{0}}};//pt with all cuts
-  TH1F *hist_ctheta_window[2][n_window][5]={{{0}}};//costheta with mass cut
+  TH1F *hist_ctheta_window[2][n_window][5]={{{0}}};//pt and costheta with mass cut
   char *process[3]={"ggh","vbf","bkg"};
 
   for (int proc=0; proc<3; proc++) {
@@ -432,7 +428,7 @@ int main() {
 
     for (int categ=0; categ<5; categ++) {
       for (int kinvar=0; kinvar<n_kinvar ; kinvar++) {
-	if (categ) sprintf(buffer,"hist_%s_categ%d_%s_reco",kinvarval[kinvar],categ,process[proc]);
+	if (categ<3.5) sprintf(buffer,"hist_%s_categ%d_%s_reco",kinvarval[kinvar],categ,process[proc]);
 	else 	sprintf(buffer,"hist_%s_%s_reco",kinvarval[kinvar],process[proc]);
 	hist_reco[categ][kinvar]=new TH1F(buffer,buffer,n_bins[kinvar],binning[kinvar][0],binning[kinvar][1]);
 	hist_reco[categ][kinvar]->Sumw2();
@@ -444,7 +440,7 @@ int main() {
     for (int study=0; study<n_study; study++) {
       for (int cut=0; cut<n_cuttheta; cut++) {
 	for (int categ=0; categ<5; categ++) {//0:inclusive; 1:EBEB (both_photons r9>.94); 2:EBEB !(r9); 3:!(EBEB) (r9); 4:!(EBEB) !(r9)
-	  if (categ)	  sprintf(buffer,"hist_%scuttheta%d_categ%d_%s_reco",kinvarval[study],cuttheta[cut],categ,process[proc]);
+	  if (categ<3.5)	  sprintf(buffer,"hist_%scuttheta%d_categ%d_%s_reco",kinvarval[study],cuttheta[cut],categ,process[proc]);
 	  else 	  sprintf(buffer,"hist_%scuttheta%d_%s_reco",kinvarval[study],cuttheta[cut],process[proc]);
 	  histcut_reco[study][cut][categ]=new TH1F(buffer,buffer,n_bins[study],binning[study][0],binning[study][1]);
 	  histcut_reco[study][cut][categ]->Sumw2();
@@ -460,7 +456,7 @@ int main() {
       for (int categ=0; categ<5; categ++) {
 	for (int kinvar=0; kinvar<2; kinvar++) {
 	  
-	  if (categ)	sprintf(buffer,"hist_%s_categ%d_%s%d_reco",kinvarval[kinvar+1],categ,process[proc],windowval[window]);
+	  if (categ<3.5)	sprintf(buffer,"hist_%s_categ%d_%s%d_reco",kinvarval[kinvar+1],categ,process[proc],windowval[window]);
 	  else sprintf(buffer,"hist_%s_%s%d_reco",kinvarval[kinvar+1],process[proc],windowval[window]);
 	  hist_ctheta_window[kinvar][window][categ]=new TH1F(buffer,buffer,n_bins[kinvar+1],binning[kinvar+1][0],binning[kinvar+1][1]);
 	  hist_ctheta_window[kinvar][window][categ]->Sumw2();
@@ -471,7 +467,7 @@ int main() {
       
 
 	for (int cut=0; cut<n_cuttheta; cut++) {
-	  if (categ)	sprintf(buffer,"hist_ptcuttheta%d_categ%d_%s%d_reco",cuttheta[cut],categ,process[proc],windowval[window]);
+	  if (categ<3.5)	sprintf(buffer,"hist_ptcuttheta%d_categ%d_%s%d_reco",cuttheta[cut],categ,process[proc],windowval[window]);
 	  else sprintf(buffer,"hist_ptcuttheta%d_%s%d_reco",cuttheta[cut],process[proc],windowval[window]);
 	  histwindow_reco[window][cut][categ]=new TH1F(buffer,buffer,n_bins[1],binning[1][0],binning[1][1]);
 	  histwindow_reco[window][cut][categ]->Sumw2();
@@ -489,8 +485,8 @@ int main() {
       sprintf(buffer,"%s",reco_variables[i]);
       tree->SetBranchStatus(buffer,1);  
       tree->SetBranchAddress(buffer,&reco_fvalues[i]);
-  }
-  for (int i=0;i<4;i++) {
+    }
+  for (int i=0;i<3.5;i++) {
     sprintf(buffer,"%s",reco_variables[13+i]);
     tree->SetBranchStatus(buffer,1);  
     tree->SetBranchAddress(buffer,&reco_ivalues[i]);
@@ -513,21 +509,21 @@ int main() {
     weight=reco_fvalues[11]*reco_fvalues[12];
     isEB= (reco_ivalues[1] && reco_ivalues[3]) ? 1 : 0 ;
     r9= (reco_fvalues[4]>0.94 && reco_fvalues[9]>0.94) ? 1 : 0 ;
-    category=4-2*isEB-r9;
+    category=3-2*isEB-r9;
     tree_result->Fill();
 
 
     
-    hist_reco[0][0]->Fill(dipho_mass,weight);
-    hist_reco[0][1]->Fill(dipho_pt,weight);
-    hist_reco[0][2]->Fill(dipho_ctheta,weight);
+    hist_reco[4][0]->Fill(dipho_mass,weight);
+    hist_reco[4][1]->Fill(dipho_pt,weight);
+    hist_reco[4][2]->Fill(dipho_ctheta,weight);
     hist_reco[category][0]->Fill(dipho_mass,weight);
     hist_reco[category][1]->Fill(dipho_pt,weight);
     hist_reco[category][2]->Fill(dipho_ctheta,weight);
     for (int cut=0; cut<n_cuttheta; cut++) {
       if (dipho_ctheta<cuttheta[cut]/1000.) continue;
-	histcut_reco[0][cut][0]->Fill(dipho_mass,weight);
-	histcut_reco[1][cut][0]->Fill(dipho_pt,weight);
+	histcut_reco[0][cut][4]->Fill(dipho_mass,weight);
+	histcut_reco[1][cut][4]->Fill(dipho_pt,weight);
 	histcut_reco[0][cut][category]->Fill(dipho_mass,weight);
 	histcut_reco[1][cut][category]->Fill(dipho_pt,weight);
     }
@@ -535,12 +531,12 @@ int main() {
     for (int window=0; window<n_window; window++) {
       if (dipho_mass>125+windowval[window]/2. || dipho_mass<125-windowval[window]/2.) continue;
       hist_ctheta_window[1][window][category]->Fill(dipho_ctheta,weight);
-      hist_ctheta_window[1][window][0]->Fill(dipho_ctheta,weight);
+      hist_ctheta_window[1][window][4]->Fill(dipho_ctheta,weight);
       hist_ctheta_window[0][window][category]->Fill(dipho_pt,weight);
-      hist_ctheta_window[0][window][0]->Fill(dipho_pt,weight);
+      hist_ctheta_window[0][window][4]->Fill(dipho_pt,weight);
       for (int cut=0; cut<n_cuttheta; cut++ ) {
 	if (dipho_ctheta<cuttheta[cut]/1000.) continue;
-	histwindow_reco[window][cut][0]->Fill(dipho_pt,weight);
+	histwindow_reco[window][cut][4]->Fill(dipho_pt,weight);
 	histwindow_reco[window][cut][category]->Fill(dipho_pt,weight);
       }
       
