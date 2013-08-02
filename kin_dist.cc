@@ -11,8 +11,8 @@ using namespace std;
 
 #define GGH_GEN 0 
 #define VBF_GEN 0
-#define BKG_GEN 1
-#define RECO 0
+#define BKG_GEN 0
+#define RECO 1
 
 
 int main() {
@@ -398,7 +398,7 @@ int main() {
   TH1F *hist_ctheta_window[2][n_window][5]={{{0}}};//pt and costheta with mass cut
   char *process[3]={"ggh","vbf","bkg"};
 
-  for (int proc=0; proc<3; proc++) {
+  for (int proc=2; proc<3; proc++) {
     switch (proc) 
       {
       case 2:
@@ -486,11 +486,13 @@ int main() {
       tree->SetBranchStatus(buffer,1);  
       tree->SetBranchAddress(buffer,&reco_fvalues[i]);
     }
-  for (int i=0;i<3.5;i++) {
+  for (int i=0;i<4;i++) {
     sprintf(buffer,"%s",reco_variables[13+i]);
     tree->SetBranchStatus(buffer,1);  
     tree->SetBranchAddress(buffer,&reco_ivalues[i]);
   }
+
+    double totweight=0;
 
 
   for (int i=0;i<nentry;i++) {
@@ -507,6 +509,8 @@ int main() {
     dipho_pt=gamma_pair->Pt();
     dipho_ctheta=GetCosTheta(gamma1,gamma2);
     weight=reco_fvalues[11]*reco_fvalues[12];
+    //cout << reco_fvalues[11] << " " << reco_fvalues[12] << " " << weight << endl;
+      totweight+= weight;
     isEB= (reco_ivalues[1] && reco_ivalues[3]) ? 1 : 0 ;
     r9= (reco_fvalues[4]>0.94 && reco_fvalues[9]>0.94) ? 1 : 0 ;
     category=3-2*isEB-r9;
@@ -578,7 +582,7 @@ int main() {
 
   sprintf(buffer,"%s reco done",process[proc]);
   cout << buffer << endl; 
-  
+  cout << totweight << endl;  
 
   }  
   }
