@@ -66,8 +66,9 @@ for cut in `echo "0 ${cutlist}"`
   else   echo "\\caption{\$\\chi^2\$ values for ggh, vbg and background events with \$cos(\\theta*)>0.${cut}\$}"
       cuttheta="_cuttheta${cut}"
       grepvar=""
+
   fi
-  
+
   echo "\\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|}"
   echo "\\hline"
   echo "${func} \\\\"
@@ -80,7 +81,6 @@ for cut in `echo "0 ${cutlist}"`
 	  then name=`echo "ggh${function}pol${pol}${cuttheta}"`
 	  chi2=`grep ${name} ${file_ggh} | grep -v "cuttheta" | awk '{print $2}'`
 	  chi2list_ggh="${chi2list_ggh} &  ${chi2}"
-	  
 	  name=`echo "vbf${function}pol${pol}${cuttheta}"`
 	  chi2=`grep ${name} ${file_vbf} | grep -v "cuttheta" | awk '{print $2}'`
 	  chi2list_vbf="${chi2list_vbf} &  ${chi2}"

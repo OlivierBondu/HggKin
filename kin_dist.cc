@@ -9,9 +9,9 @@
 #include <iostream>
 using namespace std;
 
-#define GGH_GEN 0 
-#define VBF_GEN 0
-#define BKG_GEN 0
+#define GGH_GEN 1 
+#define VBF_GEN 1
+#define BKG_GEN 1
 #define RECO 1
 
 
@@ -105,6 +105,7 @@ int main() {
       dipho_pt=gamma_pair->Pt();
       weight=gen_values[8];
       tree_result->Fill();
+      if(dipho_pt>binning[1][1]) continue;
 
       hist_ggh_gen[0][1]->Fill(dipho_pt);
       hist_ggh_gen[0][0]->Fill(dipho_mass);
@@ -200,6 +201,7 @@ int main() {
       dipho_pt=gamma_pair->Pt();
       weight=gen_values[8];
       tree_result->Fill();
+      if(dipho_pt>binning[1][1]) continue;
       
       hist_vbf_gen[0][1]->Fill(dipho_pt);
       hist_vbf_gen[0][0]->Fill(dipho_mass);
@@ -320,7 +322,7 @@ int main() {
       weight=gen_values[8];
       tree_result->Fill();
       
-      
+      if(dipho_pt>binning[1][1]) continue;      
       hist_bkg[0]->Fill(dipho_mass);
       hist_bkg[1]->Fill(dipho_pt);
       hist_bkg[2]->Fill(dipho_ctheta);
@@ -515,7 +517,7 @@ int main() {
     r9= (reco_fvalues[4]>0.94 && reco_fvalues[9]>0.94) ? 1 : 0 ;
     category=3-2*isEB-r9;
     tree_result->Fill();
-
+      if(dipho_pt>binning[1][1]) continue;
 
     
     hist_reco[4][0]->Fill(dipho_mass,weight);

@@ -8,9 +8,8 @@ for process in `echo "ggh vbf bkg"`
   tmp="result*${process}*gen.txt"
   tmp="`ls ${tmp}`"
   tmp_files="${tmp_files} ${tmp}"
-  echo $tmp
 done
-
+echo ${tmp_files}
 for categ in `seq 0 4`
   do 
   for process in `echo "ggh vbf bkg"`
@@ -20,7 +19,6 @@ for categ in `seq 0 4`
 	then tmp=`ls ${tmp} | grep -v "categ"`
     else tmp=`ls ${tmp} | grep "categ${categ}"`
     fi
-    echo $tmp
     tmp_files="${tmp_files} ${tmp}"
   done
 done
@@ -32,8 +30,9 @@ for fil in `echo ${tmp_files}`
 done
 
 cd ${hgg}
-bash table_fit.sh ${files} > note_fit.tex
-
+echo "starting writting tex"
+bash table_fit.sh ${files} 1> note_fit.tex 2>error.txt
+echo "tex written"
  pdflatex note_fit.tex
  pdflatex note_fit.tex
 

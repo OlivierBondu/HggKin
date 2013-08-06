@@ -18,7 +18,7 @@
 #include "TLatex.h"
 
 #define NBINS 100
-#define BATCH 0
+#define BATCH 1
 
 using namespace std;
 
@@ -34,24 +34,24 @@ int main() {
   
   char* cutval[5]={"","200","375","550","750"};
 
-  //  fit_gen("vbf",2,1,"",0);
-  //fit_reco("bkg",2,2,"",0,-1);
+  // fit_gen("ggh",2,1,"",0);
+  //it_reco("vbf",2,2,"",0,-1);
 
   for (int cut=0;cut<5;cut++) {
     for (int menu=0;menu<3;menu++) {
       for (int menu_pol=0;menu_pol<3;menu_pol++) {
-	fit_gen("ggh",menu,menu_pol,cutval[cut],0);
-	fit_gen("vbf",menu,menu_pol,cutval[cut],0);
+	//fit_gen("ggh",menu,menu_pol,cutval[cut],0);
+	//fit_gen("vbf",menu,menu_pol,cutval[cut],0);
 	for (int window=0; window<4;window++) {
 	  if (window==1) continue;	  	
-	  //fit_gen("bkg",menu,menu_pol,cutval[cut],window);
+	  fit_gen("bkg",menu,menu_pol,cutval[cut],window);
 	  for (int categ=-1;categ<2;categ++) {
-	    fit_reco("ggh",menu,menu_pol,cutval[cut],window,categ);
+	    // fit_reco("ggh",menu,menu_pol,cutval[cut],window,categ);
 	    //fit_reco("vbf",menu,menu_pol,cutval[cut],window,categ);
-	    //fit_reco("bkg",menu,menu_pol,cutval[cut],window,categ);
+ 	    //fit_reco("bkg",menu,menu_pol,cutval[cut],window,categ);
 	  }
 	  for (int categ=2;categ<4;categ++) {
-	    fit_reco("ggh",menu,menu_pol,cutval[cut],window,categ);
+	    //fit_reco("ggh",menu,menu_pol,cutval[cut],window,categ);
 	    //fit_reco("vbf",menu,menu_pol,cutval[cut],window,categ);
 	    //fit_reco("bkg",menu,menu_pol,cutval[cut],window,categ);
 	  }
@@ -95,7 +95,7 @@ int fit_gen(char const *process,int const &menu,int const &menu_pol,char const *
 
   TCanvas *canvas=new TCanvas("canvas","canvas");
   TPad *pad_fit=new TPad("pad_fit","pad_fit",0,0.3,1,1);
-  pad_fit->SetBottomMargin(0.05);
+  pad_fit->SetBottomMargin(0.00);
   pad_fit->Draw();
   canvas->cd();
   TPad *ratio_pad=new TPad("ratio_pad","ratio_pad",0,0,1,0.3);  
@@ -243,13 +243,20 @@ int fit_gen(char const *process,int const &menu,int const &menu_pol,char const *
 
   
   ratio_pad->cd();
+  ratio->GetYaxis()->SetTitle("N_{fit}/N_{events}");
   ratio->GetYaxis()->SetRangeUser(0,2);
+  ratio->GetYaxis()->SetLabelSize(0.1);
+  ratio->GetYaxis()->SetTitleSize(0.1);
+ratio->GetYaxis()->SetTitleOffset(0.5);
+  ratio->GetXaxis()->SetLabelSize(0.1);
+  ratio->GetXaxis()->SetTitleSize(0.1);
   ratio->Draw("P");
   line->Draw("SAME");
 
   pad_fit->cd();
   //  pad_fit->SetLogy(1);
-  frame->GetXaxis()->SetTitle("");  
+  frame->GetXaxis()->SetTitle("");
+  frame->GetXaxis()->SetLabelSize(0);  
   frame->Draw();  
 
 
@@ -348,7 +355,7 @@ int fit_reco(char const *process,int const &menu,int const &menu_pol,char const 
   TTree *tree=(TTree*) file_result->Get(buffer);
   RooDataSet *dataset=0;
   pad_fit->cd();
-  TH1F *hist=0;
+  TH1F *hist=new TH1F("hist","hist",NBINS,0,200);
 
   char buffer2[100];
   cout << "before sprintf" << endl;
@@ -371,11 +378,14 @@ int fit_reco(char const *process,int const &menu,int const &menu_pol,char const 
 
   dataset=new RooDataSet("dataset","dataset",tree,RooArgSet(dipho_pt,dipho_mass,weight,dipho_ctheta,category),buffer,"weight");
   cout << "dataset weight " << dataset->sumEntries() << endl;  
-  sprintf(buffer2,"dipho_pt>>hist(%d,0,200)",NBINS);
+  
+  //  hist=(TH1F *) dataset->fillHistogram(hist,dipho_pt);
+
+ sprintf(buffer2,"dipho_pt>>hist(%d,0,200)",NBINS);
   tree->Draw(buffer2,buffer);
   hist=(TH1F*) gDirectory->Get("hist");
+  //  hist->Scale(dataset->sumEntries()/hist->Integral());
   hist->Sumw2();  
-  hist->Scale(dataset->sumEntries()/hist->Integral());
   dataset->plotOn(frame);
   cout << "tree" << endl;
   RooProdPdf *model;
@@ -434,9 +444,9 @@ int fit_reco(char const *process,int const &menu,int const &menu_pol,char const 
   model->plotOn(frame);
 
   TH1F *ratio=(TH1F*) model->createHistogram("ratio", dipho_pt,RooFit::Binning(hist->GetNbinsX(),0,200));
-  
+
   ratio->Scale(hist->Integral());
-  ratio->Sumw2();
+  ratio->Sumw2();  
   ratio->Divide(hist);
   cout << "modified ratio" << endl;
  
@@ -460,7 +470,7 @@ int fit_reco(char const *process,int const &menu,int const &menu_pol,char const 
   ratio->GetYaxis()->SetRangeUser(0,2);
   ratio->GetYaxis()->SetLabelSize(0.1);
   ratio->GetYaxis()->SetTitleSize(0.1);
-ratio->GetYaxis()->SetTitleOffset(0.5);
+  ratio->GetYaxis()->SetTitleOffset(0.5);
   ratio->GetXaxis()->SetLabelSize(0.1);
   ratio->GetXaxis()->SetTitleSize(0.1);
   ratio->Draw("P");

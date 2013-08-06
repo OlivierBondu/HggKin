@@ -47,10 +47,10 @@ int main() {
   RooWorkspace *ws=0;
   char buffer[100];
 
-  //  int i=0;
-  for (int i=0;i<5;i++) {
+  //    int i=3;
+    for (int i=0;i<5;i++) {
     root_file->cd();   
-    if (i)    sprintf(buffer,"ws_hgg_%d",menu_cut[i]);
+    if (i)    sprintf(buffer,"ws_hgg_splot_gen%d",menu_cut[i]);
     else sprintf(buffer,"ws_hgg");
     ws=new RooWorkspace (buffer,buffer);
     if (AddModel(ws,menu_cut[i])) cout << "AddModel failed" << endl;
@@ -61,7 +61,7 @@ int main() {
     root_file->cd();
     ws->Write("",TObject::kOverwrite);
     ws->Delete();  
-  }
+      }
   root_file->Close();
   return 0;
 }
@@ -115,7 +115,7 @@ int AddModel(RooWorkspace *ws, int  const &cut=0) {
 //   model_mass_ggh->plotOn(frame_mass);
 //   model_mass_ggh->plotOn(frame_mass,Components("model_smear_mass_ggh"),LineColor(kGreen),LineStyle(kDashed));
 //   frame_mass->Draw();
-//   canvas->SaveAs("frame_massggh.pdf");
+//   canvas->SaveAs("frame_massggh_gen.pdf");
 //   frame_mass->Delete();
 
   sim_gen->Delete();
@@ -148,6 +148,13 @@ int AddModel(RooWorkspace *ws, int  const &cut=0) {
 //   coefM_tsallis_pt_ggh->setRange(coefM_tsallis_pt_ggh->getVal()-2*coefM_tsallis_pt_ggh->getError(),coefM_tsallis_pt_ggh->getVal()+2*coefM_tsallis_pt_ggh->getError());
 //   coefN_tsallis_pt_ggh->setRange(coefN_tsallis_pt_ggh->getVal()-2*coefN_tsallis_pt_ggh->getError(),coefN_tsallis_pt_ggh->getVal()+2*coefN_tsallis_pt_ggh->getError());
 //   coefT_tsallis_pt_ggh->setRange(coefT_tsallis_pt_ggh->getVal()-2*coefT_tsallis_pt_ggh->getError(),coefT_tsallis_pt_ggh->getVal()+2*coefT_tsallis_pt_ggh->getError());
+
+  coef0_pol_pt_ggh->setConstant(1);
+  coef1_pol_pt_ggh->setConstant(1);
+  coef2_pol_pt_ggh->setConstant(1);
+  coefM_tsallis_pt_ggh->setConstant(1);
+  coefN_tsallis_pt_ggh->setConstant(1);
+  coefT_tsallis_pt_ggh->setConstant(1);
   
 
   //Check plot
@@ -155,7 +162,7 @@ int AddModel(RooWorkspace *ws, int  const &cut=0) {
 //     sim_gen->plotOn(frame_pt);
 //     model_pt_ggh->plotOn(frame_pt);
 //     frame_pt->Draw();
-//     canvas->SaveAs("frame_ptggh.pdf");
+//     canvas->SaveAs("frame_ptggh_gen.pdf");
 //     frame_pt->Delete();
   
   sim_gen->Delete();
@@ -195,7 +202,7 @@ int AddModel(RooWorkspace *ws, int  const &cut=0) {
 //     sim_gen->plotOn(frame_mass,Binning(80,100,180));
 //     model_mass_bkg->plotOn(frame_mass);
 //     frame_mass->Draw();
-//     canvas->SaveAs("frame_massbkg.pdf");
+//     canvas->SaveAs("frame_massbkg_gen.pdf");
 //     frame_mass->Delete();
 
     sim_gen->Delete();
@@ -238,6 +245,13 @@ int AddModel(RooWorkspace *ws, int  const &cut=0) {
 //   coefM_tsallis_pt_bkg->setRange(coefM_tsallis_pt_bkg->getVal()-2*coefM_tsallis_pt_bkg->getError(),coefM_tsallis_pt_bkg->getVal()+2*coefM_tsallis_pt_bkg->getError());
 //   coefN_tsallis_pt_bkg->setRange(coefN_tsallis_pt_bkg->getVal()-2*coefN_tsallis_pt_bkg->getError(),coefN_tsallis_pt_bkg->getVal()+2*coefN_tsallis_pt_bkg->getError());
 //   coefT_tsallis_pt_bkg->setRange(coefT_tsallis_pt_bkg->getVal()-2*coefT_tsallis_pt_bkg->getError(),coefT_tsallis_pt_bkg->getVal()+2*coefT_tsallis_pt_bkg->getError());
+
+  coef0_pol_pt_bkg->setConstant(1);
+  coef1_pol_pt_bkg->setConstant(1);
+  coef2_pol_pt_bkg->setConstant(1);
+  coefM_tsallis_pt_bkg->setConstant(1);
+  coefN_tsallis_pt_bkg->setConstant(1);
+  coefT_tsallis_pt_bkg->setConstant(1);
   
   
 
@@ -246,7 +260,7 @@ int AddModel(RooWorkspace *ws, int  const &cut=0) {
 //   sim_gen->plotOn(frame_pt);
 //   model_pt_bkg->plotOn(frame_pt);
 //   frame_pt->Draw();
-//   canvas->SaveAs("frame_otbkg.pdf");
+//   canvas->SaveAs("frame_otbkg_gen.pdf");
 //   frame_pt->Delete();
 
   sim_gen->Delete();
@@ -256,7 +270,7 @@ int AddModel(RooWorkspace *ws, int  const &cut=0) {
 
 
   //Combine the models 
-  RooRealVar *ggh_yield=new RooRealVar("ggh_yield","ggh_yield",500,100,1000);
+  RooRealVar *ggh_yield=new RooRealVar("ggh_yield","ggh_yield",500,10,1000);
   RooRealVar *bkg_yield=new RooRealVar("bkg_yield","bkg_yield",100000,100,200000);
   
   RooAddPdf *model_tot= new RooAddPdf("model_tot","model_tot",RooArgList(*model_ggh,*model_bkg),RooArgList(*ggh_yield,*bkg_yield));  
@@ -299,11 +313,11 @@ int AddData(RooWorkspace* ws, int const &cut=0) {
 //   RooPlot *framemass=dipho_mass->frame();
 //   sim_gen->plotOn(framemass, Binning(40,100,180));
 //   framemass->Draw();
-//   canvas->SaveAs("frame_mass.pdf");
+//   canvas->SaveAs("frame_mass_gen.pdf");
 //   RooPlot *framept=dipho_pt->frame();
 //   sim_gen_ggh->plotOn(framept);
 //   framept->Draw();
-//   canvas->SaveAs("frame_pt.pdf");  
+//   canvas->SaveAs("frame_pt_gen.pdf");  
 
   //import dataset into workspace
   ws->import(*sim_gen,RooFit::Rename("sim_gen"));
@@ -338,40 +352,40 @@ int DoSPlot(RooWorkspace* ws) {
   RooRealVar *ggh_yield=ws->var("ggh_yield");
   RooRealVar *bkg_yield=ws->var("bkg_yield");
 
-  mean_mass_ggh->setConstant();
-  sigma_mass_ggh->setConstant();
-  coef0_bern_mass_bkg->setConstant();
-  coef1_bern_mass_bkg->setConstant();
-  coef2_bern_mass_bkg->setConstant();
-  coef3_bern_mass_bkg->setConstant();
+  mean_mass_ggh->setConstant(1);
+  sigma_mass_ggh->setConstant(1);
+  coef0_bern_mass_bkg->setConstant(1);
+  coef1_bern_mass_bkg->setConstant(1);
+  coef2_bern_mass_bkg->setConstant(1);
+  coef3_bern_mass_bkg->setConstant(1);
 
   model->fitTo(*sim_gen);
 
   // Check plot
-//   TLatex latex; latex.SetNDC(1); char buffer[100];
-//   TCanvas *canvas=new TCanvas();
-//   RooPlot* frame_mass=dipho_mass->frame(); frame_mass->UseCurrentStyle();
-//   frame_mass=dipho_mass->frame();
-//   sim_gen->plotOn(frame_mass);
-//   model->plotOn(frame_mass);
-//   model->plotOn(frame_mass, Components("model_ggh"), LineColor(kGreen), LineStyle(kDashed));
-//   model->plotOn(frame_mass, Components("model_bkg"), LineColor(kRed), LineStyle(kDashed));
-//   frame_mass->Draw();
-//   sprintf(buffer,"ggh_yields=%3.2f   #chi^2=%3.2f",ggh_yield->getVal(),frame_mass->chiSquare()); 
-//   latex.DrawLatex(0.1,0.96,buffer);
-//   canvas->SaveAs("frameDoSplotMass.pdf");
-//   frame_mass->Delete();
+  TLatex latex; latex.SetNDC(1); char buffer[100];
+  TCanvas *canvas=new TCanvas();
+  RooPlot* frame_mass=dipho_mass->frame(); frame_mass->UseCurrentStyle();
+  frame_mass=dipho_mass->frame();
+  sim_gen->plotOn(frame_mass);
+  model->plotOn(frame_mass);
+  model->plotOn(frame_mass, Components("model_ggh"), LineColor(kGreen), LineStyle(kDashed));
+  model->plotOn(frame_mass, Components("model_bkg"), LineColor(kRed), LineStyle(kDashed));
+  frame_mass->Draw();
+  sprintf(buffer,"ggh_yields=%3.2f   #chi^2=%3.2f",ggh_yield->getVal(),frame_mass->chiSquare()); 
+  latex.DrawLatex(0.1,0.96,buffer);
+  canvas->SaveAs("frameDoSplotMass_gen.pdf");
+  frame_mass->Delete();
 
-//   RooPlot* frame_pt=dipho_pt->frame();
-//   frame_pt=dipho_pt->frame();
-//   sim_gen->plotOn(frame_pt);
-//   model->plotOn(frame_pt);
-//   model->plotOn(frame_pt, Components("model_ggh"), LineColor(kGreen), LineStyle(kDashed));
-//   model->plotOn(frame_pt, Components("model_bkg"), LineColor(kRed), LineStyle(kDashed));
-//   frame_pt->Draw();
-//   canvas->SaveAs("frameDoSplotPt.pdf");
-//   frame_pt->Delete();
-//   canvas->Close();
+  RooPlot* frame_pt=dipho_pt->frame();
+  frame_pt=dipho_pt->frame();
+  sim_gen->plotOn(frame_pt);
+  model->plotOn(frame_pt);
+  model->plotOn(frame_pt, Components("model_ggh"), LineColor(kGreen), LineStyle(kDashed));
+  model->plotOn(frame_pt, Components("model_bkg"), LineColor(kRed), LineStyle(kDashed));
+  frame_pt->Draw();
+  canvas->SaveAs("frameDoSplotPt_gen.pdf");
+  frame_pt->Delete();
+  canvas->Close();
 
 
 
@@ -561,7 +575,7 @@ int MakePlot(RooWorkspace* ws, int const &cut=0) {
   // plot weighted signal events and first fit
   frame_up=dipho_pt->frame();
   sim_gen_Wggh->plotOn(frame_up,MarkerColor(2),DataError(RooAbsData::SumW2),Name("sim_gen_Wggh"),Binning(100,0,200));// plot weighted ggh events
-  model->plotOn(frame_up,Components("model_ggh"),LineColor(5),Normalization(sim_gen_Wbkg->sumEntries(),RooAbsReal::NumEvent),Name("model_ggh"));//ggh component of total fit 
+  model->plotOn(frame_up,Components("model_ggh"),LineColor(3),Normalization(sim_gen_Wbkg->sumEntries(),RooAbsReal::NumEvent),Name("model_ggh"));//ggh component of total fit 
   //cout << "sim_gen_ggh sum entries " << sim_gen_Wggh->sumEntries() << endl;
   canvas->cd();
   //   canvas->SetLogy();

@@ -107,7 +107,7 @@ void  compare_gen(char* const level, int const &norme, int const &window, int co
     stack->GetYaxis()->SetTitle(buffer);
     stack->GetXaxis()->SetTitle(kinvartitle[count_variable]);
     
-    TLegend *legend=new TLegend(0.8,0.7,1,1);
+    TLegend *legend=new TLegend(0.8,0.8,1,1);
     // legend->SetShadowColor(0);
 //     legend->SetFillColor(0);
 //     legend->SetBorderSize(0);

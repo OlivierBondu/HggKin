@@ -13,12 +13,13 @@ echo "\\usepackage[T1]{fontenc}"
 echo "\\usepackage{graphicx}"
 echo "\\usepackage[a4paper]{geometry}"
 echo "\\geometry{hscale=0.9,vscale=0.85,centering}"
-
+echo "\\title{Determination of ggh \$p_T\$ Distribution Through the Use of SPlot.}"
 echo "\\begin{document}"
-
-
-echo "\\section*{Determination of ggh \$p_T\$ Distribution Through the Use of SPlot.}" 
-  echo "\\subsection*{Inclusive}"
+echo "\\maketitle"
+echo "\\tableofcontents"
+echo "\\clearpage"
+echo "\\part{Generator Level}"
+echo "\\section{Inclusive on $|cos(\\theta*)|$}"
   echo "\\begin{figure}[h!]"
   echo "\\centering"
   echo "\\begin{minipage}[c]{0.49\linewidth}"
@@ -46,7 +47,7 @@ echo
 for cut in `echo "200 375 550 750"`
   do
   echo "\\clearpage"
-  echo "\\subsection*{\$cos(\\theta*)>0.${cut}\$}"
+  echo "\\section{\$cos(\\theta*)>0.${cut}\$}"
   echo "\\begin{figure}[h!]"
   echo "\\centering"
   echo "\\begin{minipage}[c]{0.49\linewidth}"
