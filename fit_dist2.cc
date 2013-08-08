@@ -35,7 +35,7 @@ int main() {
   char* cutval[5]={"","200","375","550","750"};
 
   // fit_gen("ggh",2,1,"",0);
-  //it_reco("vbf",2,2,"",0,-1);
+  fit_reco("bkg",2,2,"",2,1);
 
   for (int cut=0;cut<5;cut++) {
     for (int menu=0;menu<3;menu++) {
@@ -44,7 +44,7 @@ int main() {
 	//fit_gen("vbf",menu,menu_pol,cutval[cut],0);
 	for (int window=0; window<4;window++) {
 	  if (window==1) continue;	  	
-	  fit_gen("bkg",menu,menu_pol,cutval[cut],window);
+	  //fit_gen("bkg",menu,menu_pol,cutval[cut],window);
 	  for (int categ=-1;categ<2;categ++) {
 	    // fit_reco("ggh",menu,menu_pol,cutval[cut],window,categ);
 	    //fit_reco("vbf",menu,menu_pol,cutval[cut],window,categ);
@@ -373,7 +373,7 @@ int fit_reco(char const *process,int const &menu,int const &menu_pol,char const 
     sprintf(buffer2, " && ");
   }
 
-  if (categ>-1) sprintf(buffer,"%s %s category<%d+0.1 && category > %d-0.1",buffer,buffer2,categ,categ);
+  if (categ>-1) sprintf(buffer,"%s %s category < %d+0.1 && category > %d-0.1",buffer,buffer2,categ,categ);
 
 
   dataset=new RooDataSet("dataset","dataset",tree,RooArgSet(dipho_pt,dipho_mass,weight,dipho_ctheta,category),buffer,"weight");

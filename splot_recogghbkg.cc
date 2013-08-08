@@ -25,6 +25,7 @@
 #include "RooStats/SPlot.h"
 
 #define BATCH 1 // On batch mode, have to change loading and saving path
+#define NBINS 40
 
 using namespace std;
 using namespace RooStats;
@@ -46,10 +47,10 @@ int main() {
   RooWorkspace *ws=0;
   char buffer[100];
 
-  int i=1;
-  int categ=1;
-  for (int i=0; i<5;i++) {
-    for (int categ=-1; categ<4;categ++) {
+   int i=0;
+  int categ=0;
+//   for (int i=0; i<5;i++) {
+//     for (int categ=-1; categ<4;categ++) {
       sprintf(buffer,"ws_hgg_splot_reco");
       if (i) sprintf(buffer,"%s%d",buffer,menu_cut[i]);
       if (categ>-1) sprintf(buffer,"%scateg%d",buffer,categ);
@@ -61,8 +62,9 @@ int main() {
       root_file->cd();
       ws->Write("",TObject::kOverwrite);
       ws->Delete();  
-    } 
-  }
+//     } 
+//   }
+
   root_file->Close();
   cout << "Went up to the end" << endl;
   return 0;
@@ -80,7 +82,7 @@ int AddModel(RooWorkspace *ws, int  const &cut=0, int const &categ=0) {
   
   
   RooRealVar *dipho_mass=new RooRealVar("dipho_mass","m_{#gamma #gamma}",100,180,"GeV/c^{2}");
-  RooRealVar *dipho_pt=new RooRealVar("dipho_pt","p_{T#gamma#gamma}",100,0,200,"GeV/c");
+  RooRealVar *dipho_pt=new RooRealVar("dipho_pt","p_{T#gamma#gamma}",100,0,80,"GeV/c");
   RooRealVar *dipho_ctheta=new RooRealVar("dipho_ctheta","cos(#theta *)",0.5,0,1);
   RooRealVar *weight=new RooRealVar("weight","weight",0,10);
   RooRealVar *category=new RooRealVar("category","category",-1,5);
@@ -89,6 +91,7 @@ int AddModel(RooWorkspace *ws, int  const &cut=0, int const &categ=0) {
   RooDataSet *sim_gen=0;
   TCanvas *canvas=new TCanvas("canvas","canvas",800,600);
   char buffer[100],buffer2[100];  
+
 
 
   //Model of ggh =gauss_mass * tsallispol2
@@ -134,14 +137,14 @@ int AddModel(RooWorkspace *ws, int  const &cut=0, int const &categ=0) {
 
 
 
-  RooRealVar *coef0_pol_pt_ggh=new RooRealVar("coef0_pol_pt_ggh","coef0_pol_pt_ggh",7,-1,100);
+  RooRealVar *coef0_pol_pt_ggh=new RooRealVar("coef0_pol_pt_ggh","coef0_pol_pt_ggh",10,-1,100);
   RooRealVar *coef1_pol_pt_ggh=new RooRealVar("coef1_pol_pt_ggh","coef1_pol_pt_ggh",7,-1,100);
   RooRealVar *coef2_pol_pt_ggh=new RooRealVar("coef2_pol_pt_ggh","coef2_pol_pt_ggh",7,-1,100);
   RooBernstein *pol_pt_ggh=new RooBernstein("pol_pt_ggh","pol_pt_ggh",*dipho_pt,RooArgSet(*coef0_pol_pt_ggh, *coef1_pol_pt_ggh, *coef2_pol_pt_ggh));
 
-  RooRealVar *coefM_tsallis_pt_ggh=new RooRealVar("coefM_tsallis_pt_ggh","coefM_tsallis_pt_ggh",125,0,300);
-  RooRealVar *coefT_tsallis_pt_ggh=new RooRealVar("coefT_tsallis_pt_ggh","coefT_tsallis_pt_ggh",10,1,50);
-  RooRealVar *coefN_tsallis_pt_ggh=new RooRealVar("coefN_tsallis_pt_ggh","coefN_tsallis_pt_ggh",5,2,30);
+  RooRealVar *coefM_tsallis_pt_ggh=new RooRealVar("coefM_tsallis_pt_ggh","coefM_tsallis_pt_ggh",1,0,300);
+  RooRealVar *coefT_tsallis_pt_ggh=new RooRealVar("coefT_tsallis_pt_ggh","coefT_tsallis_pt_ggh",5,1,50);
+  RooRealVar *coefN_tsallis_pt_ggh=new RooRealVar("coefN_tsallis_pt_ggh","coefN_tsallis_pt_ggh",3,2,30);
   RooGenericPdf *tsallis_pt_ggh=new RooGenericPdf("tsallis_pt_ggh","(coefN_tsallis_pt_ggh-1)*(coefN_tsallis_pt_ggh-2)/coefN_tsallis_pt_ggh/coefT_tsallis_pt_ggh/(coefN_tsallis_pt_ggh*coefT_tsallis_pt_ggh+(coefN_tsallis_pt_ggh-2)*coefM_tsallis_pt_ggh)*dipho_pt*pow(1+(sqrt(coefM_tsallis_pt_ggh*coefM_tsallis_pt_ggh+dipho_pt*dipho_pt)-coefM_tsallis_pt_ggh)/coefN_tsallis_pt_ggh/coefT_tsallis_pt_ggh,-coefN_tsallis_pt_ggh)",RooArgSet(*dipho_pt,*coefN_tsallis_pt_ggh,*coefM_tsallis_pt_ggh,*coefT_tsallis_pt_ggh));
   
   
@@ -173,7 +176,7 @@ int AddModel(RooWorkspace *ws, int  const &cut=0, int const &categ=0) {
     frame_pt->Draw();
     canvas->SaveAs("frame_ptggh_reco.pdf");
     frame_pt->Delete();
-  
+
   sim_gen->Delete();
   tree->Delete();
   tree=0;
@@ -222,25 +225,22 @@ int AddModel(RooWorkspace *ws, int  const &cut=0, int const &categ=0) {
 
 
 
-  RooRealVar *coef0_pol_pt_bkg=new RooRealVar("coef0_pol_pt_bkg","coef0_pol_pt_bkg",14,0.001,50);
-  RooRealVar *coef1_pol_pt_bkg=new RooRealVar("coef1_pol_pt_bkg","coef1_pol_pt_bkg",0.7,0.001,50);
-  RooRealVar *coef2_pol_pt_bkg=new RooRealVar("coef2_pol_pt_bkg","coef2_pol_pt_bkg",0.7,0.001,50);
+  RooRealVar *coef0_pol_pt_bkg=new RooRealVar("coef0_pol_pt_bkg","coef0_pol_pt_bkg",14,1,100);
+  RooRealVar *coef1_pol_pt_bkg=new RooRealVar("coef1_pol_pt_bkg","coef1_pol_pt_bkg",9,1,100);
+  RooRealVar *coef2_pol_pt_bkg=new RooRealVar("coef2_pol_pt_bkg","coef2_pol_pt_bkg",34,1,100);
 
   RooBernstein *pol_pt_bkg=new RooBernstein("pol_pt_bkg","pol_pt_bkg",*dipho_pt,RooArgSet(*coef0_pol_pt_bkg,*coef1_pol_pt_bkg,*coef2_pol_pt_bkg));
 
-
-  RooRealVar *theta_logn_pt_bkg=new RooRealVar("theta_logn_pt_bkg","theta_logn_pt_bkg",-1,-30,30);
-  RooRealVar *sigma_logn_pt_bkg=new RooRealVar("sigma_logn_pt_bkg","sigma_logn_pt_bkg",6,0,300);
-  RooRealVar *M_logn_pt_bkg=new RooRealVar("M_logn_pt_bkg","M_logn_pt_bkg",6,0,300);
-  RooGenericPdf *logn_pt_bkg=new RooGenericPdf("logn_pt_bkg","TMath::LogNormal(dipho_pt,sigma_logn_pt_bkg,theta_logn_pt_bkg,M_logn_pt_bkg)",RooArgSet(*dipho_pt, *M_logn_pt_bkg, * theta_logn_pt_bkg, *sigma_logn_pt_bkg));
-
-  RooRealVar *coefM_tsallis_pt_bkg=new RooRealVar("coefM_tsallis_pt_bkg","coefM_tsallis_pt_bkg",1,0,300);
-  RooRealVar *coefT_tsallis_pt_bkg=new RooRealVar("coefT_tsallis_pt_bkg","coefT_tsallis_pt_bkg",6,1,50);
-  RooRealVar *coefN_tsallis_pt_bkg=new RooRealVar("coefN_tsallis_pt_bkg","coefN_tsallis_pt_bkg",3,2,30);
+  RooRealVar *coefM_tsallis_pt_bkg=new RooRealVar("coefM_tsallis_pt_bkg","coefM_tsallis_pt_bkg",1,0,10);
+  RooRealVar *coefT_tsallis_pt_bkg=new RooRealVar("coefT_tsallis_pt_bkg","coefT_tsallis_pt_bkg",6,1,15);
+  RooRealVar *coefN_tsallis_pt_bkg=new RooRealVar("coefN_tsallis_pt_bkg","coefN_tsallis_pt_bkg",3,2,15);
   RooGenericPdf *tsallis_pt_bkg=new RooGenericPdf("tsallis_pt_bkg","(coefN_tsallis_pt_bkg-1)*(coefN_tsallis_pt_bkg-2)/coefN_tsallis_pt_bkg/coefT_tsallis_pt_bkg/(coefN_tsallis_pt_bkg*coefT_tsallis_pt_bkg+(coefN_tsallis_pt_bkg-2)*coefM_tsallis_pt_bkg)*dipho_pt*pow(1+(sqrt(coefM_tsallis_pt_bkg*coefM_tsallis_pt_bkg+dipho_pt*dipho_pt)-coefM_tsallis_pt_bkg)/coefN_tsallis_pt_bkg/coefT_tsallis_pt_bkg,-coefN_tsallis_pt_bkg)",RooArgSet(*dipho_pt,*coefN_tsallis_pt_bkg,*coefM_tsallis_pt_bkg,*coefT_tsallis_pt_bkg));
   
   RooProdPdf *model_pt_bkg=new RooProdPdf("model_pt_bkg","model_pt_bkg",RooArgSet(*tsallis_pt_bkg,*pol_pt_bkg));
   
+  // RooRealVar *compo_pol_pt=new RooRealVar("compo_pol_pt","compo_pol_pt",0.5,0.1,0.9);
+//   RooAddPdf *model_pt_bkg=new RooAddPdf("model_pt_bkg","model_pt_bkg",RooArgSet(*pol_pt_bkg,*tsallis_pt_bkg),*compo_pol_pt);
+  //RooAbsPdf *model_pt_bkg=tsallis_pt_bkg;
 
 
   model_pt_bkg->fitTo(*sim_gen);
@@ -253,22 +253,41 @@ int AddModel(RooWorkspace *ws, int  const &cut=0, int const &categ=0) {
 //   coefN_tsallis_pt_bkg->setRange(coefN_tsallis_pt_bkg->getVal()-2*coefN_tsallis_pt_bkg->getError(),coefN_tsallis_pt_bkg->getVal()+2*coefN_tsallis_pt_bkg->getError());
 // //   coefT_tsallis_pt_bkg->setRange(coefT_tsallis_pt_bkg->getVal()-2*coefT_tsallis_pt_bkg->getError(),coefT_tsallis_pt_bkg->getVal()+2*coefT_tsallis_pt_bkg->getError());
 
-  coef0_pol_pt_bkg->setConstant(1);
-  coef1_pol_pt_bkg->setConstant(1);
-  coef2_pol_pt_bkg->setConstant(1);
-  coefM_tsallis_pt_bkg->setConstant(1);
-  coefN_tsallis_pt_bkg->setConstant(1);
-  coefT_tsallis_pt_bkg->setConstant(1);
      
   
 
   //Check plot
   frame_pt=dipho_pt->frame();
   sim_gen->plotOn(frame_pt);
-  model_pt_bkg->plotOn(frame_pt);
+  model_pt_bkg->plotOn(frame_pt,Name("ModelPolFull"));
+  tsallis_pt_bkg->plotOn(frame_pt,LineColor(kRed),LineStyle(kDashed),Name("ModelPolTsallis"));
+  //  tsallis_pt_bkg->fitTo(*sim_gen);
+  tsallis_pt_bkg->plotOn(frame_pt,LineColor(kGreen),Name("ModelTsallisSeul"));
   frame_pt->Draw();
+  TLegend legend(0.6,0.8,1,1);
+  legend.AddEntry("ModelPolFull","Full Model with Polynom","l");
+  legend.AddEntry("ModelPolTsallis","Tsallis Comp. with Polynom","l");
+  legend.AddEntry("ModelTsallisSeul","Tsallis Only Model","l");
+  legend.Draw();
+  frame_pt->SetTitle("");
   canvas->SaveAs("frame_ptbkg_reco.pdf");
   frame_pt->Delete();
+
+  frame_pt=dipho_pt->frame();
+  pol_pt_bkg->plotOn(frame_pt);
+  frame_pt->Draw();
+  canvas->SaveAs("frame_polptbkg_reco.pdf");
+  frame_pt->Delete();
+
+
+  coef0_pol_pt_bkg->setConstant(1);
+  coef1_pol_pt_bkg->setConstant(1);
+  coef2_pol_pt_bkg->setConstant(1);
+  coefM_tsallis_pt_bkg->setConstant(1);
+  coefN_tsallis_pt_bkg->setConstant(1);
+  coefT_tsallis_pt_bkg->setConstant(1);
+
+
 
   sim_gen->Delete();
   tree->Delete();
@@ -277,7 +296,7 @@ int AddModel(RooWorkspace *ws, int  const &cut=0, int const &categ=0) {
 
 
   //Combine the models 
-  RooRealVar *ggh_yield=new RooRealVar("ggh_yield","ggh_yield",500,30,1000);
+  RooRealVar *ggh_yield=new RooRealVar("ggh_yield","ggh_yield",500,2,1000);
   RooRealVar *bkg_yield=new RooRealVar("bkg_yield","bkg_yield",50000,100,200000);
   
   RooAddPdf *model_gghbkg= new RooAddPdf("model_gghbkg","model_gghbkg",RooArgList(*model_ggh,*model_bkg),RooArgList(*ggh_yield,*bkg_yield));  
@@ -418,9 +437,21 @@ int DoSPlot(RooWorkspace* ws) {
   frame_pt->Draw();
   canvas->SaveAs("frameDoSplotPt_reco.pdf");
   frame_pt->Delete();
-  canvas->Close();
+
 
 			 
+ 
+  frame_pt=dipho_pt->frame(0,70,35);
+  sim_gghbkg->plotOn(frame_pt);
+  model_gghbkg->plotOn(frame_pt);
+  model_gghbkg->plotOn(frame_pt, Components("model_ggh"), LineColor(kGreen), LineStyle(kDashed));
+  model_gghbkg->plotOn(frame_pt, Components("model_bkg"), LineColor(kRed), LineStyle(kDashed));
+  frame_pt->Draw();
+  canvas->SaveAs("frameZoomPt_reco.pdf");
+  frame_pt->Delete();
+  canvas->Close();
+
+
 			 
   SPlot *splot_gghbkg=new SPlot("splot_gghbkg","splot_gghbkg", *simW_gghbkg, model_gghbkg, RooArgList(*ggh_yield, *bkg_yield));  //Create splot
 
@@ -476,7 +507,7 @@ int MakePlot(RooWorkspace* ws, int const &cut=0, int const &categ=0) {
   //Check plots of the fit before splot
   RooPlot *frame_up=dipho_pt->frame();
   RooPlot *frame_down=dipho_mass->frame();
-  sim->plotOn(frame_up,Name("sim"),Binning(100,0,200),MarkerColor(kBlack));
+  sim->plotOn(frame_up,Name("sim"),Binning(NBINS,0,200),MarkerColor(kBlack));
   model->plotOn(frame_up, LineColor(kBlue),Name("model"));
   model->plotOn(frame_up,Components("model_ggh"),LineColor(kGreen),LineStyle(kDashed),Name("model_ggh"));
   model->plotOn(frame_up,Components("model_bkg"),LineColor(kRed),LineStyle(kDashed),Name("model_bkg"));
@@ -486,15 +517,16 @@ int MakePlot(RooWorkspace* ws, int const &cut=0, int const &categ=0) {
   model->plotOn(frame_down,Components("model_ggh"),LineColor(kGreen),LineStyle(kDashed));
   model->plotOn(frame_down,Components("model_bkg"),LineColor(kRed),LineStyle(kDashed));
 
-  pad_up->cd();
+  //  pad_up->cd();
   //  pad_up->SetLogy(1);
-  frame_up->UseCurrentStyle();
-  frame_up->Draw();
-  pad_down->cd();
+  //frame_up->UseCurrentStyle();
+  //frame_up->Draw();
+  //pad_down->cd();
   //  pad_down->SetLogy(1);
+  canvas->cd();  
   frame_down->UseCurrentStyle();
   frame_down->Draw();
-
+  
   legend->AddEntry(frame_up->findObject("sim"),"Inclusive Generated Events","lpe");
   legend->AddEntry(frame_up->findObject("model"),"Inclusive Fit","l");
   legend->AddEntry(frame_up->findObject("model_ggh"),"ggH Component","l");
@@ -538,9 +570,9 @@ int MakePlot(RooWorkspace* ws, int const &cut=0, int const &categ=0) {
   // plot weighted events and first fit
   frame_up=dipho_pt->frame();
   RooDataSet *sim_Wggh=new RooDataSet("sim_Wggh","sim_Wggh",simW,*simW->get(),0,"ggh_yield_sw");
-  sim_Wggh->plotOn(frame_up,MarkerColor(2),DataError(RooAbsData::SumW2),Name("sim_Wggh"),Binning(100,0,200));// plot weighted ggh events
+  sim_Wggh->plotOn(frame_up,MarkerColor(2),DataError(RooAbsData::SumW2),Name("sim_Wggh"),Binning(NBINS,0,200));// plot weighted ggh events
   RooDataSet *sim_Wbkg=new RooDataSet("sim_Wbkg","sim_Wbkg",simW,*simW->get(),0,"bkg_yield_sw");
-  sim_Wbkg->plotOn(frame_up,MarkerColor(1),DataError(RooAbsData::SumW2),Name("sim_Wbkg"),Binning(100,0,200)); // plot weighted background events
+  sim_Wbkg->plotOn(frame_up,MarkerColor(1),DataError(RooAbsData::SumW2),Name("sim_Wbkg"),Binning(NBINS,0,200)); // plot weighted background events
   model->plotOn(frame_up,Components("model_bkg"),LineColor(4),Name("model_bkg"));// background component of the total fit
   model->plotOn(frame_up,Components("model_ggh"),LineColor(3),Name("model_ggh"));//ggh component of total fit 
 
@@ -578,7 +610,7 @@ int MakePlot(RooWorkspace* ws, int const &cut=0, int const &categ=0) {
 
   // plot weighted signal events and first fit
   frame_up=dipho_pt->frame();
-  sim_Wggh->plotOn(frame_up,MarkerColor(2),DataError(RooAbsData::SumW2),Name("sim_Wggh"),Binning(100,0,200));// plot weighted ggh events
+  sim_Wggh->plotOn(frame_up,MarkerColor(2),DataError(RooAbsData::SumW2),Name("sim_Wggh"),Binning(NBINS,0,200));// plot weighted ggh events
   model->plotOn(frame_up,Components("model_ggh"),LineColor(3),Normalization(sim_Wbkg->sumEntries(),RooAbsReal::NumEvent),Name("model_ggh"));//ggh component of total fit 
   canvas->cd();
   //   canvas->SetLogy();

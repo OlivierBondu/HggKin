@@ -162,13 +162,13 @@ buffer=""
 echo "\\clearpage"
 echo "\\part{Reconstructed Level}"
 echo "\\section*{Categories}"
-echo "Category 1 : Both Photons Unconverted and in the Barrel\\\\"
-echo "Category 2 : Both Photons in the Barrel, at Least One Converted\\\\"
-echo "Category 3 : Both Photons Unconverted, at Least One in the Endcap\\\\"
-echo "Category 4 : At Least One Photon Converted, at Least One in the Endcap\\\\"
+echo "Category 0 : Both Photons Unconverted and in the Barrel\\\\"
+echo "Category 1 : Both Photons in the Barrel, at Least One Converted\\\\"
+echo "Category 2 : Both Photons Unconverted, at Least One in the Endcap\\\\"
+echo "Category 3 : At Least One Photon Converted, at Least One in the Endcap\\\\"
 
 
-for categ in `seq 0 4`
+for categ in `seq -1 3`
   do
 file_ggh=$3
 file_ggh2=$1
@@ -180,10 +180,11 @@ file_bkg=$9
 file_bkg2=$7
 file_bkg3=$8
 
-  if [[ ${categ} = "0" ]];
+  if [[ ${categ} = "-1" ]];
       then 
       echo "\\section{Inclusive on Categories}"
-      else
+      buffcat=""    
+  else
       echo "\\clearpage"
       echo "\\section{Category ${categ}}"
       buffcat="_categ${categ}"
@@ -192,18 +193,10 @@ file_bkg3=$8
     do
     if [[ "${cut}" = "0" ]];
 	then 
-	if [[ ${categ} = "0" ]]; then echo "\\addtocontents{toc}{\\protect\\setcounter{tocdepth}{2}}"
-	fi
 	echo "\\subsection{Inclusive on \$|cos(\\theta*)|\$}"
-	if [[ ${categ} = "0" ]]; then echo "\\addtocontents{toc}{\\protect\\setcounter{tocdepth}{1}}" 
-	fi
 	buffer="${buffer} cuttheta"
     else echo "\\clearpage"
-	if [[ ${categ} = "0" ]]; then echo "\\addtocontents{toc}{\\protect\\setcounter{tocdepth}{2}}"
-	fi
 	echo "\\subsection{\$|cos(\\theta*)|>0.${cut}\$}"
-	if [[ ${categ} = "0" ]]; then echo "\\addtocontents{toc}{\\protect\\setcounter{tocdepth}{1}}"
-	fi
     fi
     echo "\\begin{figure}[!h]"
     
@@ -225,7 +218,7 @@ file_bkg3=$8
       do
       for pol in `seq 0 2`
 	do
-	if [[ (${cut} = "0") && (${categ} = "0") ]];
+	if [[ (${cut} = "0") && (${categ} = "-1") ]];
 	    then
 	    name=`echo "ggh${function}pol${pol}${cuttheta}"`
 	    chi2=`grep ${name} ${file_ggh} | grep -v "cuttheta" | grep -v "categ" | awk '{print $2}'`
@@ -291,7 +284,7 @@ file_bkg3=$8
 	    chi2=`grep ${name} ${file_bkg3} | grep -v "cuttheta"  | awk '{print $2}'`
 	    chi2list_bkg3="${chi2list_bkg3} &  ${chi2}"
 	
-  elif [[ ${categ} = "0" ]];
+  elif [[ ${categ} = "-1" ]];
 	    then
 	    name=`echo "ggh${function}pol${pol}${cuttheta}"`
 	    chi2=`grep ${name} ${file_ggh}  | grep -v "categ" | awk '{print $2}'`
@@ -382,13 +375,13 @@ fi
     echo "\\hline"
     echo "\\end{tabular}"
     echo "\\begin{minipage}{0.33\\linewidth}"
-    echo "\\includegraphics[width=\\linewidth]{/afs/cern.ch/work/c/cgoudet/private/plot/pdf/fit_gghtsallispol2${cuttheta}_reco.pdf}"
+    echo "\\includegraphics[width=\\linewidth]{/afs/cern.ch/work/c/cgoudet/private/plot/pdf/fit_gghtsallispol2${cuttheta}${buffcat}_reco.pdf}"
     echo "\\end{minipage}"
     echo "\\begin{minipage}{0.33\\linewidth}"
-    echo "\\includegraphics[width=\\linewidth]{/afs/cern.ch/work/c/cgoudet/private/plot/pdf/fit_vbftsallispol1${cuttheta}_reco.pdf}"
+    echo "\\includegraphics[width=\\linewidth]{/afs/cern.ch/work/c/cgoudet/private/plot/pdf/fit_vbftsallispol1${cuttheta}${buffcat}_reco.pdf}"
     echo "\\end{minipage}"
     echo "\\begin{minipage}{0.33\\linewidth}"
-    echo "\\includegraphics[width=\\linewidth]{/afs/cern.ch/work/c/cgoudet/private/plot/pdf/fit_bkgtsallispol2${cuttheta}_reco.pdf}"
+    echo "\\includegraphics[width=\\linewidth]{/afs/cern.ch/work/c/cgoudet/private/plot/pdf/fit_bkgtsallispol2${cuttheta}${buffcat}_reco.pdf}"
     echo "\\end{minipage}"
 
     echo "\\end{figure}"
