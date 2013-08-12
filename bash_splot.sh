@@ -8,6 +8,7 @@ pdflatex note_splot.tex
 
 rm -v note_splot.aux
 rm -v note_splot.log
-#rm -v note_splot.tex
+rm -v note_splot.toc
+rm -v note_splot.tex
 
 mv note_splot.pdf /afs/cern.ch/work/c/cgoudet/private/plot/.

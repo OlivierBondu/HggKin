@@ -189,7 +189,6 @@ int main() {
       tree->SetBranchAddress(buffer,&gen_values[i]);
     }
 
-
     for (int i=0; i<nentry; i++) {
       tree->GetEntry(i);
       gamma1->SetPtEtaPhiM(gen_values[0],gen_values[1],gen_values[2],gen_values[3]);
@@ -308,8 +307,8 @@ int main() {
       tree->SetBranchStatus(buffer,1);  
       tree->SetBranchAddress(buffer,&gen_values[i]);
     }
-
-
+    
+    cout << nentry << endl;
     for (int i=0; i<nentry; i++) {
       tree->GetEntry(i);
       gamma1->SetPtEtaPhiM(gen_values[0],gen_values[1],gen_values[2],gen_values[3]);
@@ -400,7 +399,7 @@ int main() {
   TH1F *hist_ctheta_window[2][n_window][5]={{{0}}};//pt and costheta with mass cut
   char *process[3]={"ggh","vbf","bkg"};
 
-  for (int proc=2; proc<3; proc++) {
+  for (int proc=0; proc<3; proc++) {
     switch (proc) 
       {
       case 2:
@@ -418,14 +417,14 @@ int main() {
 	file_result->cd();
 	tree  =(TTree *) file->Get("vbf_m125_8TeV");
 	break;      
-}
+      }
     sprintf(buffer,"tree_reco_%s",process[proc]);
     tree_result=new TTree(buffer,buffer);
     tree_result->Branch("dipho_mass",&dipho_mass,"dipho_mass/F");
     tree_result->Branch("dipho_pt",&dipho_pt,"dipho_pt/F");
     tree_result->Branch("dipho_ctheta",&dipho_ctheta,"dipho_ctheta/F");
     tree_result->Branch("weight",&weight,"weight/F");
-    tree_result->Branch("category",&category,"category/b");
+    tree_result->Branch("category",&category,"category/I");
 
 
     for (int categ=0; categ<5; categ++) {
@@ -495,6 +494,11 @@ int main() {
   }
 
     double totweight=0;
+//     float phopt=0;
+//     tree->SetBranchStatus("dipho_pt",1);
+//     tree->SetBranchAddress("dipho_pt",&phopt);
+
+
 
 
   for (int i=0;i<nentry;i++) {
@@ -511,6 +515,7 @@ int main() {
     dipho_pt=gamma_pair->Pt();
     dipho_ctheta=GetCosTheta(gamma1,gamma2);
     weight=reco_fvalues[11]*reco_fvalues[12];
+    //      cout << dipho_pt << " " << phopt << "     " << dipho_mass << " " << reco_fvalues[10] << endl;
     //cout << reco_fvalues[11] << " " << reco_fvalues[12] << " " << weight << endl;
       totweight+= weight;
     isEB= (reco_ivalues[1] && reco_ivalues[3]) ? 1 : 0 ;

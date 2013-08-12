@@ -9,6 +9,7 @@
 #include "TMath.h"
 #include "TLegend.h"
 #include "TLatex.h"
+#include "TAxis.h"
 
 //Roofit headers
 #include "RooPlot.h"
@@ -48,7 +49,7 @@ int main() {
   char buffer[100];
 
    int i=0;
-  int categ=0;
+  int categ=-1;
 //   for (int i=0; i<5;i++) {
 //     for (int categ=-1; categ<4;categ++) {
       sprintf(buffer,"ws_hgg_splot_reco");
@@ -75,15 +76,15 @@ int main() {
 //######################################################################################################################################
 //######################################################################################################################################
 int AddModel(RooWorkspace *ws, int  const &cut=0, int const &categ=0) {
- 
+  setTDRStyle(); 
   TFile *file_kin=0;
   if (BATCH) file_kin=new TFile("kin_dist.root");
   else file_kin=new TFile("/afs/cern.ch/work/c/cgoudet/private/data/kin_dist.root");
   
   
   RooRealVar *dipho_mass=new RooRealVar("dipho_mass","m_{#gamma #gamma}",100,180,"GeV/c^{2}");
-  RooRealVar *dipho_pt=new RooRealVar("dipho_pt","p_{T#gamma#gamma}",100,0,80,"GeV/c");
-  RooRealVar *dipho_ctheta=new RooRealVar("dipho_ctheta","cos(#theta *)",0.5,0,1);
+  RooRealVar *dipho_pt=new RooRealVar("dipho_pt","p_{T#gamma#gamma}",0,200,"GeV/c");
+  RooRealVar *dipho_ctheta=new RooRealVar("dipho_ctheta","cos(#theta *)",0,1);
   RooRealVar *weight=new RooRealVar("weight","weight",0,10);
   RooRealVar *category=new RooRealVar("category","category",-1,5);
   RooPlot *frame_mass=0,*frame_pt=0;
@@ -128,8 +129,8 @@ int AddModel(RooWorkspace *ws, int  const &cut=0, int const &categ=0) {
   compo_mass->setRange(compo_mass->getVal()-2*compo_mass->getError(),compo_mass->getVal()+2*compo_mass->getError());
   
   //Check plot
-  frame_mass=dipho_mass->frame();
-  sim_gen->plotOn(frame_mass,Binning(30,110,140));
+  frame_mass=dipho_mass->frame(110,140,15);
+  sim_gen->plotOn(frame_mass);
   model_mass_ggh->plotOn(frame_mass);
   frame_mass->Draw();
   canvas->SaveAs("frame_massggh_reco.pdf");
@@ -300,13 +301,14 @@ int AddModel(RooWorkspace *ws, int  const &cut=0, int const &categ=0) {
   RooRealVar *bkg_yield=new RooRealVar("bkg_yield","bkg_yield",50000,100,200000);
   
   RooAddPdf *model_gghbkg= new RooAddPdf("model_gghbkg","model_gghbkg",RooArgList(*model_ggh,*model_bkg),RooArgList(*ggh_yield,*bkg_yield));  
+  //RooAddPdf *model_gghbkg= new RooAddPdf("model_gghbkg","model_gghbkg",RooArgList(*model_mass_ggh,*model_mass_bkg),RooArgList(*ggh_yield,*bkg_yield));  
 
   // Import all pdf and variables (implicitely) into workspace
   ws->import(*weight);
   ws->import(*category);
   ws->import(*dipho_ctheta);
   ws->import(*model_gghbkg);
-
+  ws->import(*dipho_pt);
   file_kin->Close();
 
   cout << "end AddModel" <<  endl;
@@ -350,7 +352,7 @@ int AddData(RooWorkspace* ws, int const &cut=0, int const &categ=0) {
 
   
   //Check Plot
-    TCanvas *canvas=new TCanvas();
+    TCanvas *canvas=new TCanvas("canvas","canvas",800,600);
     RooPlot *framemass=dipho_mass->frame();
     sim_gghbkg->plotOn(framemass, Binning(80,100,180));
     framemass->Draw();
@@ -381,9 +383,8 @@ int DoSPlot(RooWorkspace* ws) {
   RooDataSet *sim_gghbkg=(RooDataSet*) ws->data("sim_gghbkg");
   RooRealVar *dipho_mass=ws->var("dipho_mass");  
   RooRealVar *dipho_pt=ws->var("dipho_pt");
-  RooDataSet *simW_gghbkg=new RooDataSet(*sim_gghbkg,"simW_gghbkg");
-
-
+  RooRealVar *exp_ggh_yield=ws->var("exp_ggh_yield");
+  //  dipho_pt->setRange("40",0,40);
 
   //Fixing discriminant parameters
   RooRealVar *mean1_mass_ggh=ws->var("mean1_mass_ggh");
@@ -397,9 +398,6 @@ int DoSPlot(RooWorkspace* ws) {
   RooRealVar *coef3_bern_mass_bkg=ws->var("coef3_bern_mass_bkg");
   RooRealVar *ggh_yield=ws->var("ggh_yield");
   RooRealVar *bkg_yield=ws->var("bkg_yield");
-
-
-
   mean1_mass_ggh->setConstant(1);
   sigma1_mass_ggh->setConstant(1);
   mean2_mass_ggh->setConstant(1);
@@ -413,18 +411,27 @@ int DoSPlot(RooWorkspace* ws) {
   model_gghbkg->fitTo(*sim_gghbkg);  
  
 
-
   // Check plot
   TLatex latex; latex.SetNDC(1); char buffer[100];
-  TCanvas *canvas=new TCanvas();
-  RooPlot* frame_mass=dipho_mass->frame(); frame_mass->UseCurrentStyle();
-  sim_gghbkg->plotOn(frame_mass,Range(124.9,125.1));
-  model_gghbkg->plotOn(frame_mass);
-  model_gghbkg->plotOn(frame_mass, Components("model_ggh"), LineColor(kGreen), LineStyle(kDashed));
-  model_gghbkg->plotOn(frame_mass, Components("model_bkg"), LineColor(kRed), LineStyle(kDashed));
+  TCanvas *canvas=new TCanvas("canvas","canvas",800,600);
+  TLegend *legend=new TLegend(0.8,0.85,1,1);
+  RooPlot* frame_mass=dipho_mass->frame(100,180,40); frame_mass->UseCurrentStyle();
+  frame_mass->GetYaxis()->SetLabelSize(0.03);
+  sim_gghbkg->plotOn(frame_mass,Name("data"));
+  model_gghbkg->plotOn(frame_mass,Name("full"));
+  model_gghbkg->plotOn(frame_mass, Components("model_ggh"), LineColor(kGreen), LineStyle(kDashed),Name("ggh"));
+  model_gghbkg->plotOn(frame_mass, Components("model_bkg"), LineColor(kRed), LineStyle(kDashed),Name("bkg"));
   frame_mass->Draw();
-  sprintf(buffer,"ggh_yields=%3.2f   #chi^2=%3.2f",ggh_yield->getVal(),frame_mass->chiSquare()); 
-  latex.DrawLatex(0.6,0.9,buffer);
+  latex.DrawLatex(0.5,0.86,"ggh yield");
+  sprintf(buffer,"fitted = %3.0f",ggh_yield->getVal()); 
+  latex.DrawLatex(0.5,0.81,buffer);
+  sprintf(buffer,"expected = %3.0f",exp_ggh_yield->getVal());
+  latex.DrawLatex(0.5,0.76,buffer);
+  legend->AddEntry(frame_mass->findObject("data"),"MC reco","lpe");
+  legend->AddEntry(frame_mass->findObject("full"),"Full Fit","l");
+  legend->AddEntry(frame_mass->findObject("ggh"),"ggh Fit","l");
+  legend->AddEntry(frame_mass->findObject("bkg"),"bkg Fit","l");
+  legend->Draw();
   canvas->SaveAs("frameDoSplotMass_reco.pdf");
   frame_mass->Delete();
 
@@ -438,30 +445,23 @@ int DoSPlot(RooWorkspace* ws) {
   canvas->SaveAs("frameDoSplotPt_reco.pdf");
   frame_pt->Delete();
 
+  //   frame_pt=dipho_pt->frame();
+//   sim_gghbkg->plotOn(frame_pt);
+//   model_gghbkg->plotOn(frame_pt);
+//   model_gghbkg->plotOn(frame_pt, Components("model_ggh"), LineColor(kGreen), LineStyle(kDashed));
+//   model_gghbkg->plotOn(frame_pt, Components("model_bkg"), LineColor(kRed), LineStyle(kDashed));
+//   frame_pt->Draw();
+//   canvas->SaveAs("frameZoomPt_reco.pdf");
+//   frame_pt->Delete();
+//   canvas->Close();
 
-			 
- 
-  frame_pt=dipho_pt->frame(0,70,35);
-  sim_gghbkg->plotOn(frame_pt);
-  model_gghbkg->plotOn(frame_pt);
-  model_gghbkg->plotOn(frame_pt, Components("model_ggh"), LineColor(kGreen), LineStyle(kDashed));
-  model_gghbkg->plotOn(frame_pt, Components("model_bkg"), LineColor(kRed), LineStyle(kDashed));
-  frame_pt->Draw();
-  canvas->SaveAs("frameZoomPt_reco.pdf");
-  frame_pt->Delete();
-  canvas->Close();
-
-
-			 
-  SPlot *splot_gghbkg=new SPlot("splot_gghbkg","splot_gghbkg", *simW_gghbkg, model_gghbkg, RooArgList(*ggh_yield, *bkg_yield));  //Create splot
-
-  ws->import(*simW_gghbkg);
-
-
+  cout << "is weighted : " << sim_gghbkg->isWeighted() << endl;
+  SPlot *splot_gghbkg=new SPlot("splot_gghbkg","splot_gghbkg", *sim_gghbkg, model_gghbkg, RooArgList(*ggh_yield, *bkg_yield));  //Create splot
+  ws->import(*sim_gghbkg,Rename("simW_gghbkg"));
+  
   cout << "end DoSPlot" << endl;
   return 0;
 }
-
 //#############################################################################################"
 //#############################################################################################"
 //#############################################################################################"
@@ -469,26 +469,20 @@ int MakePlot(RooWorkspace* ws, int const &cut=0, int const &categ=0) {
 
   setTDRStyle();
   // collect usefull variables
+  RooAbsPdf *model=ws->pdf("model_gghbkg");
+  RooDataSet *simu= (RooDataSet*) ws->data("sim_gghbkg");
   RooRealVar *dipho_mass=ws->var("dipho_mass");
   RooRealVar *dipho_pt=ws->var("dipho_pt");
-  RooAbsPdf *model=ws->pdf("model_gghbkg");
-  RooDataSet *sim= (RooDataSet*) ws->data("sim_gghbkg");
-  RooDataSet *simW=(RooDataSet*) ws->data("simW_gghbkg");
   RooRealVar *bkg_yield=ws->var("bkg_yield");
   RooRealVar *ggh_yield=ws->var("ggh_yield");
   RooRealVar *exp_ggh_yield=ws->var("exp_ggh_yield");
+  RooDataSet *simW=(RooDataSet*) ws->data("simW_gghbkg");
 
   TLatex latex;
   latex.SetNDC();  
   char buffer[100];
-
-
   TCanvas *canvas=new TCanvas("canvas","canvas",800,600);
-  TPad *pad_down=new TPad("pad_down","pad_down",0,0,1,0.5);
-  TPad *pad_up=new TPad("pad_up","pad_up",0,0.5,1,1);
   TLegend *legend=new TLegend(0.8,0.7,1,1);
-  pad_down->Draw();
-  pad_up->Draw();
 
   //define path prefixes  for saving canvas
   char buffer_path[100]="",buffer_file[2][3][10]={{""}},buffercut[10]="",buffercateg[30]="";
@@ -504,90 +498,21 @@ int MakePlot(RooWorkspace* ws, int const &cut=0, int const &categ=0) {
   if (cut) sprintf(buffercut,"%d",cut);
   if (categ>-1) sprintf(buffercateg,"_categ%d",categ);
 
-  //Check plots of the fit before splot
-  RooPlot *frame_up=dipho_pt->frame();
-  RooPlot *frame_down=dipho_mass->frame();
-  sim->plotOn(frame_up,Name("sim"),Binning(NBINS,0,200),MarkerColor(kBlack));
-  model->plotOn(frame_up, LineColor(kBlue),Name("model"));
-  model->plotOn(frame_up,Components("model_ggh"),LineColor(kGreen),LineStyle(kDashed),Name("model_ggh"));
-  model->plotOn(frame_up,Components("model_bkg"),LineColor(kRed),LineStyle(kDashed),Name("model_bkg"));
-
-  sim->plotOn(frame_down,Binning(40,100,180),MarkerColor(kBlack));
-  model->plotOn(frame_down,LineColor(kBlue));
-  model->plotOn(frame_down,Components("model_ggh"),LineColor(kGreen),LineStyle(kDashed));
-  model->plotOn(frame_down,Components("model_bkg"),LineColor(kRed),LineStyle(kDashed));
-
-  //  pad_up->cd();
-  //  pad_up->SetLogy(1);
-  //frame_up->UseCurrentStyle();
-  //frame_up->Draw();
-  //pad_down->cd();
-  //  pad_down->SetLogy(1);
-  canvas->cd();  
-  frame_down->UseCurrentStyle();
-  frame_down->Draw();
-  
-  legend->AddEntry(frame_up->findObject("sim"),"Inclusive Generated Events","lpe");
-  legend->AddEntry(frame_up->findObject("model"),"Inclusive Fit","l");
-  legend->AddEntry(frame_up->findObject("model_ggh"),"ggH Component","l");
-  legend->AddEntry(frame_up->findObject("model_bkg"),"bkg Component","l");
-  legend->Draw();
-
-  sprintf(buffer,"signal yields");
-  latex.DrawLatex(0.4,0.88,buffer);
-  sprintf(buffer,"fitted : %1.2e",ggh_yield->getVal());
-  latex.DrawLatex(0.4,0.84,buffer);
-  sprintf(buffer,"expected : %1.2e",exp_ggh_yield->getVal());
-  latex.DrawLatex(0.4,0.80,buffer);
-
-  if (cut)  {
-    sprintf(buffer,"cos(#theta*) > %1.3f",cut/1000.);
-    canvas->cd();    
-    latex.DrawLatex(0.2,0.49,buffer);
-  }
-
-  if (categ>-1)  {
-    sprintf(buffer,"category %d",categ);
-    canvas->cd();    
-    latex.DrawLatex(0.6,0.49,buffer);
-  }
-  
-    
-  //saving canvas
-  for (int file=0;file<3;file++) {
-    sprintf(buffer,"%s%ssplot_unweighted_gghbkg%s%s_reco.%s",buffer_path,buffer_file[0][file],buffercut,buffercateg,buffer_file[1][file]);  
-    canvas->SaveAs(buffer);
-    }  
-
-    frame_up->Delete();
-    frame_down->Delete();
-    legend->Delete();
-  
-  cout << "plotted non weighted" << endl;
-
-
-
   // plot weighted events and first fit
-  frame_up=dipho_pt->frame();
-  RooDataSet *sim_Wggh=new RooDataSet("sim_Wggh","sim_Wggh",simW,*simW->get(),0,"ggh_yield_sw");
-  sim_Wggh->plotOn(frame_up,MarkerColor(2),DataError(RooAbsData::SumW2),Name("sim_Wggh"),Binning(NBINS,0,200));// plot weighted ggh events
+  RooPlot *frame_pt=dipho_pt->frame();
   RooDataSet *sim_Wbkg=new RooDataSet("sim_Wbkg","sim_Wbkg",simW,*simW->get(),0,"bkg_yield_sw");
-  sim_Wbkg->plotOn(frame_up,MarkerColor(1),DataError(RooAbsData::SumW2),Name("sim_Wbkg"),Binning(NBINS,0,200)); // plot weighted background events
-  model->plotOn(frame_up,Components("model_bkg"),LineColor(4),Name("model_bkg"));// background component of the total fit
-  model->plotOn(frame_up,Components("model_ggh"),LineColor(3),Name("model_ggh"));//ggh component of total fit 
+  sim_Wbkg->plotOn(frame_pt,MarkerColor(2),LineColor(2),DataError(RooAbsData::SumW2),Name("sim_Wbkg"),Binning(NBINS,0,dipho_pt->getMax()));// plot weighted ggh events
+  model->plotOn(frame_pt,Components("model_bkg"),LineColor(4),Name("model_bkg"));// background component of the total fit
 
 
   canvas->cd();
   //  canvas->SetLogy();
-  frame_up->UseCurrentStyle();
-  frame_up->Draw();
+  frame_pt->UseCurrentStyle();
+  frame_pt->Draw();
   legend=new TLegend(0.8,0.7,1,1);
-  legend->AddEntry("sim_Wggh", "ggH Weighted Events","lpe");
   legend->AddEntry("sim_Wbkg", "bkg Weighted Events","lpe");
-  legend->AddEntry("model_ggh","Non Weighted ggH Fit","l");
   legend->AddEntry("model_bkg","Non Weighted Bkg Fit","l");
   legend->Draw();
-
   if (cut) {
       sprintf(buffer,"cos(#theta*) > %1.3f",cut/1000.);
       canvas->cd();
@@ -598,29 +523,28 @@ int MakePlot(RooWorkspace* ws, int const &cut=0, int const &categ=0) {
       canvas->cd();
       latex.DrawLatex(0.5,0.96,buffer);
   }
-
-  //saving canvas
   for (int file=0; file<3; file++ ) {
     sprintf(buffer,"%s%ssplot_gghbkg%s%s_reco.%s",buffer_path,buffer_file[0][file],buffercut,buffercateg,buffer_file[1][file]);
       canvas->SaveAs(buffer);
   }
-  cout << "wieghted drawn" << endl;
+  cout << "weighted drawn" << endl;
+  frame_pt->Delete();
 
-  frame_up->Delete();
 
   // plot weighted signal events and first fit
-  frame_up=dipho_pt->frame();
-  sim_Wggh->plotOn(frame_up,MarkerColor(2),DataError(RooAbsData::SumW2),Name("sim_Wggh"),Binning(NBINS,0,200));// plot weighted ggh events
-  model->plotOn(frame_up,Components("model_ggh"),LineColor(3),Normalization(sim_Wbkg->sumEntries(),RooAbsReal::NumEvent),Name("model_ggh"));//ggh component of total fit 
+  frame_pt=dipho_pt->frame();
+  RooDataSet *sim_Wggh=new RooDataSet("sim_Wggh","sim_Wggh",simW,*simW->get(),0,"ggh_yield_sw");
+  sim_Wggh->plotOn(frame_pt,MarkerColor(2),DataError(RooAbsData::SumW2),Name("sim_Wggh"),Binning(NBINS,0,dipho_pt->getMax()));// plot weighted ggh events
+  model->plotOn(frame_pt,Components("model_ggh"),LineColor(3),Normalization(sim_Wbkg->sumEntries(),RooAbsReal::NumEvent),Name("model_ggh"));//ggh component of total fit 
+  
   canvas->cd();
   //   canvas->SetLogy();
-  frame_up->UseCurrentStyle();
-  frame_up->Draw();
+  frame_pt->UseCurrentStyle();
+  frame_pt->Draw();
   legend=new TLegend(0.8,0.9,1,1);
   legend->AddEntry("sim_Wggh", "ggH Weighted Events","lpe");
   legend->AddEntry("model_ggh","Non Weighted ggH Fit","l");
   legend->Draw();
-
  if(cut) {
       sprintf(buffer,"cos(#theta*) > %1.3f",cut/1000.);
       canvas->cd();
@@ -631,16 +555,12 @@ int MakePlot(RooWorkspace* ws, int const &cut=0, int const &categ=0) {
    canvas->cd();
    latex.DrawLatex(0.5,0.96,buffer);
  }
-
-  for (int file=0; file<3; file++ ) {
+ for (int file=0; file<3; file++ ) {
     sprintf(buffer,"%s%ssplot_ggh%s%s_reco.%s",buffer_path,buffer_file[0][file],buffercut,buffercateg,buffer_file[1][file]);
       canvas->SaveAs(buffer);
   }
-
   cout << "weigthed ggh drawn" << endl;
 
-
-
-
-  return 0;
-}
+  cout << "end MakePlot" << endl;
+  return 0;}
+    
