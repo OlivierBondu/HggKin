@@ -3,6 +3,7 @@
 bash table_compare.sh > note_compare.tex
 pdflatex note_compare.tex
 pdflatex note_compare.tex
+pdflatex note_compare.tex
 rm -v note_compare.aux
 rm -v note_compare.log
 rm -v note_compare.tex
