@@ -27,6 +27,7 @@
 #include "RooStats/SPlot.h"
 
 #define BATCH 1 // On batch mode, have to change loading and saving path
+#define NBINS 40
 
 using namespace std;
 using namespace RooStats;
@@ -448,7 +449,7 @@ int MakePlot(RooWorkspace* ws, int const &cut=0) {
   //Check plots of the fit before splot
   RooPlot *frame_up=dipho_pt->frame();
   RooPlot *frame_down=dipho_mass->frame();
-  sim_gen->plotOn(frame_up,Name("sim_gen"),Binning(100,0,200),MarkerColor(kBlack));
+  sim_gen->plotOn(frame_up,Name("sim_gen"),Binning(NBINS,0,200),MarkerColor(kBlack));
   model->plotOn(frame_up, LineColor(kBlue),Name("model"));
   model->plotOn(frame_up,Components("model_ggh"),LineColor(kGreen),LineStyle(kDashed),Name("model_ggh"));
   model->plotOn(frame_up,Components("model_bkg"),LineColor(kRed),LineStyle(kDashed),Name("model_bkg"));
@@ -530,9 +531,9 @@ int MakePlot(RooWorkspace* ws, int const &cut=0) {
   // plot weighted events and first fit
   frame_up=dipho_pt->frame();
   RooDataSet *sim_gen_Wggh=new RooDataSet("sim_gen_Wggh","sim_gen_Wggh",sim_genW,*sim_genW->get(),0,"ggh_yield_sw");
-  sim_gen_Wggh->plotOn(frame_up,MarkerColor(2),LineColor(1),DataError(RooAbsData::SumW2),Name("sim_gen_Wggh"),Binning(100,0,200));// plot weighted ggh events
+  sim_gen_Wggh->plotOn(frame_up,MarkerColor(2),LineColor(1),DataError(RooAbsData::SumW2),Name("sim_gen_Wggh"),Binning(NBINS,0,200));// plot weighted ggh events
   RooDataSet *sim_gen_Wbkg=new RooDataSet("sim_gen_Wbkg","sim_gen_Wbkg",sim_genW,*sim_genW->get(),0,"bkg_yield_sw");
-  sim_gen_Wbkg->plotOn(frame_up,MarkerColor(1),LineColor(1),DataError(RooAbsData::SumW2),Name("sim_gen_Wbkg"),Binning(100,0,200)); // plot weighted background events
+  sim_gen_Wbkg->plotOn(frame_up,MarkerColor(1),LineColor(1),DataError(RooAbsData::SumW2),Name("sim_gen_Wbkg"),Binning(NBINS,0,200)); // plot weighted background events
    model->plotOn(frame_up,Components("model_bkg"),LineColor(4),Name("model_bkg"));// background component of the total fit
    model->plotOn(frame_up,Components("model_ggh"),LineColor(3),Name("model_ggh"));//ggh component of total fit 
 
@@ -596,7 +597,7 @@ int MakePlot(RooWorkspace* ws, int const &cut=0) {
 
   // plot weighted signal events and first fit
   frame_up=dipho_pt->frame();
-  sim_gen_Wggh->plotOn(frame_up,MarkerColor(2),LineColor(2),DataError(RooAbsData::SumW2),Name("sim_gen_Wggh"),Binning(100,0,200));// plot weighted ggh events
+  sim_gen_Wggh->plotOn(frame_up,MarkerColor(2),LineColor(2),DataError(RooAbsData::SumW2),Name("sim_gen_Wggh"),Binning(NBINS,0,200));// plot weighted ggh events
   model->plotOn(frame_up,Components("model_ggh"),LineColor(3),Normalization(sim_gen_Wbkg->sumEntries(),RooAbsReal::NumEvent),Name("model_ggh"));//ggh component of total fit 
   //cout << "sim_gen_ggh sum entries " << sim_gen_Wggh->sumEntries() << endl;
   canvas->cd();
