@@ -14,6 +14,9 @@ using namespace std;
 #define RECO 1
 
 
+
+
+
 int main() {
   //------------Analysis choices of parameters and cuts
   //mass window
@@ -28,7 +31,8 @@ int main() {
   char const *kinvartitle[n_kinvar]={"m_{#gamma#gamma}","p_{T}","|cos(#theta*)|"};
   float const binning[n_kinvar][2]={{100,180},{0,200},{0,1}};
   int const n_bins[n_kinvar]={160,200,200};
-  //number of variables with costheta* cuts                                                                                                                    int const n_study=2;
+  //number of variables with costheta* cuts
+int const n_study=2;
   //-------------  
 
   fstream stream_integral;
@@ -622,8 +626,8 @@ float GetCosTheta(TLorentzVector *g1, TLorentzVector *g2) {
   
   TLorentzVector *p1=new TLorentzVector();//Tev
   TLorentzVector *p2=new TLorentzVector();
-  p1->SetPxPyPzE(0,0,4,4); // properties of beams in the lab referential
-  p2->SetPxPyPzE(0,0,-4,4);
+  p1->SetPxPyPzE(0,0,4000,4000); // properties of beams in the lab referential
+  p2->SetPxPyPzE(0,0,-4000,4000);
   TLorentzVector *syst=new TLorentzVector();
   *syst=(*g1)+(*g2);
   
