@@ -3,28 +3,32 @@
 #include "TH1F.h"
 #include "TLorentzVector.h"
 
-
+#include <utility>
+#include <vector>
 #include <fstream>
 #include "param_kin.h"
 #include <iostream>
 using namespace std;
 
-#define GGH_GEN 1 
-#define VBF_GEN 1
-#define BKG_GEN 1
+#define DEBUG 0
+#define GGH_GEN 0 
+#define VBF_GEN 0
+#define BKG_GEN 0
 #define RECO 1
 
+float GetCosTheta(TLorentzVector *g1, TLorentzVector *g2) ;
+int GetVbfInfo( float reco_fvalues[], int reco_ivalues[], float *dijet_deltaEta, float *zepp, float *dijet_mass, float *dijet_dipho_deltaPhi);
 
 int main() {
 
 
   fstream stream_integral;
-  stream_integral.open("/afs/cern.ch/work/c/cgoudet/private/data/hist_integral.txt",fstream::out);
+  stream_integral.open("hist_integral.txt",fstream::out);
 
   //################################################
   
   TFile *file=0;
-  TFile *file_result = new TFile("/afs/cern.ch/work/c/cgoudet/private/data/kin_dist.root","UPDATE");
+  TFile *file_result = new TFile("kin_dist.root","UPDATE");
   
   TTree *tree=0;
   TTree *tree_result=0;
@@ -33,26 +37,38 @@ int main() {
   TLorentzVector *gamma1=new TLorentzVector();
   TLorentzVector *gamma2=new TLorentzVector();
   TLorentzVector *gamma_pair=new TLorentzVector();
+// output variables
+	// standard
   float dipho_pt,dipho_mass,dipho_ctheta, weight;
   int isEB=0,category,r9=0;
+	// vbf
+	float dijet_deltaEta, zepp, dijet_mass, dijet_dipho_deltaPhi;
+	dijet_deltaEta = zepp = dijet_mass = dijet_dipho_deltaPhi = -999.;
+	// -1: no dijet info
+	// 0: dijet info
+	// 1: dijet system passing VBF loose cut-based selection
+	// 2: dijet system passing VBF tight cut-based selection
+	int isVBF= -1;
   TH1F *hist_cuttheta[n_study][n_cuttheta]={{0}}; 
   int nentry=0;
   char buffer [100],dummy[100];
   
   char const *gen_variables[9]={"gh_g1_p4_pt","gh_g1_p4_eta","gh_g1_p4_phi","gh_g1_p4_mass","gh_g2_p4_pt","gh_g2_p4_eta","gh_g2_p4_phi","gh_g2_p4_mass","weight"};//useful variables
   float gen_values[9];//g1_pt,g1_eta,g1_phi,g1_mass,g2_pt,g2_eta,g2_phi,g2_mass,weight;
-  char const *reco_variables[17]={"ph1_pt","ph1_eta","ph1_phi","ph1_e","ph1_r9","ph2_pt","ph2_eta","ph2_phi","ph2_e","ph2_r9","PhotonsMass","weight","pu_weight","ph1_ciclevel","ph1_isEB","ph2_ciclevel","ph2_isEB"};
-  float reco_fvalues[13];
-  int reco_ivalues[4];
+  char const *reco_variables[43]={"ph1_pt","ph1_eta","ph1_phi","ph1_e","ph1_r9","ph2_pt","ph2_eta","ph2_phi","ph2_e","ph2_r9","PhotonsMass","weight","pu_weight","nvtx","j1_dR2Mean","j1_betaStarClassic","j1_eta","j1_phi","j1_pt","j1_e","j2_dR2Mean","j2_betaStarClassic","j2_eta","j2_phi","j2_pt","j2_e","j3_dR2Mean","j3_betaStarClassic","j3_eta","j3_phi","j3_pt","j3_e","j3_dR2Mean","j4_betaStarClassic","j4_eta","j4_phi","j4_pt","j4_e","ph1_ciclevel","ph1_isEB","ph2_ciclevel","ph2_isEB","njets_passing_kLooseID"};
+	int n_reco_fvalues = 38;
+  float reco_fvalues[38];
+	int n_reco_ivalues = 5;
+  int reco_ivalues[5];
 
-  float GetCosTheta(TLorentzVector *g1, TLorentzVector *g2) ;
+
 
 
   //###########################################################
   //#######################GGH_GEN
   //#############################################################
   if (GGH_GEN) {
-    file = new TFile("/afs/cern.ch/work/c/cgoudet/private/data/SMHiggs_m125.root");
+    file = new TFile("/afs/cern.ch/work/o/obondu/public/forChristophe/SMHiggs_m125.root");
     file_result->cd();
     tree  =(TTree *) file->Get("ggh_m125_8TeV");
 
@@ -95,6 +111,7 @@ int main() {
     
 
     for (int i=0; i<nentry; i++) {
+			if( DEBUG ) cout << "##### Processing entry i= " << i << endl;
       tree->GetEntry(i);
       gamma1->SetPtEtaPhiM(gen_values[0],gen_values[1],gen_values[2],gen_values[3]);
       gamma2->SetPtEtaPhiM(gen_values[4],gen_values[5],gen_values[6],gen_values[7]);
@@ -150,7 +167,7 @@ int main() {
   //#######################VBF_GEN#########################
   //#######################################################
   if (VBF_GEN) {
-    file = new TFile("/afs/cern.ch/work/c/cgoudet/private/data/SMHiggs_m125.root");
+    file = new TFile("/afs/cern.ch/work/o/obondu/public/forChristophe/SMHiggs_m125.root");
     file_result->cd();
     tree  =(TTree *) file->Get("vbf_m125_8TeV");
     
@@ -190,6 +207,7 @@ int main() {
     }
 
     for (int i=0; i<nentry; i++) {
+			if( DEBUG ) cout << "##### Processing entry i= " << i << endl;
       tree->GetEntry(i);
       gamma1->SetPtEtaPhiM(gen_values[0],gen_values[1],gen_values[2],gen_values[3]);
       gamma2->SetPtEtaPhiM(gen_values[4],gen_values[5],gen_values[6],gen_values[7]);
@@ -246,7 +264,7 @@ int main() {
   //####################################################################
   if (BKG_GEN) {
     
-    file = new TFile("/afs/cern.ch/work/c/cgoudet/private/data/DiPhotons.root");
+    file = new TFile("/afs/cern.ch/work/o/obondu/public/forChristophe/DiPhotons.root");
     file_result->cd();
     tree =(TTree *) file->Get("diphojet_8TeV");
 
@@ -310,6 +328,7 @@ int main() {
     
     cout << nentry << endl;
     for (int i=0; i<nentry; i++) {
+			if( DEBUG ) cout << "##### Processing entry i= " << i << endl;
       tree->GetEntry(i);
       gamma1->SetPtEtaPhiM(gen_values[0],gen_values[1],gen_values[2],gen_values[3]);
       gamma2->SetPtEtaPhiM(gen_values[4],gen_values[5],gen_values[6],gen_values[7]);
@@ -393,31 +412,35 @@ int main() {
   //#######################################################################################################################
   if (RECO) {
     cout << "in reco" << endl;
+// Creating histograms
   TH1F *hist_reco[5][n_kinvar]={{0}};// distributions without mass or theta cut
   TH1F* histcut_reco[n_study][n_cuttheta][5]={{{0}}};// mass and pt with cut theta
   TH1F* histwindow_reco[n_window][n_cuttheta][5]={{{0}}};//pt with all cuts
   TH1F *hist_ctheta_window[2][n_window][5]={{{0}}};//pt and costheta with mass cut
+
   char *process[3]={"ggh","vbf","bkg"};
 
+// Loading trees
   for (int proc=0; proc<3; proc++) {
     switch (proc) 
       {
       case 2:
-	file = new TFile("/afs/cern.ch/work/c/cgoudet/private/data/DiPhotons.root");
+	file = new TFile("/afs/cern.ch/work/o/obondu/public/forChristophe/DiPhotons.root");
 	tree  =(TTree *) file->Get("diphojet_8TeV");
 	file_result->cd();
 	break;
       case 0:
-	file = new TFile("/afs/cern.ch/work/c/cgoudet/private/data/SMHiggs_m125.root");
+	file = new TFile("/afs/cern.ch/work/o/obondu/public/forChristophe/SMHiggs_m125.root");
 	file_result->cd();
 	tree  =(TTree *) file->Get("ggh_m125_8TeV");
 	break;
       case 1:
-	file = new TFile("/afs/cern.ch/work/c/cgoudet/private/data/SMHiggs_m125.root");
+	file = new TFile("/afs/cern.ch/work/o/obondu/public/forChristophe/SMHiggs_m125.root");
 	file_result->cd();
 	tree  =(TTree *) file->Get("vbf_m125_8TeV");
 	break;      
       }
+// Setting up output tree
     sprintf(buffer,"tree_reco_%s",process[proc]);
     tree_result=new TTree(buffer,buffer);
     tree_result->Branch("dipho_mass",&dipho_mass,"dipho_mass/F");
@@ -425,8 +448,13 @@ int main() {
     tree_result->Branch("dipho_ctheta",&dipho_ctheta,"dipho_ctheta/F");
     tree_result->Branch("weight",&weight,"weight/F");
     tree_result->Branch("category",&category,"category/I");
+    tree_result->Branch("dijet_deltaEta",&dijet_deltaEta,"dijet_deltaEta/F");
+    tree_result->Branch("zepp",&zepp,"zepp/F");
+    tree_result->Branch("dijet_mass",&dijet_mass,"dijet_mass/F");
+    tree_result->Branch("dijet_dipho_deltaPhi",&dijet_dipho_deltaPhi,"dijet_dipho_deltaPhi/F");
+    tree_result->Branch("isVBF",&isVBF,"isVBF/I");
 
-
+// storing histograms
     for (int categ=0; categ<5; categ++) {
       for (int kinvar=0; kinvar<n_kinvar ; kinvar++) {
 	if (categ<3.5) sprintf(buffer,"hist_%s_categ%d_%s_reco",kinvarval[kinvar],categ,process[proc]);
@@ -482,13 +510,13 @@ int main() {
     nentry=tree->GetEntries();
     tree->SetBranchStatus("*",0);// selection of useful branches
     
-    for (int i=0; i<13; i++) {
+    for (int i=0; i< n_reco_fvalues; i++) {
       sprintf(buffer,"%s",reco_variables[i]);
       tree->SetBranchStatus(buffer,1);  
       tree->SetBranchAddress(buffer,&reco_fvalues[i]);
     }
-  for (int i=0;i<4;i++) {
-    sprintf(buffer,"%s",reco_variables[13+i]);
+  for (int i=0;i< n_reco_ivalues;i++) {
+    sprintf(buffer,"%s",reco_variables[n_reco_fvalues+i]);
     tree->SetBranchStatus(buffer,1);  
     tree->SetBranchAddress(buffer,&reco_ivalues[i]);
   }
@@ -502,6 +530,7 @@ int main() {
 
 
   for (int i=0;i<nentry;i++) {
+		if( DEBUG ) cout << "##### Processing entry i= " << i << endl;
     tree->GetEntry(i);
     if (reco_fvalues[0]<40.*reco_fvalues[10]/120.) continue; //ph1_pt< 40*PhotonsMass/120.
     if (reco_fvalues[5]<25.) continue; //ph2_pt<25.
@@ -521,6 +550,10 @@ int main() {
     isEB= (reco_ivalues[1] && reco_ivalues[3]) ? 1 : 0 ;
     r9= (reco_fvalues[4]>0.94 && reco_fvalues[9]>0.94) ? 1 : 0 ;
     category=3-2*isEB-r9;
+		isVBF = -1;
+		dijet_deltaEta = zepp = dijet_mass = dijet_dipho_deltaPhi = -999.;
+		isVBF = GetVbfInfo( reco_fvalues, reco_ivalues, &dijet_deltaEta, &zepp, &dijet_mass, &dijet_dipho_deltaPhi);
+
     tree_result->Fill();
       if(dipho_pt>binning[1][1]) continue;
 
@@ -592,13 +625,13 @@ int main() {
   cout << totweight << endl;  
 
   }  
-  }
+  } // end of if( RECO ) 
 
 
   stream_integral.close();
   file_result->Close();
   return 0;
-  }
+  } // end of main
 
 
 
@@ -633,3 +666,246 @@ float GetCosTheta(TLorentzVector *g1, TLorentzVector *g2) {
   
   return fabs(cos(bissec->Angle(g1->Vect().Unit())));
 }
+
+
+//################################################################  
+//################################################################
+//################################################################
+int GetVbfInfo( float reco_fvalues[], int reco_ivalues[], float *dijet_deltaEta, float *zepp, float *dijet_mass, float *dijet_dipho_deltaPhi){
+	int isVBF = -1;
+// getting human-readable information from input arrays
+	// reco_fvalues
+	// 0-3: g1
+	float g1_pt, g1_eta, g1_phi, g1_e;
+	g1_pt = reco_fvalues[0]; g1_eta = reco_fvalues[1]; g1_phi = reco_fvalues[2]; g1_e = reco_fvalues[3];
+	// 5-8: g2
+	float g2_pt, g2_eta, g2_phi, g2_e;
+	g2_pt = reco_fvalues[5]; g2_eta = reco_fvalues[6]; g2_phi = reco_fvalues[7]; g2_e = reco_fvalues[8];
+	// 13: nvtx
+	float nvtx;
+	nvtx = reco_fvalues[13];
+	// 14-19: j1
+	float j1_dR2Mean,j1_betaStarClassic,j1_eta,j1_phi,j1_pt,j1_e;
+	j1_dR2Mean = reco_fvalues[14]; j1_betaStarClassic = reco_fvalues[15]; j1_eta = reco_fvalues[16]; j1_phi = reco_fvalues[17]; j1_pt = reco_fvalues[18]; j1_e = reco_fvalues[19];
+	// 20-25: j2
+	float j2_dR2Mean,j2_betaStarClassic,j2_eta,j2_phi,j2_pt,j2_e;
+	j2_dR2Mean = reco_fvalues[20]; j2_betaStarClassic = reco_fvalues[21]; j2_eta = reco_fvalues[22]; j2_phi = reco_fvalues[23]; j2_pt = reco_fvalues[24]; j2_e = reco_fvalues[25];
+	// 26-31: j3
+	float j3_dR2Mean,j3_betaStarClassic,j3_eta,j3_phi,j3_pt,j3_e;
+	j3_dR2Mean = reco_fvalues[26]; j3_betaStarClassic = reco_fvalues[27]; j3_eta = reco_fvalues[28]; j3_phi = reco_fvalues[29]; j3_pt = reco_fvalues[30]; j3_e = reco_fvalues[31];
+	// 32-37: j4
+	float j4_dR2Mean,j4_betaStarClassic,j4_eta,j4_phi,j4_pt,j4_e;
+	j4_dR2Mean = reco_fvalues[32]; j4_betaStarClassic = reco_fvalues[33]; j4_eta = reco_fvalues[34]; j4_phi = reco_fvalues[35]; j4_pt = reco_fvalues[36]; j4_e = reco_fvalues[37];
+	// reco_ivalues
+	int njets_passing_kLooseID;
+	njets_passing_kLooseID = reco_ivalues[4];
+// other variables
+	float jet_dR2Mean,jet_betaStarClassic,jet_eta,jet_phi,jet_pt,jet_e;
+	if( DEBUG ) cout << "g1_pt= " << g1_pt << "\tg1_eta= " << g1_eta << "\tg1_phi= " << g1_phi << "\tg1_e= " << g1_e << endl;
+	if( DEBUG ) cout << "g2_pt= " << g2_pt << "\tg2_eta= " << g2_eta << "\tg2_phi= " << g2_phi << "\tg2_e= " << g2_e << endl;
+	if( DEBUG ) cout << "j1_pt= " << j1_pt << "\tj1_eta= " << j1_eta << "\tj1_phi= " << j1_phi << "\tj1_e= " << j1_e << endl;
+	if( DEBUG ) cout << "j2_pt= " << j2_pt << "\tj2_eta= " << j2_eta << "\tj2_phi= " << j2_phi << "\tj2_e= " << j2_e << endl;
+	if( DEBUG ) cout << "j3_pt= " << j3_pt << "\tj3_eta= " << j3_eta << "\tj3_phi= " << j3_phi << "\tj3_e= " << j3_e << endl;
+	if( DEBUG ) cout << "j4_pt= " << j4_pt << "\tj4_eta= " << j4_eta << "\tj4_phi= " << j4_phi << "\tj4_e= " << j4_e << endl;
+
+// preselection
+	if( njets_passing_kLooseID < 2 ) return -1;
+	TLorentzVector jet;
+	vector<float> jetPt;
+	vector<float> jetE;
+	vector<float> jetEta;
+	vector<float> jetPhi;
+	jetPt.clear();
+	jetE.clear();
+	jetEta.clear();
+	jetPhi.clear();
+
+	// loop over jets, store jet info + info on closest genjet / parton (no selection applied)
+	for( int ijet = 0 ; ijet < min(njets_passing_kLooseID, 4); ijet ++ )
+	{
+		if( ijet == 0 )
+		{
+			jet_e = j1_e;
+			jet_pt = j1_pt;
+			jet_phi = j1_phi;
+			jet_eta = j1_eta;
+			jet_betaStarClassic = j1_betaStarClassic;
+			jet_dR2Mean = j1_dR2Mean;
+			jet.SetPtEtaPhiE(j1_pt, j1_eta, j1_phi, j1_e);
+		} // end if jet == 0
+
+		if( ijet == 1 )
+		{
+			jet_e = j2_e;
+			jet_pt = j2_pt;
+			jet_phi = j2_phi;
+			jet_eta = j2_eta;
+			jet_betaStarClassic = j2_betaStarClassic;
+			jet_dR2Mean = j2_dR2Mean;
+			jet.SetPtEtaPhiE(j2_pt, j2_eta, j2_phi, j2_e);
+		} // end if jet == 1
+
+		if( ijet == 2 )
+		{
+			jet_e = j3_e;
+			jet_pt = j3_pt;
+			jet_phi = j3_phi;
+			jet_eta = j3_eta;
+			jet_betaStarClassic = j3_betaStarClassic;
+			jet_dR2Mean = j3_dR2Mean;
+			jet.SetPtEtaPhiE(j3_pt, j3_eta, j3_phi, j3_e);
+		} // end if jet == 2
+
+		if( ijet == 3 )
+		{
+			jet_e = j4_e;
+			jet_pt = j4_pt;
+			jet_phi = j4_phi;
+			jet_eta = j4_eta;
+			jet_betaStarClassic = j4_betaStarClassic;
+			jet_dR2Mean = j4_dR2Mean;
+			jet.SetPtEtaPhiE(j4_pt, j4_eta, j4_phi, j4_e);
+		} // end if jet == 3
+
+		if(DEBUG) cout << "\tjet_pt= " << jet_pt << "\tjet_eta= " << jet_eta << "\tjet_betaStarClassic/log(nvtx-0.64)= " << jet_betaStarClassic / log(nvtx-0.64) << "\tjet_dR2Mean= " << jet_dR2Mean << endl;
+		// jet selection
+		// ** acceptance + pu id **
+		if( jet_pt < 25. ) continue;
+		if(DEBUG) cout << "jet[" << ijet << "] survives pt cut" << endl;
+		if( fabs(jet_eta) > 4.7 ) continue;
+		if(DEBUG) cout << "jet[" << ijet << "] survives eta cut" << endl;
+		if( (fabs(jet_eta)<2.5) && ((jet_betaStarClassic > 0.2*log(nvtx-0.64)) || (jet_dR2Mean>0.06)) ) continue;
+		else if( (fabs(jet_eta)>2.5) && (fabs(jet_eta)<2.75) && ((jet_betaStarClassic > 0.3*log(nvtx-0.64)) || (jet_dR2Mean>0.05)) ) continue;
+		else if( (fabs(jet_eta)>2.75) && (fabs(jet_eta)<3.) && (jet_dR2Mean>0.05) ) continue;
+		else if( (fabs(jet_eta)>3.) && (fabs(jet_eta)<4.7) && (jet_dR2Mean>0.055) ) continue;
+		if(DEBUG) cout << "jet[" << ijet << "] survives pu rejection" << endl;
+		// ** store 4-momentum + csv output for combinatorics **
+		jetPt.push_back(jet_pt);
+		jetE.push_back(jet_e);
+		jetEta.push_back(jet_eta);
+		jetPhi.push_back(jet_phi);
+	} // end of loop over jets
+
+	if(DEBUG) cout << "Njets left after jet cuts: jetPt.size()= " << jetPt.size() << endl;	
+	if( jetPt.size() < 2 ) return -1;
+// define and fill the needed variables
+	isVBF = 0;
+	TLorentzVector g1, g2, gg;	
+	g1.SetPtEtaPhiE(g1_pt, g1_eta, g1_phi, g1_e);
+	g2.SetPtEtaPhiE(g2_pt, g2_eta, g2_phi, g2_e);
+	gg = g1 + g2;
+	TLorentzVector j1, j2, jj;	
+	j1.SetPtEtaPhiE(jetPt[0], jetEta[0], jetPhi[0], jetE[0]);
+	j2.SetPtEtaPhiE(jetPt[1], jetEta[1], jetPhi[1], jetE[1]);
+	jj = j1 + j2;
+
+	vector<int> _ij1;
+	vector<int> _ij2;
+	vector<float> _dijet_deltaEta;
+	vector<float> _zepp;
+	vector<float> _dijet_mass;
+	vector<float> _dijet_dipho_deltaPhi;
+	if( DEBUG ) cout << "This is the first dijet looped over, so initialize properly" << endl;
+	_ij1.push_back( 0 );
+	_ij2.push_back( 1 );
+	_dijet_deltaEta.push_back( j1.Eta() - j2.Eta() );
+	_zepp.push_back( gg.Eta() - (j1.Eta() + j2.Eta())/2. );
+	_dijet_mass.push_back( jj.M() );
+	_dijet_dipho_deltaPhi.push_back( jj.DeltaPhi(gg) );
+	if( DEBUG ) cout << "Now looping over dijet pairs" << endl;
+	// loop over the dijet pairs to fill the information + sort by mjj on-the-fly
+	for(unsigned int ij1 = 0 ; ij1 < jetE.size() -1 ; ij1++)
+	{
+		j1.SetPtEtaPhiE(jetPt[ij1], jetEta[ij1], jetPhi[ij1], jetE[ij1]);
+		for(unsigned int ij2 = ij1+1 ; ij2 < jetE.size() ; ij2++)
+		{
+			if( DEBUG ) cout << "This is dijet pair ij1,ij2)= ( " << ij1 << " , " << ij2 << " )" << endl;
+			if( ij1 == 0 && ij2 == 1 ) continue; // if this is the first pair then initialization is already done
+			j2.SetPtEtaPhiE(jetPt[ij2], jetEta[ij2], jetPhi[ij2], jetE[ij2]);
+			jj = j1 + j2;
+			unsigned int n_dijet = _dijet_mass.size();
+			for(unsigned int ijj = 0 ; ijj < n_dijet ; ijj++ )
+			{
+				if(DEBUG) cout << "ijj= " << ijj << "\tn_dijet= " << n_dijet << "\tjj.M()= " << jj.M() << "\t_dijet_mass[ijj]= " << _dijet_mass[ijj] << endl;
+				if( jj.M() > _dijet_mass[ijj] )
+				{
+					_ij1.insert( _ij1.begin()+ijj,  ij1 );
+					_ij2.insert( _ij2.begin()+ijj,  ij2 );
+					_dijet_deltaEta.insert( _dijet_deltaEta.begin()+ijj,  j1.Eta() - j2.Eta() );
+					_zepp.insert( _zepp.begin()+ijj,  gg.Eta() - (j1.Eta() + j2.Eta())/2. );
+					_dijet_mass.insert( _dijet_mass.begin()+ijj,  jj.M() );
+					_dijet_dipho_deltaPhi.insert( _dijet_dipho_deltaPhi.begin()+ijj,  jj.DeltaPhi(gg) );
+					break;
+				} else if (ijj == _dijet_mass.size() -1) {
+					_ij1.push_back( ij1 );
+					_ij2.push_back( ij2 );
+					_dijet_deltaEta.push_back( j1.Eta() - j2.Eta() );
+					_zepp.push_back( gg.Eta() - (j1.Eta() + j2.Eta())/2. );
+					_dijet_mass.push_back( jj.M() );
+					_dijet_dipho_deltaPhi.push_back( jj.DeltaPhi(gg) );
+				}
+			}
+		}
+	}
+
+	*dijet_deltaEta = _dijet_deltaEta[0];
+	*zepp = _zepp[0];
+	*dijet_mass = _dijet_mass[0];
+	*dijet_dipho_deltaPhi = _dijet_dipho_deltaPhi[0];
+
+// loose VBF selection
+	int ijj_loose = -1;
+	for(unsigned int ijj = 0 ; ijj < _dijet_mass.size() ; ijj ++)
+	{
+		if( ijj_loose != -1 ) continue;
+		if( g1_pt / gg.M() < .5 ) continue;
+		if( g2_pt < 25. ) continue;
+		if( jetPt[ _ij1[ijj] ] < 30. ) continue;
+		if( jetPt[ _ij2[ijj] ] < 20. ) continue;
+		if( fabs(_dijet_deltaEta[ijj]) < 3. ) continue;
+		if(DEBUG) cout << "Event having fabs(_dijet_deltaEta[ijj]) > 3." << endl;
+		if( fabs(_zepp[ijj]) > 2.5 ) continue;
+		if(DEBUG) cout << "Event having fabs(_zepp[ijj]) < 2.5" << endl;
+		if( _dijet_mass[ijj] < 250. ) continue;
+		if(DEBUG) cout << "Event having _dijet_mass[ijj] > 250." << endl;
+		if( fabs(_dijet_dipho_deltaPhi[ijj]) < 2.6 ) continue;
+		if(DEBUG) cout << "Event passing loose vbf selection!" << endl;
+		if( ijj_loose == -1 ) // take the highest mjj dijet candidate if all the cuts are passed
+		{
+			ijj_loose = ijj;
+			*dijet_deltaEta = _dijet_deltaEta[ijj];
+			*zepp = _zepp[ijj];
+			*dijet_mass = _dijet_mass[ijj];
+			*dijet_dipho_deltaPhi = _dijet_dipho_deltaPhi[ijj];
+		}
+	} 
+	if( ijj_loose != -1 ) isVBF = 1;
+
+// tight VBF selection
+	int ijj_tight = -1;
+	for(unsigned int ijj = 0 ; ijj < _dijet_mass.size() ; ijj ++)
+	{
+		if( ijj_tight != -1 ) continue;
+		if( g1_pt / gg.M() < .5 ) continue;
+		if( g2_pt < 25. ) continue;
+		if( jetPt[ _ij1[ijj] ] < 30. ) continue;
+		if( jetPt[ _ij2[ijj] ] < 30. ) continue;
+		if( fabs(_dijet_deltaEta[ijj]) < 3. ) continue;
+		if( fabs(_zepp[ijj]) > 2.5 ) continue;
+		if( _dijet_mass[ijj] < 500. ) continue;
+		if( fabs(_dijet_dipho_deltaPhi[ijj]) < 2.6 ) continue;
+		if(DEBUG) cout << "Event passing tight vbf selection!" << endl;
+		if( ijj_tight == -1 ) // take the highest mjj dijet candidate if all the cuts are passed
+		{
+			ijj_tight = ijj;
+			*dijet_deltaEta = _dijet_deltaEta[ijj];
+			*zepp = _zepp[ijj];
+			*dijet_mass = _dijet_mass[ijj];
+			*dijet_dipho_deltaPhi = _dijet_dipho_deltaPhi[ijj];
+		}
+	} 
+	if( ijj_tight != -1 ) isVBF = 2;
+
+	return isVBF;
+}
+
