@@ -16,6 +16,9 @@
 *.la
 *.a
 
+# editor temp files
+*.swp
+
 # data
 *.root
 *.tex
