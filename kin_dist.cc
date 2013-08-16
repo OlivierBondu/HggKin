@@ -5,7 +5,6 @@
 
 
 #include <fstream>
-#include "param_kin.h"
 #include <iostream>
 using namespace std;
 
@@ -16,7 +15,21 @@ using namespace std;
 
 
 int main() {
-
+  //------------Analysis choices of parameters and cuts
+  //mass window
+  int const n_window=2;
+  int const windowval[n_window]={2,3};
+  //cos theta cuts
+  int const n_cuttheta=4;
+  int const cuttheta[n_cuttheta]={200,375,550,750};
+  //   kinematical variables
+  int const n_kinvar=3;
+  char const *kinvarval[n_kinvar]={"mass","pt","costheta"};
+  char const *kinvartitle[n_kinvar]={"m_{#gamma#gamma}","p_{T}","|cos(#theta*)|"};
+  float const binning[n_kinvar][2]={{100,180},{0,200},{0,1}};
+  int const n_bins[n_kinvar]={160,200,200};
+  //number of variables with costheta* cuts                                                                                                                    int const n_study=2;
+  //-------------  
 
   fstream stream_integral;
   stream_integral.open("/afs/cern.ch/work/c/cgoudet/private/data/hist_integral.txt",fstream::out);

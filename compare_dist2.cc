@@ -1,5 +1,4 @@
 #include <iostream>
-#include "param_kin.h"
 #include "setTDRStyle.h"
 
 #include "TFile.h"
@@ -51,6 +50,23 @@ int main() {
 //#######################################################################
 void  compare_gen(char* const level, int const &norme, int const &window, int const &dology, int const &dostack, int const &cut) {
   cout << "in compare gen" << endl;
+  //------------Analysis choices of parameters and cuts
+  //mass window
+  int const n_window=2;
+  int const windowval[n_window]={2,3};
+  //cos theta cuts
+  int const n_cuttheta=4;
+  int const cuttheta[n_cuttheta]={200,375,550,750};
+  // kinematical variables
+  int const n_kinvar=3;
+  char const *kinvarval[n_kinvar]={"mass","pt","costheta"};
+  char const *kinvartitle[n_kinvar]={"m_{#gamma#gamma}","p_{T}","|cos(#theta*)|"};
+  float const binning[n_kinvar][2]={{100,180},{0,200},{0,1}};
+  int const n_bins[n_kinvar]={160,200,200};
+  //number of variables with costheta* cuts
+  int const n_study=2;
+  //-------------
+
   setTDRStyle();
   gROOT->ForceStyle();
   TCanvas *canvas=new TCanvas("canvas","canvas",800,600);
@@ -156,6 +172,22 @@ void  compare_gen(char* const level, int const &norme, int const &window, int co
 //#######################################################################
 void  compare_reco(int const &norme, int const &window, int const &dology, int const &dostack, int const &cut, int const &categ) {
 
+  //------------Analysis choices of parameters and cuts
+  //mass window
+  int const n_window=2;
+  int const windowval[n_window]={2,3};
+  //cos theta cuts
+  int const n_cuttheta=4;
+  int const cuttheta[n_cuttheta]={200,375,550,750};
+  // kinematical variables
+  int const n_kinvar=3;
+  char const *kinvarval[n_kinvar]={"mass","pt","costheta"};
+  char const *kinvartitle[n_kinvar]={"m_{#gamma#gamma}","p_{T}","|cos(#theta*)|"};
+  float const binning[n_kinvar][2]={{100,180},{0,200},{0,1}};
+  int const n_bins[n_kinvar]={160,200,200};
+  //number of variables with costheta* cuts
+  int const n_study=2;
+  //-------------
 
   setTDRStyle();
   gROOT->ForceStyle();
