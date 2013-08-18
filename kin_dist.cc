@@ -8,11 +8,11 @@
 #include <iostream>
 using namespace std;
 
-#define GGH_GEN 1 
-#define VBF_GEN 1
-#define BKG_GEN 1
+#define GGH_GEN 0 
+#define VBF_GEN 0
+#define BKG_GEN 0
 #define RECO 1
-
+#define DATA 1
 
 
 
@@ -610,14 +610,77 @@ int const n_study=2;
 
   }  
   }
+//################################################################  
+//################################################################
+//################################################################
+
+  if (DATA) {
+    cout << "in data" << endl;
+
+    TFile *file_input=new TFile("/afs/cern.ch/work/c/cgoudet/private/data/data.root");
+    TTree *tree_input=(TTree *) file_input->Get("Data");
+    file_result->cd();
+
+    //Create branches of output tree
+    tree_result=new TTree("tree_data","tree_data");
+    tree_result->Branch("dipho_mass",&dipho_mass,"dipho_mass/F");
+    tree_result->Branch("dipho_pt",&dipho_pt,"dipho_pt/F");
+    tree_result->Branch("dipho_ctheta",&dipho_ctheta,"dipho_ctheta/F");
+    tree_result->Branch("category",&category,"category/I");
+
+    // Activate branches of interest in the input tree
+    nentry=tree_input->GetEntries();
+    tree_input->SetBranchStatus("*",0);// selection of useful branches
+    char const *data_variables[15]={"ph1_pt","ph1_eta","ph1_phi","ph1_e","ph1_r9","ph2_pt","ph2_eta","ph2_phi","ph2_e","ph2_r9","PhotonsMass","ph1_ciclevel","ph1_isEB","ph2_ciclevel","ph2_isEB"};
+    float data_fvalues[11];
+    int data_ivalues[4];
+    
+    for (int i=0; i<11; i++) {
+      tree_input->SetBranchStatus(data_variables[i],1);  
+      tree_input->SetBranchAddress(data_variables[i],&data_fvalues[i]);
+    }
+    for (int i=0;i<4;i++) {
+    tree_input->SetBranchStatus(data_variables[11+i],1);  
+    tree_input->SetBranchAddress(data_variables[11+i],&data_ivalues[i]);
+    }
+    
+    //Fill output tree according to cuts
+    for (int i=0;i<nentry;i++) {
+      tree_input->GetEntry(i);
+      if (data_fvalues[0]<40.*data_fvalues[10]/120.) continue; //ph1_pt> 40*PhotonsMass/120.
+      if (data_fvalues[5]<25.) continue; //ph2_pt>25.
+      if ((data_ivalues[0]<4) || (data_ivalues[2]<4) ) continue; //(ph1_ciclevel>4 ) && (phi2_ciclevel>4)
+      if (data_fvalues[10]<100. || data_fvalues[10]>180.) continue;// 100<mgg<180
+      gamma1->SetPtEtaPhiE(data_fvalues[0],data_fvalues[1],data_fvalues[2],data_fvalues[3]);
+      gamma2->SetPtEtaPhiE(data_fvalues[5],data_fvalues[6],data_fvalues[7],data_fvalues[8]);
+      *gamma_pair=*gamma1+*gamma2;
+      dipho_mass=gamma_pair->M();
+      dipho_pt=gamma_pair->Pt();
+      dipho_ctheta=GetCosTheta(gamma1,gamma2);
+
+      isEB= (data_ivalues[1] && data_ivalues[3]) ? 1 : 0 ;
+      r9= (data_fvalues[4]>0.94 && data_fvalues[9]>0.94) ? 1 : 0 ;
+      category=3-2*isEB-r9;
+      tree_result->Fill();
+    }
+    cout <<    tree_result->GetEntries() << endl;
+    tree_result->Write("",TObject::kOverwrite);
+    tree_result->Delete();
+    tree_input->Delete();
+    file_input->Close();
+    file_input->Delete();
+
+  cout << "Data done"  << endl; 
+
+  }  
+  
+
 
 
   stream_integral.close();
   file_result->Close();
   return 0;
   }
-
-
 
 //################################################################  
 //################################################################
