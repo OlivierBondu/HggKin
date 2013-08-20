@@ -28,7 +28,7 @@
 //#include "RooGlobalFunc.h"
 #include "RooStats/SPlot.h"
 
-#define BATCH 1 // On batch mode, have to change loading and saving path
+#define BATCH 0 // On batch mode, have to change loading and saving path
 #define NBINS 40
 #define WIDTH 5
 using namespace std;
@@ -55,8 +55,9 @@ int main() {
   for (int i=0;i<5;i++) {
     cout << "which cut ? " << menu_cut[i]  << endl;
     root_file->cd();   
-    if (i)    sprintf(buffer,"ws_hgg_splot%d_gen",menu_cut[i]);
-    else sprintf(buffer,"ws_hgg");
+    if (i)    sprintf(buffer,"ws_pt%d_genggh",menu_cut[i]);
+    else sprintf(buffer,"ws_pt_genggh");
+    cout << "passed if" << endl;
     ws=new RooWorkspace (buffer,buffer);
     if (AddModel(ws,menu_cut[i])) cout << "AddModel failed" << endl;
     if (AddData(ws,menu_cut[i])) cout << "AddData failed" << endl;
@@ -461,25 +462,12 @@ int DoSPlot(RooWorkspace* ws,int const &cut) {
     latex.DrawLatex(0.2,0.96,buffer);
   }
   for (int file=0; file<3; file++ ) {
-    sprintf(buffer,"%s%sframeDoSPlotMass_ggh%s_gen.%s",buffer_path, buffer_file[0][file], buffercut,buffer_file[1][file]);
+    sprintf(buffer,"%s%sSPlotInput_pt%s_genggh.%s",buffer_path, buffer_file[0][file], buffercut,buffer_file[1][file]);
     cout << "buffer :" << buffer << endl; 
     canvas->SaveAs(buffer);
   }
 
   frame_mass->Delete();
-
-
-  RooPlot* frame_pt=dipho_pt->frame();
-  frame_pt=dipho_pt->frame();
-  sim_gen->plotOn(frame_pt);
-  model->plotOn(frame_pt);
-  model->plotOn(frame_pt, Components("model_ggh"), LineColor(kGreen), LineStyle(kDashed));
-  model->plotOn(frame_pt, Components("model_bkg"), LineColor(kRed), LineStyle(kDashed));
-  frame_pt->Draw();
-  canvas->SaveAs("frameDoSPlotPt_gen.pdf");
-  frame_pt->Delete();
-  canvas->Close();
-
 
 
   SPlot *splot_gen=new SPlot("splot_gen","splot_gen", *sim_genW, model, RooArgList(*ggh_yield, *bkg_yield),*dipho_pt);  //Create splot
@@ -554,7 +542,7 @@ int MakePlot(RooWorkspace* ws, int const &cut=0) {
   }
 
   for (int file=0; file<3; file++ ) {
-    sprintf(buffer,"%s%ssplot_gghbkg%s_gen.%s",buffer_path, buffer_file[0][file], buffercut,buffer_file[1][file]);
+    sprintf(buffer,"%s%ssplot_pt%s_gengghbkg.%s",buffer_path, buffer_file[0][file], buffercut,buffer_file[1][file]);
     cout << "buffer :" << buffer << endl; 
     canvas->SaveAs(buffer);
   }
@@ -624,7 +612,7 @@ int MakePlot(RooWorkspace* ws, int const &cut=0) {
   line->Draw("SAME");
 
   for (int file=0; file<3; file++ ) {
-    sprintf(buffer,"%s%ssplot_ggh%s_gen.%s",buffer_path, buffer_file[0][file], buffercut,buffer_file[1][file]);
+    sprintf(buffer,"%s%ssplot_pt%s_genggh.%s",buffer_path, buffer_file[0][file], buffercut,buffer_file[1][file]);
     canvas->SaveAs(buffer);
   }
   cout << "drawn" << endl;

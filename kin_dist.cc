@@ -8,10 +8,10 @@
 #include <iostream>
 using namespace std;
 
-#define GGH_GEN 0 
-#define VBF_GEN 0
-#define BKG_GEN 0
-#define RECO 0
+#define GGH_GEN 1 
+#define VBF_GEN 1
+#define BKG_GEN 1
+#define RECO 1
 #define DATA 1
 
 
