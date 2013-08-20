@@ -46,8 +46,8 @@ int main() {
   int MakePlot(RooWorkspace*, int const &cut=0); // Create and save result and check plots
 
   TFile *root_file=0;
-  if (BATCH) root_file=new TFile("WS_SPlot_gen.root","UPDATE"); //File to store the workspace
-  else root_file=new TFile("/afs/cern.ch/work/c/cgoudet/private/data/WS_SPlot_gen.root","UPDATE");
+  if (BATCH) root_file=new TFile("WS_SPlot.root","UPDATE"); //File to store the workspace
+  else root_file=new TFile("/afs/cern.ch/work/c/cgoudet/private/data/WS_SPlot.root","UPDATE");
   RooWorkspace *ws=0;
   char buffer[100];
 

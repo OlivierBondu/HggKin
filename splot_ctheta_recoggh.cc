@@ -46,17 +46,17 @@ int main() {
   int MakePlot(RooWorkspace*, int const &categ=-1); // Create and save result and check plots
 
   TFile *root_file=0;
-  if (BATCH) root_file=new TFile("WS_SPlot_reco.root","UPDATE"); //File to store the workspace
-  else root_file=new TFile("/afs/cern.ch/work/c/cgoudet/private/data/WS_SPlot_reco.root","UPDATE");
+  if (BATCH) root_file=new TFile("WS_SPlot.root","UPDATE"); //File to store the workspace
+  else root_file=new TFile("/afs/cern.ch/work/c/cgoudet/private/data/WS_SPlot.root","UPDATE");
   RooWorkspace *ws=0;
   char buffer[100];
 
   int categ=-1;
 //     for (int i=0; i<5;i++) {
 //   for (int categ=-1; categ<4;categ++) {
-      sprintf(buffer,"ws_ggh_ctheta");
+      sprintf(buffer,"ws_ctheta");
       if (categ>-1) sprintf(buffer,"%s_categ%d",buffer,categ);
-      sprintf(buffer,"%s_reco",buffer);
+      sprintf(buffer,"%s_recoggh",buffer);
       ws=new RooWorkspace(buffer,buffer);
       AddModel(ws,categ);
       AddData(ws,categ);

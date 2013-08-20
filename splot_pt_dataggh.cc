@@ -45,19 +45,19 @@ int main() {
   int MakePlot(RooWorkspace*, int const &cut=0, int const &categ=-1); // Create and save result and check plots
 
   TFile *root_file=0;
-  if (BATCH) root_file=new TFile("WS_SPlot_data.root","UPDATE"); //File to store the workspace
-  else root_file=new TFile("/afs/cern.ch/work/c/cgoudet/private/data/WS_SPlot_data.root","UPDATE");
+  if (BATCH) root_file=new TFile("WS_SPlot.root","UPDATE"); //File to store the workspace
+  else root_file=new TFile("/afs/cern.ch/work/c/cgoudet/private/data/WS_SPlot.root","UPDATE");
   RooWorkspace *ws=0;
   char buffer[100];
 
-  int i=0;
-  int categ=-1;
+  int i=1;
+  int categ=1;
 //     for (int i=0; i<5;i++) {
 //   for (int categ=-1; categ<4;categ++) {
-      sprintf(buffer,"ws_hgg_splot");
+      sprintf(buffer,"ws_pt");
       if (i) sprintf(buffer,"%s%d",buffer,menu_cut[i]);
       if (categ>-1) sprintf(buffer,"%s_categ%d",buffer,categ);
-      sprintf(buffer,"%s_data",buffer);
+      sprintf(buffer,"%s_dataggh",buffer);
       ws=new RooWorkspace(buffer,buffer);
       AddModel(ws,menu_cut[i],categ);
       AddData(ws,menu_cut[i],categ);
@@ -306,7 +306,7 @@ int DoSPlot(RooWorkspace* ws, int const &cut=0, int const &categ=-1) {
     latex.DrawLatex(0.4,0.96,buffer);
   }
   for (int file=0; file<3; file++ ) {
-    sprintf(buffer,"%s%sframeDoSPlotMass_ggh%s%s_data.%s",buffer_path,buffer_file[0][file],buffercut,buffercateg,buffer_file[1][file]);
+    sprintf(buffer,"%s%sSPlotInput_pt%s%s_dataggh.%s",buffer_path,buffer_file[0][file],buffercut,buffercateg,buffer_file[1][file]);
     canvas->SaveAs(buffer);
   }
 
@@ -415,7 +415,7 @@ int MakePlot(RooWorkspace* ws, int const &cut=0, int const &categ=0) {
     latex.DrawLatex(0.4,0.96,buffer);
   }
   for (int file=0; file<3; file++ ) {
-    sprintf(buffer,"%s%ssplot_gghbkg%s%s_reco.%s",buffer_path,buffer_file[0][file],buffercut,buffercateg,buffer_file[1][file]);
+    sprintf(buffer,"%s%ssplot_pt%s%s_dataggh.%s",buffer_path,buffer_file[0][file],buffercut,buffercateg,buffer_file[1][file]);
     canvas->SaveAs(buffer);
   }
   cout << "weighted drawn" << endl;
@@ -480,7 +480,7 @@ int MakePlot(RooWorkspace* ws, int const &cut=0, int const &categ=0) {
     latex.DrawLatex(0.4,0.96,buffer);
   }
   for (int file=0; file<3; file++ ) {
-    sprintf(buffer,"%s%ssplot_ggh%s%s_reco.%s",buffer_path,buffer_file[0][file],buffercut,buffercateg,buffer_file[1][file]);
+    sprintf(buffer,"%s%ssplot_pt%s%s_dataggh.%s",buffer_path,buffer_file[0][file],buffercut,buffercateg,buffer_file[1][file]);
     canvas->SaveAs(buffer);
   }
   cout << "weigthed ggh drawn" << endl;
