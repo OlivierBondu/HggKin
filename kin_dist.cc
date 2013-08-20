@@ -11,7 +11,7 @@ using namespace std;
 #define GGH_GEN 0 
 #define VBF_GEN 0
 #define BKG_GEN 0
-#define RECO 1
+#define RECO 0
 #define DATA 1
 
 
