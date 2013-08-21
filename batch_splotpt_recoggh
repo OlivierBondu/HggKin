@@ -7,12 +7,13 @@ source /afs/cern.ch/user/c/cgoudet/534.sh
 cd ${batchdir}
 
 cp "${path}data/WS_SPlot.root" .
-cp "${path}codes/exec/splot_recogghbkg.exe" .
+cp "${path}codes/exec/splot_pt_recoggh.exe" .
 cp "${path}data/kin_dist.root" .
 
-./splot_recogghbkg.exe 1>logsplotreco.log 2>logerrorsplotreco.log
+./splot_pt_recoggh.exe 1>logsplotreco.log 2>logerrorsplotreco.log
 
-rm splot_recogghbkg.exe
+rm splot_pt_recoggh.exe
 rm kin_dist.root
-
+cp WS_SPlot.root "${start}data/."
+rm WS_SPlot.root
 cp * /afs/cern.ch/work/c/cgoudet/public/BatchDump/.

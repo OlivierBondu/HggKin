@@ -7,13 +7,13 @@ cd ${file_dir}
 
 
 cp -v "${start}data/kin_dist.root" ${file_dir}
-cp -v "${start}codes/exec/splot_gengghbkg.exe" ${file_dir}
+cp -v "${start}codes/exec/splot_pt_genggh.exe" ${file_dir}
 cp -v "${start}data/WS_SPlot.root" ${file_dir}
 
-./splot_gengghbkg.exe 2>logerrorsplot.txt 1>logsplot.txt
+./splot_pt_genggh.exe 2>logerrorsplot.txt 1>logsplot.txt
 
 rm kin_dist.root
-rm splot_gengghbkg.exe
+rm splot_pt_genggh.exe
 cp WS_SPlot.root "${start}data/."
 rm WS_SPlot.root
 cp * /afs/cern.ch/work/c/cgoudet/public/BatchDump/.

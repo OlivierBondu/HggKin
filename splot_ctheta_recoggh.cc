@@ -27,7 +27,7 @@
 
 #include "RooStats/SPlot.h"
 
-#define BATCH 0 // On batch mode, have to change loading and saving path
+#define BATCH 1 // On batch mode, have to change loading and saving path
 #define NBINS 10
 #define WIDTH 10
 
@@ -36,10 +36,7 @@ using namespace RooStats;
 using namespace RooFit;
 
 int main() {
-  //#############menu
-  int const menu_cut[5]={0,200,375,550,750};
 
-  //############def
   int AddModel(RooWorkspace*, int const &categ=-1); // Add pdf to workspace and pre-fit them
   int AddData(RooWorkspace*,  int const &categ=-1); // Add simulated events ro workspace
   int DoSPlot(RooWorkspace*,  int const &categ=-1); // Create SPlot object
@@ -51,22 +48,21 @@ int main() {
   RooWorkspace *ws=0;
   char buffer[100];
 
-  int categ=-1;
-//     for (int i=0; i<5;i++) {
-//   for (int categ=-1; categ<4;categ++) {
-      sprintf(buffer,"ws_ctheta");
-      if (categ>-1) sprintf(buffer,"%s_categ%d",buffer,categ);
-      sprintf(buffer,"%s_recoggh",buffer);
-      ws=new RooWorkspace(buffer,buffer);
-      AddModel(ws,categ);
-      AddData(ws,categ);
-      DoSPlot(ws,categ);
-      MakePlot(ws,categ);
-      //       root_file->cd();
-//       ws->Write("",TObject::kOverwrite);
-//       ws->Delete();  
-//       } 
-//       }
+  //  int categ=-1;
+  for (int categ=-1; categ<4;categ++) {
+    sprintf(buffer,"ws_ctheta");
+    if (categ>-1) sprintf(buffer,"%s_categ%d",buffer,categ);
+    sprintf(buffer,"%s_recoggh",buffer);
+    ws=new RooWorkspace(buffer,buffer);
+    AddModel(ws,categ);
+    AddData(ws,categ);
+    DoSPlot(ws,categ);
+    MakePlot(ws,categ);
+    root_file->cd();
+    ws->Write("",TObject::kOverwrite);
+    ws->Delete();  
+  } 
+
 
   root_file->Close();
   cout << "Went up to the end" << endl;
@@ -310,7 +306,7 @@ int DoSPlot(RooWorkspace* ws, int const &categ=-1) {
   model_gghbkg->fitTo(*sim_gghbkg);  
  
   // Check plot
-  char buffer_path[100]="",buffer_file[2][3][10]={{""}},buffercut[10]="",buffercateg[30]="";
+  char buffer_path[100]="",buffer_file[2][3][10]={{""}},buffercateg[30]="";
   sprintf(buffer_file[1][0],"png");
   sprintf(buffer_file[1][1],"pdf");
   sprintf(buffer_file[1][2],"root");
@@ -352,7 +348,7 @@ int DoSPlot(RooWorkspace* ws, int const &categ=-1) {
     latex.DrawLatex(0.4,0.96,buffer);
   }
   for (int file=0; file<3; file++ ) {
-    sprintf(buffer,"%s%sframeDoSPlotMass_ggh%s%s_reco.%s",buffer_path,buffer_file[0][file],buffercut,buffercateg,buffer_file[1][file]);
+    sprintf(buffer,"%s%sSPlotInput_ctheta%s_recoggh.%s",buffer_path,buffer_file[0][file],buffercateg,buffer_file[1][file]);
     canvas->SaveAs(buffer);
   }
 
@@ -425,10 +421,10 @@ int MakePlot(RooWorkspace* ws, int const &categ=0) {
   legend=new TLegend(0.6,0.7,1,1);
   legend->SetTextSize(0.04);
   legend->AddEntry("","Reconstruction Level","");
-  legend->AddEntry("sim_Wggh", "ggh Weighted Events","lpe");
-  legend->AddEntry("sim_Wbkg", "bkg Weighted Events","lpe");
-  legend->AddEntry("model_ggh","Non Weighted ggh Fit","lpe");
-  legend->AddEntry("model_bkg","Non Weighted Bkg Fit","lpe");
+  legend->AddEntry("sim_Wggh", "ggh sPlot output","lpe");
+  legend->AddEntry("sim_Wbkg", "bkg sPlot output","lpe");
+  legend->AddEntry("model_ggh","ggh MC input","lpe");
+  legend->AddEntry("model_bkg","bkg MC input","lpe");
   legend->Draw();
 
 
@@ -438,7 +434,7 @@ int MakePlot(RooWorkspace* ws, int const &categ=0) {
     latex.DrawLatex(0.4,0.96,buffer);
   }
   for (int file=0; file<3; file++ ) {
-    sprintf(buffer,"%s%ssplot_ctheta_recogghbkg%s.%s",buffer_path,buffer_file[0][file],buffercateg,buffer_file[1][file]);
+    sprintf(buffer,"%s%ssplot_ctheta%s_recogghbkg.%s",buffer_path,buffer_file[0][file],buffercateg,buffer_file[1][file]);
     cout << buffer << endl;
     canvas->SaveAs(buffer);
   }
@@ -463,8 +459,8 @@ int MakePlot(RooWorkspace* ws, int const &categ=0) {
   legend=new TLegend(0.6,0.75,1,1);
   legend->SetTextSize(0.05);
   legend->AddEntry("","Reconstruction Level","");
-  legend->AddEntry("sim_Wggh", "ggH Weighted Events","lpe");
-  legend->AddEntry("model_ggh","Non Weighted ggH Fit","lpe");
+  legend->AddEntry("sim_Wggh", "ggH sPlot output","lpe");
+  legend->AddEntry("model_ggh","bkg MC input","lpe");
   legend->Draw();
 
   TH1F *hist_fit=new TH1F("hist_fit","hist_fit",NBINS,0,1);
@@ -500,7 +496,7 @@ int MakePlot(RooWorkspace* ws, int const &categ=0) {
     latex.DrawLatex(0.4,0.96,buffer);
   }
   for (int file=0; file<3; file++ ) {
-    sprintf(buffer,"%s%ssplot_ctheta_recoggh%s.%s",buffer_path,buffer_file[0][file],buffercateg,buffer_file[1][file]);
+    sprintf(buffer,"%s%ssplot_ctheta%s_recoggh.%s",buffer_path,buffer_file[0][file],buffercateg,buffer_file[1][file]);
     cout << buffer << endl;
     canvas->SaveAs(buffer);
   }

@@ -1,0 +1,19 @@
+#!/bin/bash
+
+batchdir=`pwd`
+path="/afs/cern.ch/work/c/cgoudet/private/"
+
+source /afs/cern.ch/user/c/cgoudet/534.sh
+cd ${batchdir}
+
+cp "${path}data/WS_SPlot.root" .
+cp "${path}codes/exec/splot_ctheta_recoggh.exe" .
+cp "${path}data/kin_dist.root" .
+
+./splot_ctheta_recoggh.exe 1>logsplotreco.log 2>logerrorsplotreco.log
+
+rm splot_ctheta_recoggh.exe
+rm kin_dist.root
+cp WS_SPlot.root "${path}data/."
+rm WS_SPlot.root
+cp * /afs/cern.ch/work/c/cgoudet/public/BatchDump/.

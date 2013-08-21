@@ -25,7 +25,7 @@ echo "\\section{Inclusive on $|cos(\\theta*)|$}"
   echo "\\begin{figure}[h!]"
   echo "\\centering"
   echo "\\begin{minipage}[c]{0.49\linewidth}"
-  echo "\\includegraphics[width=8cm]{/afs/cern.ch/work/c/cgoudet/private/plot/pdf/frameDoSPlotMass_ggh_gen.pdf}"
+  echo "\\includegraphics[width=8cm]{/afs/cern.ch/work/c/cgoudet/private/plot/pdf/SPlotInput_pt_genggh.pdf}"
   echo "\\caption{Mass discriminant ditribution for Generated Backgound + Generated ggH events.}" 
   echo "\\end{minipage}"
 
@@ -33,14 +33,14 @@ echo "\\section{Inclusive on $|cos(\\theta*)|$}"
   
   echo "\\begin{minipage}[c]{0.49\linewidth}"
   echo "\\centering"
-  echo "\\includegraphics[width=8cm]{/afs/cern.ch/work/c/cgoudet/private/plot/pdf/splot_gghbkg_gen.pdf}"
+  echo "\\includegraphics[width=8cm]{/afs/cern.ch/work/c/cgoudet/private/plot/pdf/splot_pt_gengghbkg.pdf}"
   echo "\\caption{Weighted Data from Splot and Entrance Corresponding Fit of \$p_T\$ for Generated Backgound + Generated ggH events.}" 
   echo "\\end{minipage}"
   echo "\\end{figure}"
 
   echo "\\begin{figure}[h!]"
   echo "\\centering"
-  echo "\\includegraphics[width=12cm]{/afs/cern.ch/work/c/cgoudet/private/plot/pdf/splot_ggh_gen.pdf}"
+  echo "\\includegraphics[width=12cm]{/afs/cern.ch/work/c/cgoudet/private/plot/pdf/splot_pt_genggh.pdf}"
   echo "\\caption{Extrapolated \$p_T\$ Distribution of \$gg\\rightarrow H\$ Signal.}" 
   echo "\\end{figure}"
 
@@ -54,7 +54,7 @@ for cut in `echo "200 375 550 750"`
   echo "\\centering"
   echo "\\begin{minipage}[c]{0.49\linewidth}"
   echo "\\centering"
-  echo "\\includegraphics[width=8cm]{/afs/cern.ch/work/c/cgoudet/private/plot/pdf/frameDoSPlotMass_ggh${cut}_gen.pdf}"
+  echo "\\includegraphics[width=8cm]{/afs/cern.ch/work/c/cgoudet/private/plot/pdf/SPlotInput_pt${cut}_genggh.pdf}"
   echo "\\caption{Mass discriminant distribution for Generated Backgound + Generated ggH events with \$cos(\\theta*)>0.${cut}\$.}" 
   echo "\\end{minipage}"
 
@@ -62,14 +62,14 @@ for cut in `echo "200 375 550 750"`
   
   echo "\\begin{minipage}[c]{0.49\linewidth}"
   echo "\\centering"
-  echo "\\includegraphics[width=8cm]{/afs/cern.ch/work/c/cgoudet/private/plot/pdf/splot_gghbkg${cut}_gen.pdf}"
+  echo "\\includegraphics[width=8cm]{/afs/cern.ch/work/c/cgoudet/private/plot/pdf/splot_pt${cut}_gengghbkg.pdf}"
   echo "\\caption{Weighted Data from Splot and Entrance Corresponding Fit of \$p_T\$ for Generated Backgound + Generated ggH events with \$cos(\\theta*)>0.${cut}\$.}" 
   echo "\\end{minipage}"
   echo "\\end{figure}"
 
   echo "\\begin{figure}[h!]"
   echo "\\centering"
-  echo "\\includegraphics[width=12cm]{/afs/cern.ch/work/c/cgoudet/private/plot/pdf/splot_ggh${cut}_gen.pdf}"
+  echo "\\includegraphics[width=12cm]{/afs/cern.ch/work/c/cgoudet/private/plot/pdf/splot_pt${cut}_genggh.pdf}"
   echo "\\caption{Extrapolated \$p_T\$ Distribution of \$gg\\rightarrow H\$ Signal with the cut \$|cos(\\theta*)|>0.${cut}\$.}" 
   echo "\\end{figure}"
 
@@ -98,7 +98,7 @@ for categ in `seq -1 3`
   echo "\\begin{figure}[h!]"
   echo "\\centering"
   echo "\\begin{minipage}[c]{0.49\linewidth}"
-  echo "\\includegraphics[width=8cm]{/afs/cern.ch/work/c/cgoudet/private/plot/pdf/frameDoSPlotMass_ggh${buffcateg}_reco.pdf}"
+  echo "\\includegraphics[width=8cm]{/afs/cern.ch/work/c/cgoudet/private/plot/pdf/SPlotInput_pt${buffcateg}_recoggh.pdf}"
   echo "\\caption{Mass discriminant distribution for Reconstructed Backgound + Reconstructed ggH events.}" 
   echo "\\end{minipage}"
 
@@ -106,14 +106,14 @@ for categ in `seq -1 3`
   
   echo "\\begin{minipage}[c]{0.49\linewidth}"
   echo "\\centering"
-  echo "\\includegraphics[width=8cm]{/afs/cern.ch/work/c/cgoudet/private/plot/pdf/splot_gghbkg${buffcateg}_reco.pdf}"
+  echo "\\includegraphics[width=8cm]{/afs/cern.ch/work/c/cgoudet/private/plot/pdf/splot_pt${buffcateg}_recogghbkg.pdf}"
   echo "\\caption{Weighted Data from Splot and Entrance Corresponding Fit of \$p_T\$ for Reconstructed Backgound + Reconstructed ggH events.}" 
   echo "\\end{minipage}"
   echo "\\end{figure}"
 
   echo "\\begin{figure}[h!]"
   echo "\\centering"
-  echo "\\includegraphics[width=12cm]{/afs/cern.ch/work/c/cgoudet/private/plot/pdf/splot_ggh${buffcateg}_reco.pdf}"
+  echo "\\includegraphics[width=12cm]{/afs/cern.ch/work/c/cgoudet/private/plot/pdf/splot_pt${buffcateg}_recoggh.pdf}"
   echo "\\caption{Extrapolated \$p_T\$ Distribution of \$gg\\rightarrow H\$ Signal.}" 
   echo "\\end{figure}"
 
@@ -125,7 +125,7 @@ for categ in `seq -1 3`
   echo "\\centering"
   echo "\\begin{minipage}[c]{0.49\linewidth}"
   echo "\\centering"
-  echo "\\includegraphics[width=8cm]{/afs/cern.ch/work/c/cgoudet/private/plot/pdf/frameDoSPlotMass_ggh${cut}${buffcateg}_reco.pdf}"
+  echo "\\includegraphics[width=8cm]{/afs/cern.ch/work/c/cgoudet/private/plot/pdf/SPlotInput_pt${cut}${buffcateg}_recoggh.pdf}"
   echo "\\caption{Mass discriminant distribution for Reconstructed Backgound + Reconstructed ggH events with \$cos(\\theta*)>0.${cut}\$.}" 
   echo "\\end{minipage}"
 
@@ -133,14 +133,14 @@ for categ in `seq -1 3`
   
   echo "\\begin{minipage}[c]{0.49\linewidth}"
   echo "\\centering"
-  echo "\\includegraphics[width=8cm]{/afs/cern.ch/work/c/cgoudet/private/plot/pdf/splot_gghbkg${cut}${buffcateg}_reco.pdf}"
+  echo "\\includegraphics[width=8cm]{/afs/cern.ch/work/c/cgoudet/private/plot/pdf/splot_pt${cut}${buffcateg}_recogghbkg.pdf}"
   echo "\\caption{Weighted Data from Splot and Entrance Corresponding Fit of \$p_T\$ for Reconstructed Backgound + Reconstructed ggH events with \$cos(\\theta*)>0.${cut}\$.}" 
   echo "\\end{minipage}"
   echo "\\end{figure}"
 
   echo "\\begin{figure}[h!]"
   echo "\\centering"
-  echo "\\includegraphics[width=12cm]{/afs/cern.ch/work/c/cgoudet/private/plot/pdf/splot_ggh${cut}${buffcateg}_reco.pdf}"
+  echo "\\includegraphics[width=12cm]{/afs/cern.ch/work/c/cgoudet/private/plot/pdf/splot_pt${cut}${buffcateg}_recoggh.pdf}"
   echo "\\caption{Extrapolated \$p_T\$ Reconstructed Distribution of \$gg\\rightarrow H\$ Signal with the cut \$|cos(\\theta*)|>0.${cut}\$.}" 
   echo "\\end{figure}"
 

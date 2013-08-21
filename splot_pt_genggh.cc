@@ -28,7 +28,7 @@
 //#include "RooGlobalFunc.h"
 #include "RooStats/SPlot.h"
 
-#define BATCH 0 // On batch mode, have to change loading and saving path
+#define BATCH 1 // On batch mode, have to change loading and saving path
 #define NBINS 40
 #define WIDTH 5
 using namespace std;

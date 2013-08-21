@@ -1,0 +1,14 @@
+#! /bin/bash
+
+bash table_splotpt.sh > note_splotpt.tex
+
+pdflatex note_splotpt.tex
+pdflatex note_splotpt.tex
+pdflatex note_splotpt.tex
+
+rm -v note_splotpt.aux
+rm -v note_splotpt.log
+rm -v note_splotpt.toc
+rm -v note_splotpt.tex
+
+mv note_splotpt.pdf /afs/cern.ch/work/c/cgoudet/private/plot/.

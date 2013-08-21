@@ -27,7 +27,7 @@
 
 #include "RooStats/SPlot.h"
 
-#define BATCH 0 // On batch mode, have to change loading and saving path
+#define BATCH 1 // On batch mode, have to change loading and saving path
 #define NBINS 10
 #define WIDTH 10
 
@@ -51,10 +51,10 @@ int main() {
   RooWorkspace *ws=0;
   char buffer[100];
 
-  int i=3;
-  int categ=0;
-//     for (int i=0; i<5;i++) {
-//   for (int categ=-1; categ<4;categ++) {
+//   int i=3;
+//   int categ=0;
+    for (int i=0; i<5;i++) {
+  for (int categ=-1; categ<4;categ++) {
       sprintf(buffer,"ws_pt");
       if (i) sprintf(buffer,"%s%d",buffer,menu_cut[i]);
       if (categ>-1) sprintf(buffer,"%s_categ%d",buffer,categ);
@@ -67,8 +67,8 @@ int main() {
       root_file->cd();
       ws->Write("",TObject::kOverwrite);
       ws->Delete();  
-//       } 
-//       }
+      } 
+      }
 
   root_file->Close();
   cout << "Went up to the end" << endl;
