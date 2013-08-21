@@ -1,0 +1,14 @@
+#! /bin/bash
+
+bash table_splotctheta.sh > note_splotctheta.tex
+
+pdflatex note_splotctheta.tex
+pdflatex note_splotctheta.tex
+pdflatex note_splotctheta.tex
+
+rm -v note_splotctheta.aux
+rm -v note_splotctheta.log
+rm -v note_splotctheta.toc
+rm -v note_splotctheta.tex
+
+mv note_splotctheta.pdf /afs/cern.ch/work/c/cgoudet/private/plot/.
