@@ -51,10 +51,10 @@ int main() {
   RooWorkspace *ws=0;
   char buffer[100];
 
-//   int i=3;
-//   int categ=0;
-    for (int i=0; i<5;i++) {
-  for (int categ=-1; categ<4;categ++) {
+   int i=0;
+   int categ=-1;
+   //    for (int i=0; i<5;i++) {
+   // for (int categ=-1; categ<4;categ++) {
       sprintf(buffer,"ws_pt");
       if (i) sprintf(buffer,"%s%d",buffer,menu_cut[i]);
       if (categ>-1) sprintf(buffer,"%s_categ%d",buffer,categ);
@@ -67,8 +67,8 @@ int main() {
       root_file->cd();
       ws->Write("",TObject::kOverwrite);
       ws->Delete();  
-      } 
-      }
+      // } 
+//       }
 
   root_file->Close();
   cout << "Went up to the end" << endl;
@@ -302,8 +302,8 @@ RooDataSet*  sim_gendum=new RooDataSet("sim_gendum","sim_gendum",tree , RooArgSe
 
 
   //Combine the models 
-  RooRealVar *ggh_yield=new RooRealVar("ggh_yield","ggh_yield",10,1,1000);
-  RooRealVar *bkg_yield=new RooRealVar("bkg_yield","bkg_yield",50000,1,200000);
+  RooRealVar *ggh_yield=new RooRealVar("ggh_yield","ggh_yield",1,0,500);
+  RooRealVar *bkg_yield=new RooRealVar("bkg_yield","bkg_yield",100,1,200000);
 
 
   //Direct Fit extraction

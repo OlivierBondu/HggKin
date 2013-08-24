@@ -48,8 +48,8 @@ int main() {
   RooWorkspace *ws=0;
   char buffer[100];
 
-  //  int categ=-1;
-  for (int categ=-1; categ<4;categ++) {
+    int categ=-1;
+    //for (int categ=-1; categ<4;categ++) {
     sprintf(buffer,"ws_ctheta");
     if (categ>-1) sprintf(buffer,"%s_categ%d",buffer,categ);
     sprintf(buffer,"%s_recoggh",buffer);
@@ -61,7 +61,7 @@ int main() {
     root_file->cd();
     ws->Write("",TObject::kOverwrite);
     ws->Delete();  
-  } 
+    //} 
 
 
   root_file->Close();
@@ -198,7 +198,7 @@ int AddModel(RooWorkspace *ws, int const &categ=0) {
 int AddData(RooWorkspace* ws, int const &categ=0) {
 
   RooRealVar *dipho_mass=ws->var("dipho_mass");
-  RooRealVar *dipho_ctheta=new RooRealVar("dipho_ctheta","dipho_ctheta",0,1);
+  RooRealVar *dipho_ctheta=new RooRealVar("dipho_ctheta","|cos(#theta *)|",0,1);
   RooRealVar *weight=ws->var("weight");
   RooRealVar *category=ws->var("category");
   char buffer[100];
@@ -418,7 +418,7 @@ int MakePlot(RooWorkspace* ws, int const &categ=0) {
   canvas->cd();
   frame->UseCurrentStyle();
   frame->Draw();
-  legend=new TLegend(0.6,0.7,1,1);
+  legend=new TLegend(0.3,0.3,0.7,0.6);
   legend->SetTextSize(0.04);
   legend->AddEntry("","Reconstruction Level","");
   legend->AddEntry("sim_Wggh", "ggh sPlot output","lpe");
