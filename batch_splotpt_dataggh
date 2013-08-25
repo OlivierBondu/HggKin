@@ -1,0 +1,19 @@
+#!/bin/bash
+
+batchdir=`pwd`
+path="/afs/cern.ch/work/c/cgoudet/private/"
+
+source /afs/cern.ch/user/c/cgoudet/534.sh
+cd ${batchdir}
+
+cp "${path}data/WS_SPlot.root" .
+cp "${path}codes/exec/splot_pt_dataggh.exe" .
+cp "${path}data/kin_dist.root" .
+
+./splot_pt_dataggh.exe 1>logsplotdata.log 2>logerrorsplotdata.log
+
+rm splot_pt_dataggh.exe
+rm kin_dist.root
+cp WS_SPlot.root "${start}data/."
+rm WS_SPlot.root
+cp * /afs/cern.ch/work/c/cgoudet/public/BatchDump/.

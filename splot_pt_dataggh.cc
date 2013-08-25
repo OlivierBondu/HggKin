@@ -28,7 +28,7 @@
 
 #include "RooStats/SPlot.h"
 
-#define BATCH 0 // On batch mode, have to change loading and saving path
+#define BATCH 1 // On batch mode, have to change loading and saving path
 #define NBINS 10
 #define WIDTH 10
 
@@ -450,10 +450,10 @@ int MakePlot(RooWorkspace* ws, int const &cut=0, int const &categ=0) {
   frame_pt->Draw();
 
   legend=new TLegend(0.6,0.7,1,1);
-  legend->SetTextSize(0.04);
+  legend->SetTextSize(0.05);
   legend->AddEntry("","Data","");
   legend->AddEntry("swblind_bkg", "sweighted background","lpe");
-  legend->AddEntry("blind_bkg","Background","lpe");
+  legend->AddEntry("blind_bkg","Background blinded","lpe");
   legend->Draw();
 
   // creata ratio histogram (sw-data)/data
@@ -510,7 +510,7 @@ int MakePlot(RooWorkspace* ws, int const &cut=0, int const &categ=0) {
   frame_pt=dipho_pt->frame(NBINS);
   swblind_sgn->plotOn(frame_pt,MarkerColor(2),LineColor(2),DataError(RooAbsData::SumW2),Name("swblind_sgn"),Binning(NBINS,0,dipho_pt->getMax()));// plot weighted sgn events
   RooDataSet *sim_sgn=(RooDataSet *) ws->data("sim_sgn");
-  sim_sgn->plotOn(frame_pt,MarkerColor(4),LineColor(4),DataError(RooAbsData::SumW2),Name("sgn_sm"),Binning(NBINS,0,dipho_pt->getMax()));
+  sim_sgn->plotOn(frame_pt,MarkerColor(3),LineColor(3),DataError(RooAbsData::SumW2),Name("sgn_sm"),Binning(NBINS,0,dipho_pt->getMax()));
 
   frame_pt->UseCurrentStyle();
   frame_pt->GetXaxis()->SetTitleSize(0);
@@ -519,7 +519,7 @@ int MakePlot(RooWorkspace* ws, int const &cut=0, int const &categ=0) {
 
   legend=new TLegend(0.6,0.75,1,1);
   legend->SetTextSize(0.05);
-  legend->AddEntry("","Reconstruction Level","");
+  legend->AddEntry("","Data","");
   legend->AddEntry("swblind_sgn", "sweighted sgn","lpe");
   legend->AddEntry("sgn_sm","SM Higgs MC","lpe");
   legend->Draw();
