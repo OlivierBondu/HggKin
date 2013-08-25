@@ -41,10 +41,10 @@ int main() {
     for (int menu=0;menu<3;menu++) {
       for (int menu_pol=0;menu_pol<3;menu_pol++) {
 	//fit_gen("ggh",menu,menu_pol,cutval[cut],0);
-	fit_gen("vbf",menu,menu_pol,cutval[cut],0);
+	//fit_gen("vbf",menu,menu_pol,cutval[cut],0);
 	for (int window=0; window<4;window++) {
 	  if (window==1) continue;	  	
-	  //fit_gen("bkg",menu,menu_pol,cutval[cut],window);
+	  fit_gen("bkg",menu,menu_pol,cutval[cut],window);
 	  for (int categ=-1;categ<2;categ++) {
 	    // fit_reco("ggh",menu,menu_pol,cutval[cut],window,categ);
 	    //fit_reco("vbf",menu,menu_pol,cutval[cut],window,categ);
@@ -119,9 +119,9 @@ int fit_gen(char const *process,int const &menu,int const &menu_pol,char const *
   RooGenericPdf *tsallis=new RooGenericPdf("tsallis","(coefN_tsallis-1)*(coefN_tsallis-2)/coefN_tsallis/coefT_tsallis/(coefN_tsallis*coefT_tsallis+coefM_tsallis*(coefN_tsallis-2))*dipho_pt*TMath::Power(1+(sqrt(coefM_tsallis*coefM_tsallis+dipho_pt*dipho_pt)-coefM_tsallis)/coefN_tsallis/coefT_tsallis,-coefN_tsallis)",RooArgSet(dipho_pt,coefN_tsallis,coefM_tsallis,coefT_tsallis));
 
 
-  RooRealVar coef1_pol("coef1_pol","coef1_pol",2,0,100);
-  RooRealVar coef2_pol("coef2_pol","coef2_pol",2,0,100);
-  RooRealVar coef3_pol("coef3_pol","coef3_pol",3,0,100);
+  RooRealVar coef1_pol("coef1_pol","coef1_pol",2,0,10);
+  RooRealVar coef2_pol("coef2_pol","coef2_pol",2,0,10);
+  RooRealVar coef3_pol("coef3_pol","coef3_pol",3,0,10);
   RooBernstein *pol2;
 
   sprintf(buffer,"tree_gen_%s",process);
