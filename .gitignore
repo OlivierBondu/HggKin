@@ -23,3 +23,8 @@
 *.txt
 *.png
 LSF*
+
+# various tmp files
+*.swp
+.__afs*
+
