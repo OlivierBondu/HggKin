@@ -99,17 +99,23 @@ int AddModel(RooWorkspace *ws, int  const &cut=0, int const &categ=0) {
   //Model of sgn =2 gaussians
   cout << "#####  Model sgn" << endl;
   //create model of background and fit  
-  RooRealVar *mean1_sgn=new RooRealVar("mean1_sgn","mean1_sgn",124,124,126);
-  RooRealVar *sigma1_sgn=new RooRealVar("sigma1_sgn","sigma1_sgn",1,0,3);
+
+  RooRealVar *mean1_sgn=new RooRealVar("mean1_sgn","mean1_sgn",128,122,128);
+  RooRealVar *sigma1_sgn=new RooRealVar("sigma1_sgn","sigma1_sgn",9,0,10);
   RooGaussian *model1_sgn=new RooGaussian("model1_sgn","model1_sgn",*dipho_mass,*mean1_sgn,*sigma1_sgn);
 
-  RooRealVar *mean2_sgn=new RooRealVar("mean2_sgn","mean2_sgn",126,120,130);
-  RooRealVar *sigma2_sgn=new RooRealVar("sigma2_sgn","sigma2_sgn",2,0,5);
+  RooRealVar *mean2_sgn=new RooRealVar("mean2_sgn","mean2_sgn",120,120,130);
+  RooRealVar *sigma2_sgn=new RooRealVar("sigma2_sgn","sigma2_sgn",9,0,10);
   RooGaussian *model2_sgn=new RooGaussian("model2_sgn","model2_sgn",*dipho_mass,*mean2_sgn,*sigma2_sgn);
 
-  RooRealVar *compo_sgn=new RooRealVar("compo_sgn","compo_sgn",0,1);
-  RooAddPdf *model_sgn=new RooAddPdf("model_sgn","model_sgn",RooArgSet(*model1_sgn,*model2_sgn),*compo_sgn);
-  //  RooGaussian *model_sgn=new RooGaussian(*model1_sgn,"model_sgn");
+  RooRealVar *mean3_sgn=new RooRealVar("mean3_sgn","mean3_sgn",126,120,130);
+  RooRealVar *sigma3_sgn=new RooRealVar("sigma3_sgn","sigma3_sgn",2,0,5);
+  RooGaussian *model3_sgn=new RooGaussian("model3_sgn","model3_sgn",*dipho_mass,*mean3_sgn,*sigma3_sgn);
+
+  RooRealVar *compo1_sgn=new RooRealVar("compo1_sgn","compo1_sgn",0,1);
+  RooRealVar *compo2_sgn=new RooRealVar("compo2_sgn","compo2_sgn",0,1);
+  RooAddPdf *model_sgn=new RooAddPdf("model_sgn","model_sgn",RooArgSet(*model1_sgn,*model2_sgn),RooArgSet(*compo1_sgn));
+  //    RooGaussian *model_sgn=new RooGaussian(*model1_sgn,"model_sgn");
 
   TTree *tree=(TTree*) file_kin->Get("tree_reco_ggh");
   sprintf(buffer,""); sprintf(buffer2,"");
@@ -119,6 +125,7 @@ int AddModel(RooWorkspace *ws, int  const &cut=0, int const &categ=0) {
   }
   if (categ>-1) {
     sprintf(buffer,"%s%s category > %2.2f && category < %2.2f",buffer,buffer2,categ-0.1,categ+0.1);
+    sprintf(buffer2," && ");
   }
   RooRealVar *weight=new RooRealVar("weight","weight",0,100);
   RooDataSet*  sim_sgn=new RooDataSet("sim_sgn","sim_sgn",tree , RooArgSet(*dipho_mass,*dipho_pt,*dipho_ctheta,*category,*weight),buffer,"weight");
@@ -127,10 +134,27 @@ int AddModel(RooWorkspace *ws, int  const &cut=0, int const &categ=0) {
   tree=(TTree *) file_kin->Get("tree_reco_vbf");
   RooDataSet *sgn_sm=new RooDataSet("sgn_sm","sgn_sm",tree,RooArgSet(*dipho_mass,*dipho_pt,*dipho_ctheta,*category,*weight),buffer,"weight");
   sim_sgn->append(*sgn_sm);
-  model_sgn->fitTo(*sim_sgn);
-  ws->import(*sim_sgn);
+
+  sgn_sm->Delete();
+  model_sgn->fitTo(*sim_sgn,Range(110,140));
+
+
+
+ //Check plot
+RooPlot *framesgn=dipho_mass->frame(100,180,40);  
+// sim_sgn->plotOn(framesgn,MarkerColor(kRed),MarkerSize(1.5));
+//  model_sgn->plotOn(framesgn);
+ sgn_sm=(RooDataSet *) sim_sgn->reduce("(dipho_mass<115 || dipho_mass>135)");
+ sgn_sm->plotOn(framesgn,MarkerColor(kBlue));
+  framesgn->Draw();
+  canvas->SaveAs("frame_masssgn_data.pdf");
+  cout << framesgn->chiSquare() << endl;
+  framesgn->Delete();
+
+  ws->import(*sgn_sm,Rename("sim_sgn"));
+
   //#################################
-  // model backgroubd Bern4 
+  // Modelackgroubd Bern4 
   cout << "#####   Model bkg" << endl;
   RooRealVar *coef0_bern_bkg=new RooRealVar("coef0_bern_bkg","coef0_bern_bkg",0.001,0,1);
   RooRealVar *coef1_bern_bkg=new RooRealVar("coef1_bern_bkg","coef1_bern_bkg",0.001,0,1);
@@ -276,8 +300,10 @@ int DoSPlot(RooWorkspace* ws, int const &cut=0, int const &categ=-1) {
 
 
 
-   RooRealVar *compo_sgn=ws->var("compo_sgn");
-   compo_sgn->setConstant(1);
+   RooRealVar *compo1_sgn=ws->var("compo_sgn");
+   compo1_sgn->setConstant(1);
+   RooRealVar *compo2_sgn=ws->var("compo_sgn");
+   compo2_sgn->setConstant(1);
    RooRealVar* mean1_sgn=ws->var("mean1_sgn");
    mean1_sgn->setConstant(1);
    RooRealVar* sigma1_sgn=ws->var("sigma1_sgn");
@@ -286,7 +312,10 @@ int DoSPlot(RooWorkspace* ws, int const &cut=0, int const &categ=-1) {
    mean2_sgn->setConstant(1);
    RooRealVar* sigma2_sgn=ws->var("sigma2_sgn");
    sigma2_sgn->setConstant(1);
- 
+ RooRealVar* mean3_sgn=ws->var("mean3_sgn");
+   mean3_sgn->setConstant(1);
+   RooRealVar* sigma3_sgn=ws->var("sigma3_sgn");
+   sigma3_sgn->setConstant(1);
 
   model_sgnbkg->fitTo(*dataset);  
   // Check plot
