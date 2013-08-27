@@ -6,7 +6,8 @@ ROOTLIBS  = `root-config --libs --ldflags`
 ROOFITLIBS = -lRooFit -lRooFitCore -lMinuit -lFoam
 ROOSTATSLIBS = -lRooStats
 
-all: kin_dist.exe compare_dist2.exe fit_dist2.exe splot_ctheta_genggh.exe
+#all: kin_dist.exe compare_dist2.exe fit_dist2.exe splot_ctheta_genggh.exe
+all:
 
 kin_dist.exe: kin_dist.cc
 	$(CC) $(CCFLAGS) $(ROOTFLAGS) $(ROOTLIBS) kin_dist.cc -o kin_dist.exe
