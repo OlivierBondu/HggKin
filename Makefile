@@ -38,6 +38,11 @@ splot.o: splot.cc
 splot.exe: splot.o setTDRStyle.o
 	$(CC) $(ROOTLIBS) $(ROOFITLIBS) $(ROOSTATSLIBS) $(BOOSTLIBS) splot.o setTDRStyle.o -o splot.exe
 
+splot_pt_dataggh.o: splot_pt_dataggh.cc
+	$(CC) $(CCFLAGS) $(ROOTFLAGS) $(BOOSTFLAGS) -c splot_pt_dataggh.cc -o splot_pt_dataggh.o
+
+splot_pt_dataggh.exe: splot_pt_dataggh.o setTDRStyle.o
+	$(CC) $(ROOTLIBS) $(ROOFITLIBS) $(ROOSTATSLIBS) $(BOOSTLIBS) splot_pt_dataggh.o setTDRStyle.o -o splot_pt_dataggh.exe
 
 clean:
 	rm *.exe *.o
