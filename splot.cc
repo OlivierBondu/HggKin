@@ -12,6 +12,7 @@
 #include "TLine.h"
 // C++ headers
 #include <iostream>
+#include <boost/program_options.hpp>
 // plot style
 #include "setTDRStyle.h"
 // RooFit headers
@@ -28,28 +29,65 @@
 // RooStats headers
 #include "RooWorkspace.h"
 #include "RooStats/SPlot.h"
-
+// defines
 #define BATCH 1 // On batch mode, have to change loading and saving path
 #define NBINS 10
 #define WIDTH 10
-
+// namespaces
 using namespace std;
 using namespace RooStats;
 using namespace RooFit;
+namespace po = boost::program_options;
+// functions declaration
+int AddModel(RooWorkspace*, int const &cut=0, int const &categ=-1); // Add pdf to workspace and pre-fit them
+int AddData(RooWorkspace*, int const &cut=0, int const &categ=-1); // Add simulated events ro workspace
+int DoSPlot(RooWorkspace*, int const &cut=0, int const &categ=-1); // Create SPlot object
+int MakePlot(RooWorkspace*, int const &cut=0, int const &categ=-1); // Create and save result and check plots
 
-int main() {
+
+int main(int argc, char* argv[])
+{
+	bool doSignal;
+	bool doBackground;
+	bool doData;
+	bool doGen;
+	bool doReco;
+	copy(argv, argv + argc, ostream_iterator<char*>(cout, " "));
+	cout << endl;
+	try
+	{
+		po::options_description desc("Allowed options");
+		desc.add_options()
+			("help,h", "produce help message")
+			("doSig", po::value<bool>(&doSignal)->default_value(true), "process signal mc trees")
+			("doBkg", po::value<bool>(&doBackground)->default_value(false), "process background mc trees")
+			("doData", po::value<bool>(&doData)->default_value(false), "process data trees")
+			("doGen", po::value<bool>(&doGen)->default_value(false), "process gen-level info")
+			("doReco", po::value<bool>(&doReco)->default_value(true), "process reco-level info")
+		;
+		po::variables_map vm;
+		po::store(po::parse_command_line(argc, argv, desc), vm);
+		po::notify(vm);
+		if (vm.count("help")) {
+			cout << desc << "\n";
+			return 1;
+		}
+	} catch(exception& e) {
+		cerr << "error: " << e.what() << "\n";
+		return 1;
+	} catch(...) {
+		cerr << "Exception of unknown type!\n";
+	}
+
+
   //#############menu
   int const menu_cut[5]={0,200,375,550,750};
 
   //############def
-  int AddModel(RooWorkspace*, int const &cut=0, int const &categ=-1); // Add pdf to workspace and pre-fit them
-  int AddData(RooWorkspace*, int const &cut=0, int const &categ=-1); // Add simulated events ro workspace
-  int DoSPlot(RooWorkspace*, int const &cut=0, int const &categ=-1); // Create SPlot object
-  int MakePlot(RooWorkspace*, int const &cut=0, int const &categ=-1); // Create and save result and check plots
 
   TFile *root_file=0;
   if (BATCH) root_file=new TFile("WS_SPlot.root","UPDATE"); //File to store the workspace
-  else root_file=new TFile("/afs/cern.ch/work/c/cgoudet/private/data/WS_SPlot.root","UPDATE");
+  else root_file=new TFile("WS_SPlot.root","UPDATE");
   RooWorkspace *ws=0;
   char buffer[100];
 
@@ -81,11 +119,11 @@ int main() {
 //######################################################################################################################################
 //######################################################################################################################################
 //######################################################################################################################################
-int AddModel(RooWorkspace *ws, int  const &cut=0, int const &categ=0) {
+int AddModel(RooWorkspace *ws, int  const &cut, int const &categ) {
   setTDRStyle(); 
   TFile *file_kin=0;
   if (BATCH) file_kin=new TFile("kin_dist.root");
-  else file_kin=new TFile("/afs/cern.ch/work/c/cgoudet/private/data/kin_dist.root");
+  else file_kin=new TFile("kin_dist.root");
   
   
   RooRealVar *dipho_mass=new RooRealVar("dipho_mass","m_{#gamma #gamma}",100,180,"GeV/c^{2}");
@@ -215,7 +253,7 @@ RooPlot *framesgn=dipho_mass->frame(100,180,40);
 //######################################################################################################
 //######################################################################################################
 //######################################################################################################
-int AddData(RooWorkspace* ws, int const &cut=0, int const &categ=0) {
+int AddData(RooWorkspace* ws, int const &cut, int const &categ) {
   cout << "in AddData" << endl;
   RooRealVar *dipho_mass=ws->var("dipho_mass");
   RooRealVar *dipho_pt=ws->var("dipho_pt");
@@ -224,7 +262,7 @@ int AddData(RooWorkspace* ws, int const &cut=0, int const &categ=0) {
   char buffer[100],buffer2[100];
   TFile *file_kin=0;
   if (BATCH) file_kin=new TFile("kin_dist.root");
-  else file_kin=new TFile("/afs/cern.ch/work/c/cgoudet/private/data/kin_dist.root");
+  else file_kin=new TFile("kin_dist.root");
 
   //Create the cut formula and gather data
   sprintf(buffer,""); sprintf(buffer2,"");
@@ -274,7 +312,7 @@ int AddData(RooWorkspace* ws, int const &cut=0, int const &categ=0) {
 //###################################################################################################
 //###################################################################################################
 //###################################################################################################
-int DoSPlot(RooWorkspace* ws, int const &cut=0, int const &categ=-1) {
+int DoSPlot(RooWorkspace* ws, int const &cut, int const &categ) {
   cout << "in DoSplot" << endl;
   setTDRStyle();
   RooAbsPdf *model_sgnbkg=ws->pdf("model_sgnbkg");
@@ -325,7 +363,7 @@ int DoSPlot(RooWorkspace* ws, int const &cut=0, int const &categ=-1) {
   sprintf(buffer_file[1][1],"pdf");
   sprintf(buffer_file[1][2],"root");
   if (! BATCH) {
-    sprintf(buffer_path,"/afs/cern.ch/work/c/cgoudet/private/plot/");
+    sprintf(buffer_path,"plot/");
     sprintf(buffer_file[0][0],"png/");
     sprintf(buffer_file[0][1],"pdf/");
     sprintf(buffer_file[0][2],"root/");
@@ -386,7 +424,7 @@ int DoSPlot(RooWorkspace* ws, int const &cut=0, int const &categ=-1) {
 //#############################################################################################"
 //#############################################################################################"
 //#############################################################################################"
-int MakePlot(RooWorkspace* ws, int const &cut=0, int const &categ=0) {
+int MakePlot(RooWorkspace* ws, int const &cut, int const &categ) {
 
   setTDRStyle();
   // collect usefull variables
@@ -416,7 +454,7 @@ int MakePlot(RooWorkspace* ws, int const &cut=0, int const &categ=0) {
   sprintf(buffer_file[1][1],"pdf");
   sprintf(buffer_file[1][2],"root");
   if (! BATCH) {
-    sprintf(buffer_path,"/afs/cern.ch/work/c/cgoudet/private/plot/");
+    sprintf(buffer_path,"plot/");
     sprintf(buffer_file[0][0],"png/");
     sprintf(buffer_file[0][1],"pdf/");
     sprintf(buffer_file[0][2],"root/");
