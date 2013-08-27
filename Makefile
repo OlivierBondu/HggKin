@@ -6,7 +6,7 @@ ROOTLIBS  = `root-config --libs --ldflags`
 ROOFITLIBS = -lRooFit -lRooFitCore -lMinuit -lFoam
 ROOSTATSLIBS = -lRooStats
 BOOSTFLAGS = -I${BOOST_ROOT}include/boost-1_48
-BOOSTLIBS = -L${BOOST_ROOT}lib
+BOOSTLIBS = -L${BOOST_ROOT}lib -lboost_program_options-gcc43-mt-1_48
 
 #all: kin_dist.exe compare_dist2.exe fit_dist2.exe splot_ctheta_genggh.exe
 all:
@@ -15,7 +15,7 @@ kin_dist.exe: kin_dist.cc
 	$(CC) $(CCFLAGS) $(ROOTFLAGS) $(ROOTLIBS) kin_dist.cc -o kin_dist.exe
 
 do_minitree.exe: do_minitree.cc
-	$(CC) $(CCFLAGS) $(ROOTFLAGS) $(ROOTLIBS) $(BOOSTFLAGS) $(BOOSTLIBS) -lboost_program_options-gcc43-mt-1_48 do_minitree.cc -o do_minitree.exe
+	$(CC) $(CCFLAGS) $(ROOTFLAGS) $(ROOTLIBS) $(BOOSTFLAGS) $(BOOSTLIBS) do_minitree.cc -o do_minitree.exe
 
 compare_dist2.o: compare_dist2.cc
 	$(CC) $(CCFLAGS) $(ROOTFLAGS) -c compare_dist2.cc -o compare_dist2.o 
@@ -32,11 +32,11 @@ fit_dist2.o: fit_dist2.cc
 fit_dist2.exe: fit_dist2.o setTDRStyle.o
 	$(CC) $(ROOTLIBS) $(ROOFITLIBS) fit_dist2.o setTDRStyle.o -o fit_dist2.exe
 
-splot_ctheta_genggh.o: splot_ctheta_genggh.cc
-	$(CC) $(CCFLAGS) $(ROOTFLAGS) -c splot_ctheta_genggh.cc -o splot_ctheta_genggh.o
+splot.o: splot.cc
+	$(CC) $(CCFLAGS) $(ROOTFLAGS) $(BOOSTFLAGS) -c splot.cc -o splot.o
 
-splot_ctheta_genggh.exe: splot_ctheta_genggh.o setTDRStyle.o
-	$(CC) $(ROOTLIBS) $(ROOFITLIBS) $(ROOSTATSLIBS) splot_ctheta_genggh.o setTDRStyle.o -o splot_ctheta_genggh.exe
+splot.exe: splot.o setTDRStyle.o
+	$(CC) $(ROOTLIBS) $(ROOFITLIBS) $(ROOSTATSLIBS) $(BOOSTLIBS) splot.o setTDRStyle.o -o splot.exe
 
 
 clean:
