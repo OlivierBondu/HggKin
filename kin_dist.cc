@@ -36,12 +36,12 @@ int const n_study=2;
   //-------------  
 
   fstream stream_integral;
-  stream_integral.open("/afs/cern.ch/work/c/cgoudet/private/data/hist_integral.txt",fstream::out);
+  stream_integral.open("/afs/cern.ch/work/o/obondu/Higgs/CMSSW_5_3_9_patch1_HggKin/src/HggKin/hist_integral.txt",fstream::out);
 
   //################################################
   
   TFile *file=0;
-  TFile *file_result = new TFile("/afs/cern.ch/work/c/cgoudet/private/data/kin_dist.root","UPDATE");
+  TFile *file_result = new TFile("/afs/cern.ch/work/o/obondu/Higgs/CMSSW_5_3_9_patch1_HggKin/src/HggKin/kin_dist.root","UPDATE");
   
   TTree *tree=0;
   TTree *tree_result=0;
@@ -69,7 +69,7 @@ int const n_study=2;
   //#######################GGH_GEN
   //#############################################################
   if (GGH_GEN) {
-    file = new TFile("/afs/cern.ch/work/c/cgoudet/private/data/SMHiggs_m125.root");
+    file = new TFile("/afs/cern.ch/work/o/obondu/Higgs/CMSSW_5_3_9_patch1_HggKin/src/HggKin/SMHiggs_m125.root");
     file_result->cd();
     tree  =(TTree *) file->Get("ggh_m125_8TeV");
 
@@ -167,7 +167,7 @@ int const n_study=2;
   //#######################VBF_GEN#########################
   //#######################################################
   if (VBF_GEN) {
-    file = new TFile("/afs/cern.ch/work/c/cgoudet/private/data/SMHiggs_m125.root");
+    file = new TFile("/afs/cern.ch/work/o/obondu/Higgs/CMSSW_5_3_9_patch1_HggKin/src/HggKin/SMHiggs_m125.root");
     file_result->cd();
     tree  =(TTree *) file->Get("vbf_m125_8TeV");
     
@@ -263,7 +263,7 @@ int const n_study=2;
   //####################################################################
   if (BKG_GEN) {
     
-    file = new TFile("/afs/cern.ch/work/c/cgoudet/private/data/DiPhotons.root");
+    file = new TFile("/afs/cern.ch/work/o/obondu/Higgs/CMSSW_5_3_9_patch1_HggKin/src/HggKin/DiPhotons.root");
     file_result->cd();
     tree =(TTree *) file->Get("diphojet_8TeV");
 
@@ -420,17 +420,17 @@ int const n_study=2;
     switch (proc) 
       {
       case 2:
-	file = new TFile("/afs/cern.ch/work/c/cgoudet/private/data/DiPhotons.root");
+	file = new TFile("/afs/cern.ch/work/o/obondu/Higgs/CMSSW_5_3_9_patch1_HggKin/src/HggKin/DiPhotons.root");
 	tree  =(TTree *) file->Get("diphojet_8TeV");
 	file_result->cd();
 	break;
       case 0:
-	file = new TFile("/afs/cern.ch/work/c/cgoudet/private/data/SMHiggs_m125.root");
+	file = new TFile("/afs/cern.ch/work/o/obondu/Higgs/CMSSW_5_3_9_patch1_HggKin/src/HggKin/SMHiggs_m125.root");
 	file_result->cd();
 	tree  =(TTree *) file->Get("ggh_m125_8TeV");
 	break;
       case 1:
-	file = new TFile("/afs/cern.ch/work/c/cgoudet/private/data/SMHiggs_m125.root");
+	file = new TFile("/afs/cern.ch/work/o/obondu/Higgs/CMSSW_5_3_9_patch1_HggKin/src/HggKin/SMHiggs_m125.root");
 	file_result->cd();
 	tree  =(TTree *) file->Get("vbf_m125_8TeV");
 	break;      
@@ -617,7 +617,7 @@ int const n_study=2;
   if (DATA) {
     cout << "in data" << endl;
 
-    TFile *file_input=new TFile("/afs/cern.ch/work/c/cgoudet/private/data/data.root");
+    TFile *file_input=new TFile("/afs/cern.ch/work/o/obondu/Higgs/CMSSW_5_3_9_patch1_HggKin/src/HggKin/data.root");
     TTree *tree_input=(TTree *) file_input->Get("Data");
     file_result->cd();
 
