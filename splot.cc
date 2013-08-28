@@ -44,8 +44,8 @@ namespace po = boost::program_options;
 // functions declaration
 int AddModel(RooWorkspace*, int variety, string cut, string cut_name, string category, string category_name);		// Add pdf to workspace and pre-fit them
 int AddData(RooWorkspace*, int variety, string cut, string cut_name, string category, string category_name);				// Add simulated events to workspace
-int DoSPlot(RooWorkspace*, int const &cut=0, int const &categ=-1);				// Create SPlot object
-int MakePlot(RooWorkspace*, int const &cut=0, int const &categ=-1);				// Create and save result and check plots
+int DoSPlot(RooWorkspace*, int const &cut = 0, int const &categ = -1);				// Create SPlot object
+int MakePlot(RooWorkspace*, int const &cut = 0, int const &categ = -1, bool doBlind = true, string sample = "BlindMC_reco");				// Create and save result and check plots
 
 
 int main(int argc, char* argv[])
@@ -123,7 +123,7 @@ int main(int argc, char* argv[])
 			AddModel(ws, variety, cuts[icut], cuts_name[icut], category[icategory], category[icategory]);
 			AddData(ws, variety, cuts[icut], cuts_name[icut], category[icategory], category[icategory]);
 			DoSPlot(ws, menu_cut[i], categ);
-			MakePlot(ws, menu_cut[i], categ);
+			MakePlot(ws, menu_cut[i], categ, doBlind, sample);
 			root_file->cd();
 			ws->Write("",TObject::kOverwrite);
 			ws->Delete();	
@@ -394,16 +394,18 @@ int DoSPlot(RooWorkspace* ws, int const &cut, int const &categ) {
 //#############################################################################################"
 //#############################################################################################"
 //#############################################################################################"
-int MakePlot(RooWorkspace* ws, int const &cut, int const &categ) {
+int MakePlot(RooWorkspace* ws, int const &cut, int const &categ, bool doBlind, string sample) {
 
 	setTDRStyle();
 	// collect useful variables
-	RooRealVar *dipho_pt=ws->var("dipho_pt");
-	RooRealVar *dipho_mass=ws->var("dipho_mass");
-	RooRealVar *sgn_yield=ws->var("sgn_yield");
-	RooRealVar *bkg_yield=ws->var("bkg_yield");
-	RooDataSet *Wdataset=(RooDataSet*) ws->data("Wdataset");
-	RooDataSet *dataset_blind=(RooDataSet*) ws->data("dataset_blind");
+	RooRealVar *dipho_pt = ws->var("dipho_pt");
+	RooRealVar *dipho_mass = ws->var("dipho_mass");
+	RooRealVar *sgn_yield = ws->var("sgn_yield");
+	RooRealVar *bkg_yield = ws->var("bkg_yield");
+	RooDataSet *Wdataset = (RooDataSet*) ws->data("Wdataset");
+	RooDataSet *dataset;
+	if(doBlind) dataset = (RooDataSet*) ws->data("dataset_blind");
+	else dataset = (RooDataSet*) ws->data("dataset");
 
 	TLatex latex;
 	latex.SetNDC();	
@@ -434,38 +436,49 @@ int MakePlot(RooWorkspace* ws, int const &cut, int const &categ) {
 
 
 
-	//compute integral of pdf in sidebands
+	//compute integral of pdf in sidebands for later normalization of blind plots
 	dipho_mass->setRange("low_SB",100,115);
 	dipho_mass->setRange("high_SB",135,180);
+	RooAbsReal *int_sgn;
+	RooAbsReal *int_bkg;
+	RooRealVar *ntree_data;
+	RooDataSet *sw_bkg;
+	RooDataSet *sw_sgn;
+	if(doBlind)
+	{
+		RooAddPdf *model_sgn=(RooAddPdf *) ws->pdf("model_sgn");
+		int_sgn = model_sgn->createIntegral(*dipho_mass,Range("low_SB,high_SB"),NormSet(*dipho_mass));
+		cout << "int_sgn->getVal()= " << int_sgn->getVal() << endl;
+		RooAddPdf *model_bkg=(RooAddPdf *) ws->pdf("model_bkg");
+		int_bkg = model_bkg->createIntegral(*dipho_mass,Range("low_SB,high_SB"),NormSet(*dipho_mass));
+		cout << "int_bkg->getVal()= " << int_bkg->getVal() << endl;
 
-	RooAddPdf *model_sgn=(RooAddPdf *) ws->pdf("model_sgn");
-	RooAbsReal *int_sgn=model_sgn->createIntegral(*dipho_mass,Range("low_SB,high_SB"),NormSet(*dipho_mass));
-	cout << "shn integral	" << int_sgn->getVal() << endl;
-	RooAddPdf *model_bkg=(RooAddPdf *) ws->pdf("model_bkg");
-	RooAbsReal *int_bkg=model_bkg->createIntegral(*dipho_mass,Range("low_SB,high_SB"),NormSet(*dipho_mass));
-
-	RooRealVar *ntree_data=(RooRealVar *) ws->var("ntree_data");
-	cout << ntree_data->getVal() << endl;
-	//Creating functions for corrected weights
-	RooRealVar *sgn_yield_sw=new RooRealVar("sgn_yield_sw","sgn_yield_sw",0,-100,100);
-	RooRealVar *bkg_yield_sw=new RooRealVar("bkg_yield_sw","bkg_yield_sw",0,-100,100);
-
-	RooDataSet *dum_swbkg=new RooDataSet("dum_swbkg","dum_swbkg",Wdataset,*Wdataset->get(),"dipho_mass<115 || dipho_mass>135","bkg_yield_sw");
-	RooRealVar *sum_swbkg=new RooRealVar("sum_swbkg","sum_swbkg",dum_swbkg->sumEntries());
-	RooDataSet *dum_swsgn=new RooDataSet("dum_swsgn","dum_swsgn",Wdataset,*Wdataset->get(),"dipho_mass<115 || dipho_mass>135","sgn_yield_sw");
-	RooRealVar *sum_swsgn=new RooRealVar("sum_swsgn","sum_swsgn",dum_swsgn->sumEntries());
-
-	RooFormulaVar *sw_blindsgn=new RooFormulaVar("sw_blindsgn","sw_blindsgn","@0*@1*@2/@3",RooArgSet(*sgn_yield_sw,*sgn_yield,*int_sgn,*sum_swsgn));
-	Wdataset->addColumn(*sw_blindsgn); 
-	RooFormulaVar *sw_blindbkg=new RooFormulaVar("sw_blindbkg","sw_blindbkg","@0*@1*@2/@3",RooArgSet(*bkg_yield_sw,*bkg_yield,*int_bkg,*sum_swbkg));
-	Wdataset->addColumn(*sw_blindbkg);	
-
-	//create datasets weighted with corrected weights
-	//Create datasets blinded sweighted
-	RooDataSet *swblind_bkg=new RooDataSet("swblind_bkg","swblind_bkg",Wdataset,*Wdataset->get(),"dipho_mass<115 || dipho_mass>135","sw_blindbkg");
-	RooDataSet *swblind_sgn=new RooDataSet("swblind_sgn","swblind_sgn",Wdataset,*Wdataset->get(),"dipho_mass<115 || dipho_mass>135","sw_blindsgn");
-	cout << "blinded sweighted dataset created" << endl;
-	cout << "somme weight : " << swblind_bkg->sumEntries()+swblind_sgn->sumEntries() << "	 " << Wdataset->sumEntries() << " " << endl;
+		ntree_data = (RooRealVar *) ws->var("ntree_data");
+		cout << ntree_data->getVal() << endl;
+		//Creating functions for corrected weights
+		RooRealVar *sgn_yield_sw = new RooRealVar("sgn_yield_sw","sgn_yield_sw",0,-100,100);
+		RooRealVar *bkg_yield_sw = new RooRealVar("bkg_yield_sw","bkg_yield_sw",0,-100,100);
+	
+		RooDataSet *dum_swbkg=new RooDataSet("dum_swbkg","dum_swbkg",Wdataset,*Wdataset->get(),"dipho_mass<115 || dipho_mass>135","bkg_yield_sw");
+		RooRealVar *sum_swbkg=new RooRealVar("sum_swbkg","sum_swbkg",dum_swbkg->sumEntries());
+		RooDataSet *dum_swsgn=new RooDataSet("dum_swsgn","dum_swsgn",Wdataset,*Wdataset->get(),"dipho_mass<115 || dipho_mass>135","sgn_yield_sw");
+		RooRealVar *sum_swsgn=new RooRealVar("sum_swsgn","sum_swsgn",dum_swsgn->sumEntries());
+	
+		RooFormulaVar *sw_blindsgn=new RooFormulaVar("sw_blindsgn","sw_blindsgn","@0*@1*@2/@3",RooArgSet(*sgn_yield_sw,*sgn_yield,*int_sgn,*sum_swsgn));
+		Wdataset->addColumn(*sw_blindsgn); 
+		RooFormulaVar *sw_blindbkg=new RooFormulaVar("sw_blindbkg","sw_blindbkg","@0*@1*@2/@3",RooArgSet(*bkg_yield_sw,*bkg_yield,*int_bkg,*sum_swbkg));
+		Wdataset->addColumn(*sw_blindbkg);	
+	
+		//create datasets weighted with corrected weights
+		//Create datasets blinded sweighted
+		sw_bkg=new RooDataSet("sw_bkg","sw_bkg",Wdataset,*Wdataset->get(),"dipho_mass<115 || dipho_mass>135","sw_blindbkg");
+		sw_sgn=new RooDataSet("sw_sgn","sw_sgn",Wdataset,*Wdataset->get(),"dipho_mass<115 || dipho_mass>135","sw_blindsgn");
+		cout << "blinded sweighted dataset created" << endl;
+		cout << "somme weight : " << sw_bkg->sumEntries()+sw_sgn->sumEntries() << "	 " << Wdataset->sumEntries() << " " << endl;
+	
+	}
+	sw_bkg=new RooDataSet("sw_bkg","sw_bkg",Wdataset,*Wdataset->get(),"","bkg_yield_sw");
+	sw_sgn=new RooDataSet("sw_sgn","sw_sgn",Wdataset,*Wdataset->get(),"","sgn_yield_sw");
 	//---------------------------------
 
 
@@ -474,24 +487,24 @@ int MakePlot(RooWorkspace* ws, int const &cut, int const &categ) {
 	pad_up->Draw();
 	pad_up->cd();
 	RooPlot *frame_pt=dipho_pt->frame(NBINS);
-	swblind_bkg->plotOn(frame_pt,MarkerSize(1.5),MarkerColor(1),LineColor(1),DataError(RooAbsData::SumW2),Name("swblind_bkg"),Binning(NBINS,0,dipho_pt->getMax()));
-	dataset_blind->plotOn(frame_pt,MarkerColor(4),LineColor(4),DataError(RooAbsData::SumW2),Name("blind_bkg"),Binning(NBINS,0,dipho_pt->getMax()));
-	cout << "sum	"	<< dataset_blind->sumEntries() << endl;
+	sw_bkg->plotOn(frame_pt,MarkerSize(1.5),MarkerColor(1),LineColor(1),DataError(RooAbsData::SumW2),Name("sw_bkg"),Binning(NBINS,0,dipho_pt->getMax()));
+	dataset->plotOn(frame_pt,MarkerColor(4),LineColor(4),DataError(RooAbsData::SumW2),Name("blind_bkg"),Binning(NBINS,0,dipho_pt->getMax()));
+	cout << "sum	"	<< dataset->sumEntries() << endl;
 	frame_pt->UseCurrentStyle();
 	frame_pt->Draw();
 
 	legend=new TLegend(0.6,0.7,1,1);
 	legend->SetTextSize(0.05);
 	legend->AddEntry("","Data","");
-	legend->AddEntry("swblind_bkg", "sweighted background","lpe");
+	legend->AddEntry("sw_bkg", "sweighted background","lpe");
 	legend->AddEntry("blind_bkg","Background blinded","lpe");
 	legend->Draw();
 
 	// creata ratio histogram (sw-data)/data
 	TH1F *hist_fit=new TH1F("hist_fit","hist_fit",NBINS,0,NBINS*WIDTH);
-	dataset_blind->fillHistogram(hist_fit,*dipho_pt);
+	dataset->fillHistogram(hist_fit,*dipho_pt);
 	TH1F *hist_set=new TH1F("hist_set","hist_set",NBINS,0,NBINS*WIDTH);
-	swblind_bkg->fillHistogram(hist_set,*dipho_pt);	
+	sw_bkg->fillHistogram(hist_set,*dipho_pt);	
 	TLine *line=new TLine(0,0,NBINS*WIDTH,0);
 	line->SetLineColor(kRed);
 	hist_set->Add(hist_fit,-1);
@@ -539,7 +552,7 @@ int MakePlot(RooWorkspace* ws, int const &cut, int const &categ) {
 	// plot weighted signal events and first fit
 	pad_up->cd();
 	frame_pt=dipho_pt->frame(NBINS);
-	swblind_sgn->plotOn(frame_pt,MarkerColor(2),LineColor(2),DataError(RooAbsData::SumW2),Name("swblind_sgn"),Binning(NBINS,0,dipho_pt->getMax()));// plot weighted sgn events
+	sw_sgn->plotOn(frame_pt,MarkerColor(2),LineColor(2),DataError(RooAbsData::SumW2),Name("sw_sgn"),Binning(NBINS,0,dipho_pt->getMax()));// plot weighted sgn events
 	RooDataSet *sim_sgn=(RooDataSet *) ws->data("sim_sgn");
 	sim_sgn->plotOn(frame_pt,MarkerColor(3),LineColor(3),DataError(RooAbsData::SumW2),Name("sgn_sm"),Binning(NBINS,0,dipho_pt->getMax()));
 
@@ -551,7 +564,7 @@ int MakePlot(RooWorkspace* ws, int const &cut, int const &categ) {
 	legend=new TLegend(0.6,0.75,1,1);
 	legend->SetTextSize(0.05);
 	legend->AddEntry("","Data","");
-	legend->AddEntry("swblind_sgn", "sweighted sgn","lpe");
+	legend->AddEntry("sw_sgn", "sweighted sgn","lpe");
 	legend->AddEntry("sgn_sm","SM Higgs MC","lpe");
 	legend->Draw();
 
@@ -559,7 +572,7 @@ int MakePlot(RooWorkspace* ws, int const &cut, int const &categ) {
 	hist_fit=new TH1F("hist_fit","hist_fit",NBINS,0,NBINS*WIDTH);
 	sim_sgn->fillHistogram(hist_fit,*dipho_pt);
 	hist_set=new TH1F("hist_set","hist_set",NBINS,0,NBINS*WIDTH);
-	swblind_sgn->fillHistogram(hist_set,*dipho_pt);	
+	sw_sgn->fillHistogram(hist_set,*dipho_pt);	
 	hist_set->SetTitle("test");
 	//	line=new TLine(0,0,NBINS*WIDTH,0);
 	line->SetLineColor(kRed);
@@ -599,5 +612,6 @@ int MakePlot(RooWorkspace* ws, int const &cut, int const &categ) {
 	cout << "weigthed sgn drawn" << endl;
 
 	cout << "end MakePlot" << endl;
-	return 0;}
+	return 0;
+}
 		
