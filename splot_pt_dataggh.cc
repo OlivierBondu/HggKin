@@ -48,7 +48,7 @@ int main() {
 
   TFile *root_file=0;
   if (BATCH) root_file=new TFile("WS_SPlot.root","UPDATE"); //File to store the workspace
-  else root_file=new TFile("/afs/cern.ch/work/c/cgoudet/private/data/WS_SPlot.root","UPDATE");
+  else root_file=new TFile("WS_SPlot.root","UPDATE");
   RooWorkspace *ws=0;
   char buffer[100];
 
@@ -84,7 +84,7 @@ int AddModel(RooWorkspace *ws, int  const &cut=0, int const &categ=0) {
   setTDRStyle(); 
   TFile *file_kin=0;
   if (BATCH) file_kin=new TFile("kin_dist.root");
-  else file_kin=new TFile("/afs/cern.ch/work/c/cgoudet/private/data/kin_dist.root");
+  else file_kin=new TFile("kin_dist.root");
   
   
   RooRealVar *dipho_mass=new RooRealVar("dipho_mass","m_{#gamma #gamma}",100,180,"GeV/c^{2}");
@@ -218,7 +218,7 @@ int AddData(RooWorkspace* ws, int const &cut=0, int const &categ=0) {
   char buffer[100],buffer2[100];
   TFile *file_kin=0;
   if (BATCH) file_kin=new TFile("kin_dist.root");
-  else file_kin=new TFile("/afs/cern.ch/work/c/cgoudet/private/data/kin_dist.root");
+  else file_kin=new TFile("kin_dist.root");
 
   //Create the cut formula and gather data
   sprintf(buffer,""); sprintf(buffer2,"");
@@ -302,7 +302,7 @@ int DoSPlot(RooWorkspace* ws, int const &cut=0, int const &categ=-1) {
   sprintf(buffer_file[1][1],"pdf");
   sprintf(buffer_file[1][2],"root");
   if (! BATCH) {
-    sprintf(buffer_path,"/afs/cern.ch/work/c/cgoudet/private/plot/");
+    sprintf(buffer_path,"plot/");
     sprintf(buffer_file[0][0],"png/");
     sprintf(buffer_file[0][1],"pdf/");
     sprintf(buffer_file[0][2],"root/");
@@ -393,7 +393,7 @@ int MakePlot(RooWorkspace* ws, int const &cut=0, int const &categ=0) {
   sprintf(buffer_file[1][1],"pdf");
   sprintf(buffer_file[1][2],"root");
   if (! BATCH) {
-    sprintf(buffer_path,"/afs/cern.ch/work/c/cgoudet/private/plot/");
+    sprintf(buffer_path,"plot/");
     sprintf(buffer_file[0][0],"png/");
     sprintf(buffer_file[0][1],"pdf/");
     sprintf(buffer_file[0][2],"root/");
