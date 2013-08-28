@@ -28,7 +28,7 @@
 
 #include "RooStats/SPlot.h"
 
-#define BATCH 1 // On batch mode, have to change loading and saving path
+#define BATCH 0 // On batch mode, have to change loading and saving path
 #define NBINS 10
 #define WIDTH 10
 
@@ -108,14 +108,9 @@ int AddModel(RooWorkspace *ws, int  const &cut=0, int const &categ=0) {
   RooRealVar *sigma2_sgn=new RooRealVar("sigma2_sgn","sigma2_sgn",9,0,10);
   RooGaussian *model2_sgn=new RooGaussian("model2_sgn","model2_sgn",*dipho_mass,*mean2_sgn,*sigma2_sgn);
 
-  RooRealVar *mean3_sgn=new RooRealVar("mean3_sgn","mean3_sgn",126,120,130);
-  RooRealVar *sigma3_sgn=new RooRealVar("sigma3_sgn","sigma3_sgn",2,0,5);
-  RooGaussian *model3_sgn=new RooGaussian("model3_sgn","model3_sgn",*dipho_mass,*mean3_sgn,*sigma3_sgn);
-
   RooRealVar *compo1_sgn=new RooRealVar("compo1_sgn","compo1_sgn",0,1);
-  RooRealVar *compo2_sgn=new RooRealVar("compo2_sgn","compo2_sgn",0,1);
   RooAddPdf *model_sgn=new RooAddPdf("model_sgn","model_sgn",RooArgSet(*model1_sgn,*model2_sgn),RooArgSet(*compo1_sgn));
-  //    RooGaussian *model_sgn=new RooGaussian(*model1_sgn,"model_sgn");
+
 
   TTree *tree=(TTree*) file_kin->Get("tree_reco_ggh");
   sprintf(buffer,""); sprintf(buffer2,"");
@@ -285,39 +280,22 @@ int DoSPlot(RooWorkspace* ws, int const &cut=0, int const &categ=-1) {
   RooRealVar *weight=ws->var("weight");
 
   //Fixing discriminant parameters
-   RooRealVar *coef0_bern_bkg=ws->var("coef0_bern_bkg");
-   coef0_bern_bkg->setConstant(1);
-   RooRealVar *coef1_bern_bkg=ws->var("coef1_bern_bkg");
-   coef1_bern_bkg->setConstant(1);
-   RooRealVar *coef2_bern_bkg=ws->var("coef2_bern_bkg");
-   coef2_bern_bkg->setConstant(1);
-   RooRealVar *coef3_bern_bkg=ws->var("coef3_bern_bkg");
-   coef3_bern_bkg->setConstant(1);
+   RooRealVar *coef0_bern_bkg=ws->var("coef0_bern_bkg");   coef0_bern_bkg->setConstant(1);
+   RooRealVar *coef1_bern_bkg=ws->var("coef1_bern_bkg");   coef1_bern_bkg->setConstant(1);
+   RooRealVar *coef2_bern_bkg=ws->var("coef2_bern_bkg");   coef2_bern_bkg->setConstant(1);
+   RooRealVar *coef3_bern_bkg=ws->var("coef3_bern_bkg");   coef3_bern_bkg->setConstant(1);
+   RooRealVar *compo1_sgn=ws->var("compo1_sgn");   compo1_sgn->setConstant(1);
+   RooRealVar* mean1_sgn=ws->var("mean1_sgn");   mean1_sgn->setConstant(1);
+   RooRealVar* sigma1_sgn=ws->var("sigma1_sgn");   sigma1_sgn->setConstant(1);
+   RooRealVar* mean2_sgn=ws->var("mean2_sgn");   mean2_sgn->setConstant(1);
+   RooRealVar* sigma2_sgn=ws->var("sigma2_sgn");   sigma2_sgn->setConstant(1);
+   
+   RooRealVar *sgn_yield=ws->var("sgn_yield");
+   RooRealVar *bkg_yield=ws->var("bkg_yield");
+   
+   cout << "Model variables retrieved and set constant" << endl;
 
-  RooRealVar *sgn_yield=ws->var("sgn_yield");
-  RooRealVar *bkg_yield=ws->var("bkg_yield");
-
-
-
-
-   RooRealVar *compo1_sgn=ws->var("compo_sgn");
-   compo1_sgn->setConstant(1);
-   RooRealVar *compo2_sgn=ws->var("compo_sgn");
-   compo2_sgn->setConstant(1);
-   RooRealVar* mean1_sgn=ws->var("mean1_sgn");
-   mean1_sgn->setConstant(1);
-   RooRealVar* sigma1_sgn=ws->var("sigma1_sgn");
-   sigma1_sgn->setConstant(1);
-   RooRealVar* mean2_sgn=ws->var("mean2_sgn");
-   mean2_sgn->setConstant(1);
-   RooRealVar* sigma2_sgn=ws->var("sigma2_sgn");
-   sigma2_sgn->setConstant(1);
- RooRealVar* mean3_sgn=ws->var("mean3_sgn");
-   mean3_sgn->setConstant(1);
-   RooRealVar* sigma3_sgn=ws->var("sigma3_sgn");
-   sigma3_sgn->setConstant(1);
-
-  model_sgnbkg->fitTo(*dataset);  
+   model_sgnbkg->fitTo(*dataset);  
   // Check plot
   char buffer_path[100]="",buffer_file[2][3][10]={{""}},buffercut[10]="",buffercateg[30]="";
   sprintf(buffer_file[1][0],"png");
