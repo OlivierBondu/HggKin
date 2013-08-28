@@ -1,9 +1,9 @@
+// Original file by C. Goudet
+// Adapted by O. Bondu (Aug 2013)
+// C++ headers
 #include <iostream>
-#include "setTDRStyle.h"
-
-//Root headers
+// ROOT Headers
 #include "TFile.h"
-#include "RooWorkspace.h"
 #include "TTree.h"
 #include "TCanvas.h"
 #include "TMath.h"
@@ -12,10 +12,9 @@
 #include "TAxis.h"
 #include "TH1F.h"
 #include "TLine.h"
+// RooFit headers
 #include "RooConstVar.h"
 #include "RooFormulaVar.h"
-
-//Roofit headers
 #include "RooPlot.h"
 #include "RooRealVar.h"
 #include "RooGaussian.h"
@@ -24,27 +23,29 @@
 #include "RooGenericPdf.h"
 #include "RooProdPdf.h"
 #include "RooBernstein.h"
-
-
+// RooStats headers
+#include "RooWorkspace.h"
 #include "RooStats/SPlot.h"
-
+// plot style
+#include "setTDRStyle.h"
+// definitions
 #define BATCH 0 // On batch mode, have to change loading and saving path
 #define NBINS 10
 #define WIDTH 10
-
+// namespaces
 using namespace std;
 using namespace RooStats;
 using namespace RooFit;
+// functions declaration
+int AddModel(RooWorkspace*, int const &cut=0, int const &categ=-1); // Add pdf to workspace and pre-fit them
+int AddData(RooWorkspace*, int const &cut=0, int const &categ=-1); // Add simulated events ro workspace
+int DoSPlot(RooWorkspace*, int const &cut=0, int const &categ=-1); // Create SPlot object
+int MakePlot(RooWorkspace*, int const &cut=0, int const &categ=-1); // Create and save result and check plots
 
-int main() {
+
+int main(int argc, char* argv[]) {
   //#############menu
   int const menu_cut[5]={0,200,375,550,750};
-
-  //############def
-  int AddModel(RooWorkspace*, int const &cut=0, int const &categ=-1); // Add pdf to workspace and pre-fit them
-  int AddData(RooWorkspace*, int const &cut=0, int const &categ=-1); // Add simulated events ro workspace
-  int DoSPlot(RooWorkspace*, int const &cut=0, int const &categ=-1); // Create SPlot object
-  int MakePlot(RooWorkspace*, int const &cut=0, int const &categ=-1); // Create and save result and check plots
 
   TFile *root_file=0;
   if (BATCH) root_file=new TFile("WS_SPlot.root","UPDATE"); //File to store the workspace
@@ -80,7 +81,7 @@ int main() {
 //######################################################################################################################################
 //######################################################################################################################################
 //######################################################################################################################################
-int AddModel(RooWorkspace *ws, int  const &cut=0, int const &categ=0) {
+int AddModel(RooWorkspace *ws, int  const &cut, int const &categ) {
   setTDRStyle(); 
   TFile *file_kin=0;
   if (BATCH) file_kin=new TFile("kin_dist.root");
@@ -209,7 +210,7 @@ RooPlot *framesgn=dipho_mass->frame(100,180,40);
 //######################################################################################################
 //######################################################################################################
 //######################################################################################################
-int AddData(RooWorkspace* ws, int const &cut=0, int const &categ=0) {
+int AddData(RooWorkspace* ws, int const &cut, int const &categ) {
   cout << "in AddData" << endl;
   RooRealVar *dipho_mass=ws->var("dipho_mass");
   RooRealVar *dipho_pt=ws->var("dipho_pt");
@@ -268,7 +269,7 @@ int AddData(RooWorkspace* ws, int const &cut=0, int const &categ=0) {
 //###################################################################################################
 //###################################################################################################
 //###################################################################################################
-int DoSPlot(RooWorkspace* ws, int const &cut=0, int const &categ=-1) {
+int DoSPlot(RooWorkspace* ws, int const &cut, int const &categ) {
   cout << "in DoSplot" << endl;
   setTDRStyle();
   RooAbsPdf *model_sgnbkg=ws->pdf("model_sgnbkg");
@@ -363,7 +364,7 @@ int DoSPlot(RooWorkspace* ws, int const &cut=0, int const &categ=-1) {
 //#############################################################################################"
 //#############################################################################################"
 //#############################################################################################"
-int MakePlot(RooWorkspace* ws, int const &cut=0, int const &categ=0) {
+int MakePlot(RooWorkspace* ws, int const &cut, int const &categ) {
 
   setTDRStyle();
   // collect usefull variables
