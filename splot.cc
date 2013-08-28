@@ -105,34 +105,8 @@ int main(int argc, char* argv[])
 //	category.push_back("category >  2.9 && category < 3.1"); category_name.push_back("cat3");
 
 	TFile *root_file=0;
-
-//	if (BATCH) root_file=new TFile("WS_SPlot.root","UPDATE"); //File to store the workspace
-//	else root_file=new TFile( Form("WS_SPlot_%s.root", sample.c_str()),"UPDATE");
 	root_file = new TFile( Form("WS_SPlot_%s.root", sample.c_str()),"UPDATE");
 	RooWorkspace *ws=0;
-//	char buffer[100];
-/*
-	int i=0; // no cut on cos theta*
-	int categ=-1; // inclusive category
-//		 for (int i=0; i<5;i++) { // loop over cos theta* cut
-//	 for (int categ=-1; categ<4;categ++) {
-//			sprintf(buffer,"ws_pt");
-//			if (i) sprintf(buffer,"%s%d",buffer,menu_cut[i]);
-//			if (categ>-1) sprintf(buffer,"%s_categ%d",buffer,categ);
-//			sprintf(buffer,"%s_datasgn",buffer);
-			string ws_name = Form("ws_pt%s%s_datasgn", i ? Form("%d", menu_cut[i]) : "", categ>-1 ? Form("_categ%d", categ) : "");
-//			ws = new RooWorkspace(buffer,buffer);
-			ws = new RooWorkspace(ws_name.c_str(), ws_name.c_str());
-			AddModel(ws, menu_cut[i], categ);
-			AddData(ws, menu_cut[i], categ);
-			DoSPlot(ws, menu_cut[i], categ);
-			MakePlot(ws, menu_cut[i], categ);
-			root_file->cd();
-			ws->Write("",TObject::kOverwrite);
-			ws->Delete();	
-//			 } 
-//			 }
-*/
 
 // FIXME setup a loop on MC_Reco MC_Gen Data as asked for
 
@@ -145,10 +119,7 @@ int main(int argc, char* argv[])
 		{
 			if(DEBUG) cout << "Processing category[" << icategory << "]= " << category[icategory] << endl; 
 			string ws_name = "ws_" + sample + "_" + cuts_name[icut] + "_" + category_name[icategory];
-//			string ws_name = Form("ws_pt%s%s_datasgn", i ? Form("%d", menu_cut[i]) : "", categ>-1 ? Form("_categ%d", categ) : "");
 			ws = new RooWorkspace(ws_name.c_str(), ws_name.c_str());
-//			AddModel(ws, menu_cut[i], categ);
-//			AddData(ws, menu_cut[i], categ);
 			AddModel(ws, variety, cuts[icut], cuts_name[icut], category[icategory], category[icategory]);
 			AddData(ws, variety, cuts[icut], cuts_name[icut], category[icategory], category[icategory]);
 			DoSPlot(ws, menu_cut[i], categ);
@@ -179,9 +150,6 @@ int AddModel(RooWorkspace *ws, int variety, string cut, string cut_name, string 
 	RooRealVar *dipho_ctheta = new RooRealVar("dipho_ctheta","cos(#theta *)",0,1);
 	RooRealVar *category = new RooRealVar("category","category",-1,5);
 	TCanvas *canvas = new TCanvas("canvas","canvas",800,600);
-//	char buffer[100],buffer2[100];	
-
-
 
 	//Model of sgn =2 gaussians
 	cout << "#####	Model sgn" << endl;
@@ -202,24 +170,13 @@ int AddModel(RooWorkspace *ws, int variety, string cut, string cut_name, string 
 	TTree* tree;
 	if( variety < 0 ) tree = (TTree*) file_kin->Get("tree_gen_ggh");
 	else tree = (TTree*) file_kin->Get("tree_reco_ggh");
-/*	sprintf(buffer,""); sprintf(buffer2,"");
-	if (cut>0) {
-		sprintf(buffer, "dipho_ctheta > %1.3f",cut/1000.);	 
-		sprintf(buffer2," && ");
-	}
-	if (categ>-1) {
-		sprintf(buffer,"%s%s category > %2.2f && category < %2.2f",buffer,buffer2,categ-0.1,categ+0.1);
-		sprintf(buffer2," && ");
-	}
-*/
+
 	RooRealVar *weight = new RooRealVar("weight", "weight",0,100);
-//	RooDataSet*	sim_sgn=new RooDataSet("sim_sgn","sim_sgn",tree , RooArgSet(*dipho_mass,*dipho_pt,*dipho_ctheta,*category,*weight),buffer,"weight");
 	RooDataSet*	sim_sgn = new RooDataSet("sim_sgn", "sim_sgn", tree , RooArgSet(*dipho_mass,*dipho_pt,*dipho_ctheta,*category,*weight), selection.c_str(), "weight");
 	tree->Delete();
 
 	if( variety < 0 ) tree = (TTree*) file_kin->Get("tree_gen_vbf");
 	else tree = (TTree*) file_kin->Get("tree_reco_vbf");
-//	RooDataSet *sgn_sm = new RooDataSet("sgn_sm", "sgn_sm", tree, RooArgSet(*dipho_mass,*dipho_pt,*dipho_ctheta,*category,*weight), buffer, "weight");
 	RooDataSet *sgn_sm = new RooDataSet("sgn_sm", "sgn_sm", tree, RooArgSet(*dipho_mass,*dipho_pt,*dipho_ctheta,*category,*weight), selection.c_str(), "weight");
 	sim_sgn->append(*sgn_sm);
 
@@ -255,17 +212,7 @@ int AddModel(RooWorkspace *ws, int variety, string cut, string cut_name, string 
 	else if(variety == 1) tree=(TTree*) file_kin->Get("tree_data");
 //	int nentries=tree->GetEntries();
 	cout << "after tree" << endl;
-/*	sprintf(buffer,""); sprintf(buffer2,"");
-	if (cut>0) {
-		sprintf(buffer, "dipho_ctheta > %1.3f",cut/1000.);	 
-		sprintf(buffer2," && ");
-	}
-	if (categ>-1) {
-		sprintf(buffer,"%s%s category > %2.2f && category < %2.2f",buffer,buffer2,categ-0.1,categ+0.1);
-		sprintf(buffer2," && ");
-	}
-	RooDataSet*	data=new RooDataSet("data","data",tree , RooArgSet(*dipho_mass,*dipho_ctheta,*category),buffer);
-*/
+
 	RooDataSet*	data=new RooDataSet("data","data",tree , RooArgSet(*dipho_mass,*dipho_ctheta,*category), selection.c_str());
 	tree->Delete();
 	model_bkg->fitTo(*data);
@@ -273,10 +220,6 @@ int AddModel(RooWorkspace *ws, int variety, string cut, string cut_name, string 
 //	 coef1_bern_bkg->setRange(coef1_bern_bkg->getVal()-1*coef1_bern_bkg->getError(),coef1_bern_bkg->getVal()+1*coef1_bern_bkg->getError());
 //	 coef2_bern_bkg->setRange(coef2_bern_bkg->getVal()-1*coef2_bern_bkg->getError(),coef2_bern_bkg->getVal()+1*coef2_bern_bkg->getError());
 //	 coef3_bern_bkg->setRange(coef3_bern_bkg->getVal()-1*coef3_bern_bkg->getError(),coef3_bern_bkg->getVal()+1*coef3_bern_bkg->getError());
-	
-	// dipho_mass->setRange("low_sideband",100,122);	
-//	 dipho_mass->setRange("high_sideband",128,180);	
-//	 model_bkg->fitTo(*data,Range("high_sideband")); 
 	
  //Check plot
 	RooPlot *frame=dipho_mass->frame(100,180,16);
@@ -315,7 +258,6 @@ int AddData(RooWorkspace *ws, int variety, string cut, string cut_name, string c
 	RooRealVar *dipho_pt=ws->var("dipho_pt");
 	RooRealVar *dipho_ctheta=ws->var("dipho_ctheta");
 	RooRealVar *category=ws->var("category");
-//	char buffer[100],buffer2[100];
 	TFile *file_kin=0;
 	file_kin=new TFile("kin_dist.root");
 
@@ -326,7 +268,6 @@ int AddData(RooWorkspace *ws, int variety, string cut, string cut_name, string c
 	if(variety == 1) tree_data = (TTree *) file_kin->Get("tree_data");
 	cout << "tree test" << tree_data->GetEntries() << endl;
 	RooDataSet *dataset=new RooDataSet("dataset","dataset",tree_data,RooArgSet(*dipho_mass,*dipho_pt,*dipho_ctheta,*category), selection.c_str());
-//	sprintf (buffer,"%s%s (dipho_mass<115 || dipho_mass>135)",buffer,buffer2);
 	string blindselection = selection + " && (dipho_mass<115 || dipho_mass>135)";	
 	RooDataSet *dataset_blind=new RooDataSet("dataset_blind","dataset_blind",tree_data,RooArgSet(*dipho_mass,*dipho_pt,*dipho_ctheta,*category),blindselection.c_str());
 	cout << "dataset created " << endl;
@@ -368,9 +309,6 @@ int DoSPlot(RooWorkspace* ws, int const &cut, int const &categ) {
 	RooDataSet *dataset=(RooDataSet*) ws->data("dataset");
 	RooDataSet *dataset_blind=(RooDataSet *) ws->data("dataset_blind");
 	RooRealVar *dipho_mass=ws->var("dipho_mass");	
-//	RooRealVar *dipho_pt=ws->var("dipho_pt");
-//	RooRealVar *exp_sgn_yield=ws->var("exp_sgn_yield");
-//	RooRealVar *weight=ws->var("weight");
 
 	//Fixing discriminant parameters
 	 RooRealVar *coef0_bern_bkg=ws->var("coef0_bern_bkg");	 coef0_bern_bkg->setConstant(1);
@@ -408,7 +346,6 @@ int DoSPlot(RooWorkspace* ws, int const &cut, int const &categ) {
 
 	cout << "starting splot" << endl;
 	RooDataSet *Wdataset=new RooDataSet(*dataset,"Wdataset");
-//	SPlot *splot_sgnbkg=new 
 	SPlot("splot_sgnbkg","splot_sgnbkg", *Wdataset, model_sgnbkg, RooArgList(*sgn_yield, *bkg_yield));	//Create splot
 	ws->import(*Wdataset,Rename("Wdataset"));
 	cout << sgn_yield->getVal() << endl;
@@ -460,8 +397,7 @@ int DoSPlot(RooWorkspace* ws, int const &cut, int const &categ) {
 int MakePlot(RooWorkspace* ws, int const &cut, int const &categ) {
 
 	setTDRStyle();
-	// collect usefull variables
-//	RooAbsPdf *model=ws->pdf("model_sgnbkg");
+	// collect useful variables
 	RooRealVar *dipho_pt=ws->var("dipho_pt");
 	RooRealVar *dipho_mass=ws->var("dipho_mass");
 	RooRealVar *sgn_yield=ws->var("sgn_yield");
@@ -524,12 +460,6 @@ int MakePlot(RooWorkspace* ws, int const &cut, int const &categ) {
 	RooFormulaVar *sw_blindbkg=new RooFormulaVar("sw_blindbkg","sw_blindbkg","@0*@1*@2/@3",RooArgSet(*bkg_yield_sw,*bkg_yield,*int_bkg,*sum_swbkg));
 	Wdataset->addColumn(*sw_blindbkg);	
 
-//	 RooFormulaVar *sw_blindsgn=new RooFormulaVar("sw_blindsgn","sw_blindsgn","@0*@1*@2/@3",RooArgSet(*sgn_yield_sw,*sgn_yield,*int_sgn,*ntree_data));
-//	 Wdataset->addColumn(*sw_blindsgn); 
-//	 RooFormulaVar *sw_blindbkg=new RooFormulaVar("sw_blindbkg","sw_blindbkg","@0*@1*@2/@3",RooArgSet(*bkg_yield_sw,*bkg_yield,*int_bkg,*ntree_data));
-//	 Wdataset->addColumn(*sw_blindbkg);	
-
- 
 	//create datasets weighted with corrected weights
 	//Create datasets blinded sweighted
 	RooDataSet *swblind_bkg=new RooDataSet("swblind_bkg","swblind_bkg",Wdataset,*Wdataset->get(),"dipho_mass<115 || dipho_mass>135","sw_blindbkg");
