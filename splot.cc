@@ -42,8 +42,8 @@ using namespace RooStats;
 using namespace RooFit;
 namespace po = boost::program_options;
 // functions declaration
-int AddModel(RooWorkspace*, int variety, string cut, string cut_name, string category, string category_name);		// Add pdf to workspace and pre-fit them
-int AddData(RooWorkspace*, int variety, string cut, string cut_name, string category, string category_name);				// Add simulated events to workspace
+int AddModel(RooWorkspace*, int variety, bool doBlind, string cut, string cut_name, string category, string category_name);		// Add pdf to workspace and pre-fit them
+int AddData(RooWorkspace*, int variety, bool doBlind, string cut, string cut_name, string category, string category_name);				// Add simulated events to workspace
 int DoSPlot(RooWorkspace*, int const &cut = 0, int const &categ = -1);				// Create SPlot object
 int MakePlot(RooWorkspace*, int const &cut = 0, int const &categ = -1, bool doBlind = true, string sample = "BlindMC_reco");				// Create and save result and check plots
 
@@ -120,8 +120,8 @@ int main(int argc, char* argv[])
 			if(DEBUG) cout << "Processing category[" << icategory << "]= " << category[icategory] << endl; 
 			string ws_name = "ws_" + sample + "_" + cuts_name[icut] + "_" + category_name[icategory];
 			ws = new RooWorkspace(ws_name.c_str(), ws_name.c_str());
-			AddModel(ws, variety, cuts[icut], cuts_name[icut], category[icategory], category[icategory]);
-			AddData(ws, variety, cuts[icut], cuts_name[icut], category[icategory], category[icategory]);
+			AddModel(ws, variety, doBlind, cuts[icut], cuts_name[icut], category[icategory], category[icategory]);
+			AddData(ws, variety, doBlind, cuts[icut], cuts_name[icut], category[icategory], category[icategory]);
 			DoSPlot(ws, menu_cut[i], categ);
 			MakePlot(ws, menu_cut[i], categ, doBlind, sample);
 			root_file->cd();
@@ -138,7 +138,7 @@ int main(int argc, char* argv[])
 //######################################################################################################################################
 //######################################################################################################################################
 //######################################################################################################################################
-int AddModel(RooWorkspace *ws, int variety, string cut, string cut_name, string cat, string cat_name)
+int AddModel(RooWorkspace *ws, int variety, bool doBlind, string cut, string cut_name, string cat, string cat_name)
 {
 	string selection = cut + " && " + cat;
 	setTDRStyle(); 
@@ -190,9 +190,11 @@ int AddModel(RooWorkspace *ws, int variety, string cut, string cut_name, string 
 // sim_sgn->plotOn(framesgn,MarkerColor(kRed),MarkerSize(1.5));
 //	model_sgn->plotOn(framesgn);
 	sgn_sm=(RooDataSet *) sim_sgn->reduce("(dipho_mass<115 || dipho_mass>135)");
-	sgn_sm->plotOn(framesgn,MarkerColor(kBlue));
+	if(doBlind) sgn_sm->plotOn(framesgn,MarkerColor(kBlue));
+	else sim_sgn->plotOn(framesgn,MarkerColor(kBlue));
 	framesgn->Draw();
-	canvas->SaveAs("frame_masssgn_data.pdf");
+//	canvas->SaveAs("frame_masssgn_data.pdf");
+	canvas->SaveAs(Form("prefit_mass_%sMC_signal.pdf", doBlind ? "Blind" : "" ));
 	cout << framesgn->chiSquare() << endl;
 	framesgn->Delete();
 
@@ -213,7 +215,8 @@ int AddModel(RooWorkspace *ws, int variety, string cut, string cut_name, string 
 //	int nentries=tree->GetEntries();
 	cout << "after tree" << endl;
 
-	RooDataSet*	data=new RooDataSet("data","data",tree , RooArgSet(*dipho_mass,*dipho_ctheta,*category), selection.c_str());
+	RooDataSet*	data = new RooDataSet("data","data",tree , RooArgSet(*dipho_mass,*dipho_ctheta,*category), selection.c_str());
+	RooDataSet* blinddata = (RooDataSet*) data->reduce("(dipho_mass<115 || dipho_mass>135)");
 	tree->Delete();
 	model_bkg->fitTo(*data);
 //	 coef0_bern_bkg->setRange(coef0_bern_bkg->getVal()-1*coef0_bern_bkg->getError(),coef0_bern_bkg->getVal()+1*coef0_bern_bkg->getError());
@@ -223,10 +226,12 @@ int AddModel(RooWorkspace *ws, int variety, string cut, string cut_name, string 
 	
  //Check plot
 	RooPlot *frame=dipho_mass->frame(100,180,16);
-	data->plotOn(frame);
+	if(doBlind) blinddata->plotOn(frame);
+	else data->plotOn(frame);
 	model_bkg->plotOn(frame);
 	frame->Draw();
-	canvas->SaveAs("frame_massbkg_data.pdf");
+	canvas->SaveAs(Form("prefit_mass_%sBackground.pdf", doBlind ? "Blind" : "" ));
+//	canvas->SaveAs("frame_massbkg_data.pdf");
 	cout << frame->chiSquare() << endl;
 	frame->Delete();
 
@@ -250,7 +255,7 @@ int AddModel(RooWorkspace *ws, int variety, string cut, string cut_name, string 
 //######################################################################################################
 //######################################################################################################
 //######################################################################################################
-int AddData(RooWorkspace *ws, int variety, string cut, string cut_name, string cat, string cat_name)
+int AddData(RooWorkspace *ws, int variety, bool doBlind, string cut, string cut_name, string cat, string cat_name)
 {
 	string selection = cut + " && " + cat;
 	cout << "in AddData" << endl;
