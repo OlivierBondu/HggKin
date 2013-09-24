@@ -3,9 +3,7 @@
 *.lo
 *.o
 *.exe
-*~
 *.out
-
 
 # Compiled Dynamic libraries
 *.so
@@ -25,6 +23,9 @@
 LSF*
 
 # various tmp files
+*~
 *.swp
 .__afs*
+test*
+dump*
 
