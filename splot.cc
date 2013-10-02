@@ -40,6 +40,7 @@
 #define NBINS 10
 #define WIDTH 10
 #define DEBUG 0
+#define KFAC 3
 // namespaces
 using namespace std;
 using namespace RooStats;
@@ -166,65 +167,74 @@ int AddModel(string inputfile, RooWorkspace *ws, int type, bool doBlind, string 
 	RooRealVar *dipho_ctheta = new RooRealVar("dipho_ctheta","cos(#theta *)",0,1);
 	RooRealVar *category = new RooRealVar("category","category",-1,5);
 	dipho_mass->setBins(80);
-	dipho_mass->setRange("SB_high", 135, 180);
+	dipho_mass->setRange("SB_high", 135., 180.);
+	dipho_mass->setRange("SB_low", 100., 115.);
 
-	//Model of sgn =2 gaussians
-//	cout << "#####	Model sgn" << endl;
+	//Model of sig =2 gaussians
+//	cout << "#####	Model sig" << endl;
 	//create model of background and fit	
 
-	RooRealVar *mean1_sgn = new RooRealVar("mean1_sgn","mean1_sgn",128,122,128);
-	RooRealVar *sigma1_sgn = new RooRealVar("sigma1_sgn","sigma1_sgn",9,0,10);
-	RooGaussian *model1_sgn = new RooGaussian("model1_sgn","model1_sgn",*dipho_mass,*mean1_sgn,*sigma1_sgn);
+	RooRealVar *mean1_sig = new RooRealVar("mean1_sig","mean1_sig",128.,122.,128.);
+	RooRealVar *sigma1_sig = new RooRealVar("sigma1_sig","sigma1_sig",9.,0.,10.);
+	RooGaussian *model1_sig = new RooGaussian("model1_sig","model1_sig",*dipho_mass,*mean1_sig,*sigma1_sig);
 
-	RooRealVar *mean2_sgn = new RooRealVar("mean2_sgn","mean2_sgn",120,120,130);
-	RooRealVar *sigma2_sgn = new RooRealVar("sigma2_sgn","sigma2_sgn",9,0,10);
-	RooGaussian *model2_sgn = new RooGaussian("model2_sgn","model2_sgn",*dipho_mass,*mean2_sgn,*sigma2_sgn);
+	RooRealVar *mean2_sig = new RooRealVar("mean2_sig","mean2_sig",120.,120.,130.);
+	RooRealVar *sigma2_sig = new RooRealVar("sigma2_sig","sigma2_sig",9.,0.,10.);
+	RooGaussian *model2_sig = new RooGaussian("model2_sig","model2_sig",*dipho_mass,*mean2_sig,*sigma2_sig);
 
-	RooRealVar *compo1_sgn = new RooRealVar("compo1_sgn","compo1_sgn",0,1);
-	RooAddPdf *model_sgn = new RooAddPdf("model_sgn","model_sgn",RooArgSet(*model1_sgn,*model2_sgn),RooArgSet(*compo1_sgn));
+	RooRealVar *compo1_sig = new RooRealVar("compo1_sig","compo1_sig",0.,1.);
+	RooAddPdf *model_sig = new RooAddPdf("model_sig","model_sig",RooArgSet(*model1_sig,*model2_sig),RooArgSet(*compo1_sig));
 
-
-	TTree* tree;
-	if( type < 0 ) tree = (TTree*) file_kin->Get("tree_gen_ggh");
-	else tree = (TTree*) file_kin->Get("tree_reco_ggh");
+	TChain* chain_sig = 0;
+	TTree* tree_sig = 0;
+	if( type < 0 )
+	{
+		tree_sig = (TTree*) file_kin->Get("tree_gen_ggh");
+		chain_sig = new TChain("tree_gen_ggh");
+		chain_sig->Add(file_kin->GetName());
+		chain_sig->Add( Form("%s/%s", file_kin->GetName(), "tree_gen_vbf") );
+	} else {
+		tree_sig = (TTree*) file_kin->Get("tree_reco_ggh");
+		chain_sig = new TChain("tree_reco_ggh");
+		chain_sig->Add(file_kin->GetName());
+		chain_sig->Add( Form("%s/%s", file_kin->GetName(), "tree_reco_vbf") );
+		if(KFAC) for(int ifac = 0 ; ifac < KFAC ; ifac++) chain_sig->Add( Form("%s/%s", file_kin->GetName(), "tree_reco_ggh") );
+	}
 
 	RooRealVar *weight = new RooRealVar("weight", "weight",0,100);
-	RooDataSet*	sim_sgn = new RooDataSet("sim_sgn", "sim_sgn", tree , RooArgSet(*dipho_mass,*dipho_pt,*dipho_ctheta,*category,*weight), selection.c_str(), "weight");
-//	RooDataSet*	sim_sgn__ = new RooDataSet("sim_sgn__", "sim_sgn__", tree , RooArgSet(*dipho_mass,*dipho_pt,*dipho_ctheta,*category,*weight), selection.c_str());
-	tree->Delete();
+	RooDataSet*	sim_sig = new RooDataSet("sim_sig", "sim_sig", chain_sig , RooArgSet(*dipho_mass,*dipho_pt,*dipho_ctheta,*category,*weight), selection.c_str(), "weight");
+//	RooDataSet*	sim_sig__ = new RooDataSet("sim_sig__", "sim_sig__", tree_sig , RooArgSet(*dipho_mass,*dipho_pt,*dipho_ctheta,*category,*weight), selection.c_str());
+//	tree_sig->Delete();
 
-	if( type < 0 ) tree = (TTree*) file_kin->Get("tree_gen_vbf");
-	else tree = (TTree*) file_kin->Get("tree_reco_vbf");
-	RooDataSet *dataset_vbf = new RooDataSet("dataset_vbf", "dataset_vbf", tree, RooArgSet(*dipho_mass,*dipho_pt,*dipho_ctheta,*category,*weight), selection.c_str(), "weight");
-	sim_sgn->append(*dataset_vbf);
+//	if( type < 0 ) tree_sig = (TTree*) file_kin->Get("tree_gen_vbf");
+//	else tree_sig = (TTree*) file_kin->Get("tree_reco_vbf");
+	RooDataSet *dataset_vbf = new RooDataSet("dataset_vbf", "dataset_vbf", tree_sig, RooArgSet(*dipho_mass,*dipho_pt,*dipho_ctheta,*category,*weight), selection.c_str(), "weight");
+//	sim_sig->append(*dataset_vbf);
 
+	tree_sig->Delete(); tree_sig = 0;
 	dataset_vbf->Delete();
-	model_sgn->fitTo(*sim_sgn, Range(110,140), SumW2Error(kTRUE));
-
-
+	model_sig->fitTo(*sim_sig, Range(110,140), SumW2Error(kTRUE));
 
 	//Check plot
-	RooPlot *framesgn = dipho_mass->frame();
-	sim_sgn->plotOn(framesgn, Binning(80), Invisible());
-	model_sgn->plotOn(framesgn);
-	RooDataSet* dataset_SMH = (RooDataSet *) sim_sgn->reduce("(dipho_mass<115 || dipho_mass>135)");
-//	dataset_SMH->plotOn(framesgn, Invisible());
-	dipho_mass->setRange("SB_low", 100., 115.);
-	dipho_mass->setRange("SB_high", 135., 180.);
-	if(doBlind) sim_sgn->plotOn(framesgn, Binning(80), MarkerColor(kBlue), CutRange("SB_low"));
-	if(doBlind) sim_sgn->plotOn(framesgn, Binning(80), MarkerColor(kBlue), CutRange("SB_high"));
-	else sim_sgn->plotOn(framesgn,MarkerColor(kBlue));
-	framesgn->SetMinimum(1e-5);	
-	setTDRStyle(); 
-	framesgn->Draw();
-//	canvas->SaveAs("frame_masssgn_data.pdf");
+	RooPlot *framesig = dipho_mass->frame();
+	sim_sig->plotOn(framesig, Binning(80), Invisible());
+	model_sig->plotOn(framesig, LineColor(kBlue), LineStyle(kDashed));
+//	RooDataSet* dataset_SMH = (RooDataSet *) sim_sig->reduce("(dipho_mass<115 || dipho_mass>135)");
+//	dataset_SMH->plotOn(framesig, Invisible());
+//	dipho_mass->setRange("SB_low", 100., 115.);
+//	dipho_mass->setRange("SB_high", 135., 180.);
+	if(doBlind) sim_sig->plotOn(framesig, Binning(80), MarkerColor(kBlue), CutRange("SB_low"), CutRange("SB_high"));
+	else sim_sig->plotOn(framesig, Binning(80), MarkerColor(kBlue));
+	framesig->SetMinimum(1e-5);	
+	framesig->Draw();
+//	canvas->SaveAs("frame_masssig_data.pdf");
 	canvas->SaveAs(Form("pdf/prefit_mass_%sMC_signal.pdf", doBlind ? "Blind" : "" ));
 	canvas->SaveAs(Form("root/prefit_mass_%sMC_signal.root", doBlind ? "Blind" : "" ));
 	canvas->SaveAs(Form("gif/prefit_mass_%sMC_signal.gif", doBlind ? "Blind" : "" ));
-//	cout << framesgn->chiSquare() << endl;
-	framesgn->Delete();
+//	cout << framesig->chiSquare() << endl;
+	framesig->Delete();
 
-	ws->import(*dataset_SMH,Rename("sim_sgn"));
+//	ws->import(*dataset_SMH,Rename("sim_sig"));
 
 	//#################################
 	// Modelackgroubd Bern4 
@@ -235,28 +245,48 @@ int AddModel(string inputfile, RooWorkspace *ws, int type, bool doBlind, string 
 	RooRealVar *coef3_bern_bkg = new RooRealVar("coef3_bern_bkg","coef3_bern_bkg",0.001,0,1);
 	RooBernstein *model_bkg = new RooBernstein("model_bkg","model_bkg",*dipho_mass,RooArgSet(*coef0_bern_bkg,*coef1_bern_bkg,*coef2_bern_bkg,*coef3_bern_bkg));
 
-	if(type == -1) tree = (TTree*) file_kin->Get("tree_gen_bkg");
-	else if(type == 0) tree = (TTree*) file_kin->Get("tree_reco_bkg");
-	else if(type == 1) tree = (TTree*) file_kin->Get("tree_data");
-//	int nentries = tree->GetEntries();
-//	cout << "after tree" << endl;
+	TTree * tree_bkg = 0;
+	TChain * chain_bkg = 0;
+	if(type == -1)
+	{
+		tree_bkg = (TTree*) file_kin->Get("tree_gen_bkg");
+		chain_bkg = new TChain("tree_gen_bkg");
+		chain_bkg->Add(file_kin->GetName());
+		chain_bkg->Add( Form("%s/%s", file_kin->GetName(), "tree_gen_ggh") );
+		chain_bkg->Add( Form("%s/%s", file_kin->GetName(), "tree_gen_vbf") );
+	} else if(type == 0) {
+		tree_bkg = (TTree*) file_kin->Get("tree_reco_bkg");
+		chain_bkg = new TChain("tree_reco_bkg");
+		chain_bkg->Add(file_kin->GetName());
+		chain_bkg->Add( Form("%s/%s", file_kin->GetName(), "tree_reco_ggh") );
+		chain_bkg->Add( Form("%s/%s", file_kin->GetName(), "tree_reco_vbf") );
+		if(KFAC) for(int ifac = 0 ; ifac < KFAC ; ifac++) chain_bkg->Add( Form("%s/%s", file_kin->GetName(), "tree_reco_ggh") );
+	}	else if(type == 1) {
+		tree_bkg = (TTree*) file_kin->Get("tree_data");
+		chain_bkg = new TChain("tree_data");
+		chain_bkg->Add(file_kin->GetName());
+	}
+//	int nentries = tree_bkg->GetEntries();
+//	cout << "after tree_bkg" << endl;
 
-	RooDataSet*	data = new RooDataSet("data","data",tree , RooArgSet(*dipho_mass,*dipho_ctheta,*category), selection.c_str());
-	RooDataSet* blinddata = (RooDataSet*) data->reduce("(dipho_mass<115 || dipho_mass>135)");
-	tree->Delete();
-	model_bkg->fitTo(*data);
+	RooDataSet*	data = 0;
+	if( type > 0 ) data = new RooDataSet("data","data", chain_bkg , RooArgSet(*dipho_mass,*dipho_ctheta,*category), selection.c_str());
+	else data = new RooDataSet("data","data", chain_bkg , RooArgSet(*dipho_mass,*dipho_ctheta,*category,*weight), selection.c_str(), "weight");
+//	RooDataSet* blinddata = (RooDataSet*) data->reduce("(dipho_mass<115 || dipho_mass>135)");
+	tree_bkg->Delete(); tree_bkg = 0;
+	model_bkg->fitTo(*data, SumW2Error(kTRUE));
 //	 coef0_bern_bkg->setRange(coef0_bern_bkg->getVal()-1*coef0_bern_bkg->getError(),coef0_bern_bkg->getVal()+1*coef0_bern_bkg->getError());
 //	 coef1_bern_bkg->setRange(coef1_bern_bkg->getVal()-1*coef1_bern_bkg->getError(),coef1_bern_bkg->getVal()+1*coef1_bern_bkg->getError());
 //	 coef2_bern_bkg->setRange(coef2_bern_bkg->getVal()-1*coef2_bern_bkg->getError(),coef2_bern_bkg->getVal()+1*coef2_bern_bkg->getError());
 //	 coef3_bern_bkg->setRange(coef3_bern_bkg->getVal()-1*coef3_bern_bkg->getError(),coef3_bern_bkg->getVal()+1*coef3_bern_bkg->getError());
 	
  //Check plot
-	RooPlot *frame = dipho_mass->frame(100,180,16);
+	RooPlot *frame = dipho_mass->frame(100,180,80);
 	data->plotOn(frame, Invisible());
-	model_bkg->plotOn(frame);
+	model_bkg->plotOn(frame, LineColor(kRed), LineStyle(kDashed));
 //	if(doBlind) blinddata->plotOn(frame);
-	if(doBlind) blinddata->plotOn(frame, CutRange("SB_low"));
-	if(doBlind) blinddata->plotOn(frame, CutRange("SB_high"));
+	if(doBlind) data->plotOn(frame, CutRange("SB_low"), CutRange("SB_high"));
+//	if(doBlind) blinddata->plotOn(frame, CutRange("SB_high"));
 	else data->plotOn(frame);
 //	model_bkg->plotOn(frame);
 	frame->SetMinimum(1.e-5);
@@ -269,15 +299,17 @@ int AddModel(string inputfile, RooWorkspace *ws, int type, bool doBlind, string 
 	frame->Delete();
 
 
-	RooRealVar *sgn_yield = new RooRealVar("sgn_yield","sgn_yield",0.,500.);
+	RooRealVar *sig_yield = new RooRealVar("sig_yield","sig_yield",0., 500. * (1. + KFAC));
 	RooRealVar *bkg_yield = new RooRealVar("bkg_yield","bkg_yield",0.,2.e5);
-	RooAddPdf *model_sgnbkg= new RooAddPdf("model_sgnbkg","model_sgnbkg",RooArgList(*model_sgn,*model_bkg),RooArgList(*sgn_yield,*bkg_yield));	
+	RooAddPdf *model_sigbkg= new RooAddPdf("model_sigbkg","model_sigbkg",RooArgList(*model_sig,*model_bkg),RooArgList(*sig_yield,*bkg_yield));	
 	// Import all pdf and variables (implicitely) into workspace
 
-//	ws->import(*category);
-//	ws->import(*dipho_ctheta);
-	ws->import(*model_sgnbkg);
-//	ws->import(*dipho_pt);
+	ws->import(*category);
+	ws->import(*dipho_ctheta);
+	ws->import(*dipho_pt);
+	ws->import(*dipho_mass);
+	ws->import(*sim_sig);
+	ws->import(*model_sigbkg);
 	file_kin->Close();
 //	canvas->Close();
 	canvas->Clear();
@@ -301,13 +333,13 @@ int AddData(RooWorkspace *ws, int type, bool doBlind, string cut, string cut_nam
 	RooRealVar *dipho_pt = ws->var("dipho_pt");
 	RooRealVar *dipho_ctheta = ws->var("dipho_ctheta");
 	RooRealVar *category = ws->var("category");
-	RooRealVar *weight = new RooRealVar("weight", "weight",0,100);
+	RooRealVar *weight = new RooRealVar("weight", "weight",0.,1.e5);
 	TFile *file_kin=0;
 	file_kin = new TFile("kin_dist.root");
 
 	if(DEBUG) cout << "Create trees and chains" << endl;
-	TChain * chain_data;
-	TTree *tree_data;
+	TChain * chain_data = 0;
+	TTree *tree_data = 0;
 	if(type == -1)
 	{
 		tree_data = (TTree *) file_kin->Get("tree_gen_bkg");
@@ -319,20 +351,26 @@ int AddData(RooWorkspace *ws, int type, bool doBlind, string cut, string cut_nam
 		chain_data->Add(file_kin->GetName());
 		chain_data->Add( Form("%s/%s", file_kin->GetName(), "tree_reco_ggh") );
 		chain_data->Add( Form("%s/%s", file_kin->GetName(), "tree_reco_vbf") );
+		if(KFAC) for(int ifac = 0 ; ifac < KFAC ; ifac++) chain_data->Add( Form("%s/%s", file_kin->GetName(), "tree_reco_ggh") );
 	} else if(type == 1) {
 		tree_data = (TTree *) file_kin->Get("tree_data");
 		chain_data = new TChain("tree_data");
 		chain_data->Add(file_kin->GetName());
 	}
 	if(DEBUG) cout << "dumb test" << endl;
-	if(DEBUG) chain_data->Draw("dipho_mass", "", "weight");
+	if(DEBUG) chain_data->Draw("dipho_mass", "weight");
 	if(DEBUG) canvas->Print("test.pdf");
 //	cout << "tree test" << tree_data->GetEntries() << endl;
 //	RooDataSet *dataset = new RooDataSet("dataset","dataset",tree_data,RooArgSet(*dipho_mass,*dipho_pt,*dipho_ctheta,*category), selection.c_str());
-	if(DEBUG) cout << "Creating RooDataSet" << endl;
+	if(DEBUG) cout << "Creating RooDataSet (type= " << type << " )" << endl;
 	RooDataSet *dataset = 0;
-	if( type > 0 ) dataset = new RooDataSet("dataset","dataset",chain_data,RooArgSet(*dipho_mass,*dipho_pt,*dipho_ctheta,*category), selection.c_str());
-	else dataset = new RooDataSet("dataset","dataset",chain_data,RooArgSet(*dipho_mass,*dipho_pt,*dipho_ctheta,*category, *weight), selection.c_str(), "weight");
+	if( type > 0 )
+		dataset = new RooDataSet("dataset","dataset",chain_data,RooArgSet(*dipho_mass,*dipho_pt,*dipho_ctheta,*category), selection.c_str());
+	else
+	{
+		if(DEBUG) cout << "HERE" << endl;
+		dataset = new RooDataSet("dataset","dataset",chain_data,RooArgSet(*dipho_mass,*dipho_pt,*dipho_ctheta,*category, *weight), selection.c_str(), "weight");
+	}
 //	else dataset = new RooDataSet("dataset","dataset",chain_data,RooArgSet(*dipho_mass,*dipho_pt,*dipho_ctheta,*category), selection.c_str());
 //	if(DEBUG) cout << "Creating blinded RooDataSet" << endl;
 //	string blindselection = selection + " && (dipho_mass<115 || dipho_mass>135)";	
@@ -342,7 +380,7 @@ int AddData(RooWorkspace *ws, int type, bool doBlind, string cut, string cut_nam
 
 	//variable for blinding correction
 //	RooRealVar *ntree_data = new RooRealVar("ntree_data","ntree_data",tree_data->GetEntries(),0,tree_data->GetEntries());
-	RooRealVar *ntree_data = new RooRealVar("ntree_data","ntree_data",chain_data->GetEntries(),0,chain_data->GetEntries());
+//	RooRealVar *ntree_data = new RooRealVar("ntree_data","ntree_data",chain_data->GetEntries(),0,chain_data->GetEntries());
 
 	if(DEBUG) cout << "Delete stuff" << endl;
 	chain_data->Delete();		
@@ -362,7 +400,7 @@ int AddData(RooWorkspace *ws, int type, bool doBlind, string cut, string cut_nam
 	if(DEBUG) cout << "import datasets into workspace" << endl;
 	ws->import(*dataset);
 //	ws->import(*dataset_blind);
-	ws->import(*ntree_data);
+//	ws->import(*ntree_data);
 
 	if(DEBUG) cout << "closing input file" << endl;
 	file_kin->Close();
@@ -380,7 +418,7 @@ int DoSPlot(RooWorkspace* ws, int const &cut, int const &categ, TCanvas *canvas)
 	cout << "\t#####\tDoSPlot\t#####" << endl;
 //	cout << "in DoSplot" << endl;
 	setTDRStyle();
-	RooAbsPdf *model_sgnbkg = ws->pdf("model_sgnbkg");
+	RooAbsPdf *model_sigbkg = ws->pdf("model_sigbkg");
 	RooDataSet *dataset = (RooDataSet*) ws->data("dataset");
 //	RooDataSet *dataset_blind = (RooDataSet *) ws->data("dataset_blind");
 	RooRealVar *dipho_mass = ws->var("dipho_mass");	
@@ -390,18 +428,18 @@ int DoSPlot(RooWorkspace* ws, int const &cut, int const &categ, TCanvas *canvas)
 	 RooRealVar *coef1_bern_bkg = ws->var("coef1_bern_bkg");	 coef1_bern_bkg->setConstant(1);
 	 RooRealVar *coef2_bern_bkg = ws->var("coef2_bern_bkg");	 coef2_bern_bkg->setConstant(1);
 	 RooRealVar *coef3_bern_bkg = ws->var("coef3_bern_bkg");	 coef3_bern_bkg->setConstant(1);
-	 RooRealVar *compo1_sgn = ws->var("compo1_sgn");	 compo1_sgn->setConstant(1);
-	 RooRealVar* mean1_sgn = ws->var("mean1_sgn");	 mean1_sgn->setConstant(1);
-	 RooRealVar* sigma1_sgn = ws->var("sigma1_sgn");	 sigma1_sgn->setConstant(1);
-	 RooRealVar* mean2_sgn = ws->var("mean2_sgn");	 mean2_sgn->setConstant(1);
-	 RooRealVar* sigma2_sgn = ws->var("sigma2_sgn");	 sigma2_sgn->setConstant(1);
+	 RooRealVar *compo1_sig = ws->var("compo1_sig");	 compo1_sig->setConstant(1);
+	 RooRealVar* mean1_sig = ws->var("mean1_sig");	 mean1_sig->setConstant(1);
+	 RooRealVar* sigma1_sig = ws->var("sigma1_sig");	 sigma1_sig->setConstant(1);
+	 RooRealVar* mean2_sig = ws->var("mean2_sig");	 mean2_sig->setConstant(1);
+	 RooRealVar* sigma2_sig = ws->var("sigma2_sig");	 sigma2_sig->setConstant(1);
 	 
-	 RooRealVar *sgn_yield = ws->var("sgn_yield");
+	 RooRealVar *sig_yield = ws->var("sig_yield");
 	 RooRealVar *bkg_yield = ws->var("bkg_yield");
 	 
 //	 cout << "Model variables retrieved and set constant" << endl;
 
-	 model_sgnbkg->fitTo(*dataset, SumW2Error(kTRUE));	
+	 model_sigbkg->fitTo(*dataset, SumW2Error(kTRUE));	
 	// Check plot
 	char buffer_file[2][3][10]={{""}},buffercut[10]="",buffercateg[30]="";
 	sprintf(buffer_file[1][0],"gif");
@@ -420,31 +458,35 @@ int DoSPlot(RooWorkspace* ws, int const &cut, int const &categ, TCanvas *canvas)
 
 //	cout << "starting splot" << endl;
 	RooDataSet *Wdataset = new RooDataSet(*dataset,"Wdataset");
-	SPlot("splot_sgnbkg","splot_sgnbkg", *Wdataset, model_sgnbkg, RooArgList(*sgn_yield, *bkg_yield));	//Create splot
+	SPlot("splot_sigbkg","splot_sigbkg", *Wdataset, model_sigbkg, RooArgList(*sig_yield, *bkg_yield));	//Create splot
 	ws->import(*Wdataset,Rename("Wdataset"));
-//	cout << sgn_yield->getVal() << endl;
+//	cout << sig_yield->getVal() << endl;
 
 	TLatex latex; latex.SetNDC(1); char buffer[100];
 	TLegend *legend = new TLegend(0.6,0.6,0.89,0.89);
 	legend->SetFillColor(0);
 	legend->SetBorderSize(0);
 //	legend->SetTextSize(0.04);
-	RooPlot* frame_mass = dipho_mass->frame(100,180,80);
+	RooPlot* frame_mass = dipho_mass->frame(100,180,40);
 //	frame_mass->UseCurrentStyle();
 //	frame_mass->GetYaxis()->SetLabelSize(0.03);
 	dataset->plotOn(frame_mass,Name("data"));
-//	 model_sgnbkg->plotOn(frame_mass,Name("full"));
-//	 model_sgnbkg->plotOn(frame_mass, Components("model_sgn"), LineColor(kGreen), LineStyle(kDashed),Name("sgn"));
-	model_sgnbkg->plotOn(frame_mass, Components("model_bkg"), LineColor(kRed), LineStyle(kDashed),Name("bkg"),Normalization(dataset->sumEntries(),RooAbsReal::NumEvent));
+//	 model_sigbkg->plotOn(frame_mass,Name("full"));
+//	 model_sigbkg->plotOn(frame_mass, Components("model_sig"), LineColor(kGreen), LineStyle(kDashed),Name("sig"));
+	model_sigbkg->plotOn(frame_mass, Components("model_bkg"), LineColor(kRed), LineStyle(kDashed),Name("bkg"),Normalization(dataset->sumEntries(),RooAbsReal::NumEvent));
+	model_sigbkg->plotOn(frame_mass, Components("model_sig"), LineColor(kBlue), LineStyle(kDashed),Name("sig"),Normalization(dataset->sumEntries(),RooAbsReal::NumEvent));
+	model_sigbkg->plotOn(frame_mass, LineColor(kRed),Name("sig+bkg"),Normalization(dataset->sumEntries(),RooAbsReal::NumEvent));
 	frame_mass->SetMinimum(1.e-5);
 	frame_mass->Draw();
-	//	latex.DrawLatex(0.45,0.86,"sgn yield");
-	sprintf(buffer,"fitted = %3.0f",sgn_yield->getVal()); 
+	//	latex.DrawLatex(0.45,0.86,"sig yield");
+	sprintf(buffer,"fitted = %3.0f",sig_yield->getVal()); 
 	//latex.DrawLatex(0.45,0.81,buffer);
-	legend->AddEntry(frame_mass->findObject("data"),"Data","lpe");
+	legend->AddEntry(frame_mass->findObject("data"),"data","lpe");
 	//	legend->AddEntry(frame_mass->findObject("full"),"Full Fit","l");
-	// legend->AddEntry(frame_mass->findObject("sgn"),"sgn Fit","l");
-	legend->AddEntry(frame_mass->findObject("bkg"),"bkg Fit","l");
+	// legend->AddEntry(frame_mass->findObject("sig"),"sig Fit","l");
+	legend->AddEntry(frame_mass->findObject("sig+bkg"), "sig+bkg fit", "l");
+	legend->AddEntry(frame_mass->findObject("bkg"), "bkg fit", "l");
+	legend->AddEntry(frame_mass->findObject("sig"), "sig fit", "l");
 	legend->Draw();
 
 	if (cut) {
@@ -458,7 +500,7 @@ int DoSPlot(RooWorkspace* ws, int const &cut, int const &categ, TCanvas *canvas)
 		latex.DrawLatex(0.4,0.96,buffer);
 	}
 	for (int file=0; file<3; file++ ) {
-		sprintf(buffer,"%sSPlotInput_pt%s%s_datasgn.%s",buffer_file[0][file],buffercut,buffercateg,buffer_file[1][file]);
+		sprintf(buffer,"%sSPlotInput_pt%s%s_datasig.%s",buffer_file[0][file],buffercut,buffercateg,buffer_file[1][file]);
 		canvas->SaveAs(buffer);
 	}
 	
@@ -476,17 +518,20 @@ int MakePlot(RooWorkspace* ws, int const &cut, int const &categ, bool doBlind, s
 {
 	cout << "\t#####\tMakePlot\t#####" << endl;
 	setTDRStyle();
+	if(DEBUG) cout << "Initialization" << endl;
 	// collect useful variables
 	RooRealVar *dipho_pt = ws->var("dipho_pt");
 	RooRealVar *dipho_mass = ws->var("dipho_mass");
-	RooRealVar *sgn_yield = ws->var("sgn_yield");
+	RooRealVar *sig_yield = ws->var("sig_yield");
 	RooRealVar *bkg_yield = ws->var("bkg_yield");
 	RooDataSet *Wdataset = (RooDataSet*) ws->data("Wdataset");
-	RooDataSet *dataset;
-	dataset = (RooDataSet*) ws->data("dataset");
+	RooDataSet *dataset = (RooDataSet*) ws->data("dataset");
+	dipho_mass->setRange("SB_low",100,115);
+	dipho_mass->setRange("SB_high",135,180);
 //	if(doBlind) dataset = (RooDataSet*) ws->data("dataset_blind");
 //	else dataset = (RooDataSet*) ws->data("dataset");
 
+	if(DEBUG) cout << "display settings" << endl;
 	TLatex latex;
 	latex.SetNDC();	
 	char buffer[100];
@@ -513,55 +558,55 @@ int MakePlot(RooWorkspace* ws, int const &cut, int const &categ, bool doBlind, s
 	//----------------------------
 
 
-
+	if(DEBUG) cout << "prepare stuff for blinded plots" << endl;
 	//compute integral of pdf in sidebands for later normalization of blind plots
-	dipho_mass->setRange("low_SB",100,115);
-	dipho_mass->setRange("high_SB",135,180);
-	RooAbsReal *int_sgn;
+	RooAbsReal *int_sig;
 	RooAbsReal *int_bkg;
-	RooRealVar *ntree_data;
+//	RooRealVar *ntree_data;
 	RooDataSet *sw_bkg;
-	RooDataSet *sw_sgn;
+	RooDataSet *sw_sig;
 	if(doBlind)
 	{
-		RooAddPdf *model_sgn = (RooAddPdf *) ws->pdf("model_sgn");
-		int_sgn = model_sgn->createIntegral(*dipho_mass,Range("low_SB,high_SB"),NormSet(*dipho_mass));
-//		cout << "int_sgn->getVal()= " << int_sgn->getVal() << endl;
+		if(DEBUG) cout << "treatment for blinded stuff" << endl;
+		RooAddPdf *model_sig = (RooAddPdf *) ws->pdf("model_sig");
+		int_sig = model_sig->createIntegral(*dipho_mass,Range("SB_low,SB_high"),NormSet(*dipho_mass));
+//		cout << "int_sig->getVal()= " << int_sig->getVal() << endl;
 		RooAddPdf *model_bkg = (RooAddPdf *) ws->pdf("model_bkg");
-		int_bkg = model_bkg->createIntegral(*dipho_mass,Range("low_SB,high_SB"),NormSet(*dipho_mass));
+		int_bkg = model_bkg->createIntegral(*dipho_mass,Range("SB_low,SB_high"),NormSet(*dipho_mass));
 //		cout << "int_bkg->getVal()= " << int_bkg->getVal() << endl;
 
-		ntree_data = (RooRealVar *) ws->var("ntree_data");
+//		ntree_data = (RooRealVar *) ws->var("ntree_data");
 //		cout << ntree_data->getVal() << endl;
 		//Creating functions for corrected weights
-		RooRealVar *sgn_yield_sw = new RooRealVar("sgn_yield_sw","sgn_yield_sw",0,-100,100);
-		RooRealVar *bkg_yield_sw = new RooRealVar("bkg_yield_sw","bkg_yield_sw",0,-100,100);
+		RooRealVar *sig_yield_sw = new RooRealVar("sig_yield_sw","sig_yield_sw",0.,-100. * (1. + KFAC), 100. * (1. + KFAC));
+		RooRealVar *bkg_yield_sw = new RooRealVar("bkg_yield_sw","bkg_yield_sw",0.,-100.,100.);
 	
 		RooDataSet *dum_swbkg = new RooDataSet("dum_swbkg","dum_swbkg",Wdataset,*Wdataset->get(),"dipho_mass<115 || dipho_mass>135","bkg_yield_sw");
 		RooRealVar *sum_swbkg = new RooRealVar("sum_swbkg","sum_swbkg",dum_swbkg->sumEntries());
-		RooDataSet *dum_swsgn = new RooDataSet("dum_swsgn","dum_swsgn",Wdataset,*Wdataset->get(),"dipho_mass<115 || dipho_mass>135","sgn_yield_sw");
-		RooRealVar *sum_swsgn = new RooRealVar("sum_swsgn","sum_swsgn",dum_swsgn->sumEntries());
+		RooDataSet *dum_swsig = new RooDataSet("dum_swsig","dum_swsig",Wdataset,*Wdataset->get(),"dipho_mass<115 || dipho_mass>135","sig_yield_sw");
+		RooRealVar *sum_swsig = new RooRealVar("sum_swsig","sum_swsig",dum_swsig->sumEntries());
 	
-		RooFormulaVar *sw_blindsgn = new RooFormulaVar("sw_blindsgn","sw_blindsgn","@0*@1*@2/@3",RooArgSet(*sgn_yield_sw,*sgn_yield,*int_sgn,*sum_swsgn));
-		Wdataset->addColumn(*sw_blindsgn); 
+		RooFormulaVar *sw_blindsig = new RooFormulaVar("sw_blindsig","sw_blindsig","@0*@1*@2/@3",RooArgSet(*sig_yield_sw,*sig_yield,*int_sig,*sum_swsig));
+		Wdataset->addColumn(*sw_blindsig); 
 		RooFormulaVar *sw_blindbkg = new RooFormulaVar("sw_blindbkg","sw_blindbkg","@0*@1*@2/@3",RooArgSet(*bkg_yield_sw,*bkg_yield,*int_bkg,*sum_swbkg));
 		Wdataset->addColumn(*sw_blindbkg);	
 	
 		//create datasets weighted with corrected weights
 		//Create datasets blinded sweighted
 		sw_bkg = new RooDataSet("sw_bkg","sw_bkg",Wdataset,*Wdataset->get(),"dipho_mass<115 || dipho_mass>135","sw_blindbkg");
-		sw_sgn = new RooDataSet("sw_sgn","sw_sgn",Wdataset,*Wdataset->get(),"dipho_mass<115 || dipho_mass>135","sw_blindsgn");
+		sw_sig = new RooDataSet("sw_sig","sw_sig",Wdataset,*Wdataset->get(),"dipho_mass<115 || dipho_mass>135","sw_blindsig");
 		cout << "blinded sweighted dataset created" << endl;
-//		cout << "somme weight : " << sw_bkg->sumEntries()+sw_sgn->sumEntries() << "	 " << Wdataset->sumEntries() << " " << endl;
+//		cout << "somme weight : " << sw_bkg->sumEntries()+sw_sig->sumEntries() << "	 " << Wdataset->sumEntries() << " " << endl;
 	
 	}
+	if(DEBUG) cout << "datasets to be used for plotting" << endl;
 	sw_bkg = new RooDataSet("sw_bkg","sw_bkg",Wdataset,*Wdataset->get(),"","bkg_yield_sw");
-	sw_sgn = new RooDataSet("sw_sgn","sw_sgn",Wdataset,*Wdataset->get(),"","sgn_yield_sw");
+	sw_sig = new RooDataSet("sw_sig","sw_sig",Wdataset,*Wdataset->get(),"","sig_yield_sw");
 	//---------------------------------
 
 
 	//Plotting bkg sPlot output
- 
+	if(DEBUG) cout << "Plotting bkg sPlot output" << endl; 
 	pad_up->Draw();
 	pad_up->cd();
 	RooPlot *frame_pt = dipho_pt->frame(NBINS);
@@ -571,16 +616,18 @@ int MakePlot(RooWorkspace* ws, int const &cut, int const &categ, bool doBlind, s
 //	frame_pt->UseCurrentStyle();
 	frame_pt->Draw();
 
+	if(DEBUG) cout << "prepare legend" << endl;
 	legend = new TLegend(0.6,0.6,0.89,0.89);
 	legend->SetFillColor(0);
 	legend->SetBorderSize(0);
 //	legend->SetTextSize(0.05);
 //	legend->AddEntry("","Data","");
 	legend->AddEntry("sw_bkg", "Data * sWeight(background)","lpe");
-	legend->AddEntry("blind_bkg",Form("Background", doBlind ? " blinded" : ""),"lpe");
+	legend->AddEntry("blind_bkg",Form("Background%s", doBlind ? " blinded" : ""),"lpe");
 	legend->Draw();
 
-	// creata ratio histogram (sw-data)/data
+	if(DEBUG) cout << "create ratio histogram" << endl;
+	// create ratio histogram (sw-data)/data
 	TH1F *hist_fit = new TH1F("hist_fit","hist_fit",NBINS,0,NBINS*WIDTH);
 	dataset->fillHistogram(hist_fit,*dipho_pt);
 	TH1F *hist_set = new TH1F("hist_set","hist_set",NBINS,0,NBINS*WIDTH);
@@ -590,6 +637,7 @@ int MakePlot(RooWorkspace* ws, int const &cut, int const &categ, bool doBlind, s
 	hist_set->Add(hist_fit,-1);
 	hist_set->Divide(hist_fit);	
 
+	if(DEBUG) cout << "redo axis stuff for the ratios" << endl;
 	hist_set->GetYaxis()->SetTitle("#frac{N_{sPlot}-N_{dat}}{N_{dat}}");
 	hist_set->GetYaxis()->SetTitleOffset(0.35);
 	hist_set->GetXaxis()->SetTitle(frame_pt->GetXaxis()->GetTitle());
@@ -599,12 +647,14 @@ int MakePlot(RooWorkspace* ws, int const &cut, int const &categ, bool doBlind, s
 //	hist_set->GetXaxis()->SetTitleOffset(1);
 	hist_set->GetYaxis()->SetTitleSize(0.15);
 	
+	if(DEBUG) cout << "draw the ratio hist" << endl;
 	canvas->cd();
 	pad_down->Draw();
 	pad_down->cd();
 	hist_set->Draw();
 	line->Draw("SAME");
 
+	if(DEBUG) cout << "add legend for categories" << endl;
 	if (cut) {
 		sprintf(buffer,"cos(#theta*) > %1.3f",cut/1000.);
 		canvas->cd();
@@ -615,11 +665,13 @@ int MakePlot(RooWorkspace* ws, int const &cut, int const &categ, bool doBlind, s
 		canvas->cd();
 		latex.DrawLatex(0.4,0.96,buffer);
 	}
+	if(DEBUG) cout << "save plot" << endl;
 	for (int file=0; file<3; file++ ) {
-		sprintf(buffer,"%ssplot_pt%s%s_datasgnbkg.%s",buffer_file[0][file],buffercut,buffercateg,buffer_file[1][file]);
+		sprintf(buffer,"%ssplot_pt%s%s_datasigbkg.%s",buffer_file[0][file],buffercut,buffercateg,buffer_file[1][file]);
 		canvas->SaveAs(buffer);
 	}
 
+	if(DEBUG) cout << "cleaning a bit all the remaining stuff" << endl;
 	frame_pt->Delete();
 	legend->Delete();
  
@@ -628,13 +680,13 @@ int MakePlot(RooWorkspace* ws, int const &cut, int const &categ, bool doBlind, s
 
 //	cout << "sw bkg drawn" << endl;
 
-
+	if(DEBUG) cout << "Plotting sig sPlot output" << endl;
 	// plot weighted signal events and first fit
 	pad_up->cd();
 	frame_pt = dipho_pt->frame(NBINS);
-	sw_sgn->plotOn(frame_pt,MarkerColor(2),LineColor(2),DataError(RooAbsData::SumW2),Name("sw_sgn"),Binning(NBINS,0,dipho_pt->getMax()));// plot weighted sgn events
-	RooDataSet *sim_sgn = (RooDataSet *) ws->data("sim_sgn");
-	sim_sgn->plotOn(frame_pt,MarkerColor(3),LineColor(3),DataError(RooAbsData::SumW2),Name("sgn_sm"),Binning(NBINS,0,dipho_pt->getMax()));
+	sw_sig->plotOn(frame_pt,MarkerColor(kRed),LineColor(kRed),DataError(RooAbsData::SumW2),Name("sw_sig"),Binning(NBINS,0,dipho_pt->getMax()));// plot weighted sig events
+	RooDataSet *sim_sig = (RooDataSet *) ws->data("sim_sig");
+	sim_sig->plotOn(frame_pt,MarkerColor(kGreen),LineColor(kGreen),DataError(RooAbsData::SumW2),Name("sig_sm"),Binning(NBINS,0,dipho_pt->getMax()));
 
 //	frame_pt->UseCurrentStyle();
 //	frame_pt->GetXaxis()->SetTitleSize(0);
@@ -642,20 +694,22 @@ int MakePlot(RooWorkspace* ws, int const &cut, int const &categ, bool doBlind, s
 	frame_pt->SetMinimum(1.e-5);
 	frame_pt->Draw();
 
+	if(DEBUG) cout << "prepare legend" << endl;
 	legend = new TLegend(0.6,0.6,0.89,0.89);
 	legend->SetFillColor(0);
 	legend->SetBorderSize(0);
 //	legend->SetTextSize(0.05);
 //	legend->AddEntry("","Data","");
-	legend->AddEntry("sw_sgn", "Data #times sWeight(signal)","lpe");
-	legend->AddEntry("sgn_sm","SM Higgs MC","lpe");
+	legend->AddEntry("sw_sig", "Data #times sWeight(signal)","lpe");
+	legend->AddEntry("sig_sm","SM Higgs MC","lpe");
 	legend->Draw();
 
+	if(DEBUG) cout << "create ratio histogram" << endl;
 	//compare signal with SMModel
 	hist_fit = new TH1F("hist_fit","hist_fit",NBINS,0,NBINS*WIDTH);
-	sim_sgn->fillHistogram(hist_fit,*dipho_pt);
+	sim_sig->fillHistogram(hist_fit,*dipho_pt);
 	hist_set = new TH1F("hist_set","hist_set",NBINS,0,NBINS*WIDTH);
-	sw_sgn->fillHistogram(hist_set,*dipho_pt);	
+	sw_sig->fillHistogram(hist_set,*dipho_pt);	
 	hist_set->SetTitle("test");
 	//	line = new TLine(0,0,NBINS*WIDTH,0);
 	line->SetLineColor(kRed);
@@ -672,6 +726,7 @@ int MakePlot(RooWorkspace* ws, int const &cut, int const &categ, bool doBlind, s
 //	hist_set->GetXaxis()->SetTitleOffset(1);
 	hist_set->GetYaxis()->SetTitleSize(0.15);
 	
+	if(DEBUG) cout << "draw the ratio hist" << endl;
 	canvas->cd();
 	pad_down->Draw();
 	pad_down->cd();
@@ -680,6 +735,7 @@ int MakePlot(RooWorkspace* ws, int const &cut, int const &categ, bool doBlind, s
 
 //	cout << "hist_set drawn" << endl;
 
+	if(DEBUG) cout << "add legend for categories" << endl;
 	if (cut) {
 		sprintf(buffer,"cos(#theta*) > %1.3f",cut/1000.);
 		canvas->cd();
@@ -690,11 +746,12 @@ int MakePlot(RooWorkspace* ws, int const &cut, int const &categ, bool doBlind, s
 		canvas->cd();
 		latex.DrawLatex(0.4,0.96,buffer);
 	}
+	if(DEBUG) cout << "save plot" << endl;
 	for (int file=0; file<3; file++ ) {
-		sprintf(buffer,"%ssplot_pt%s%s_datasgn.%s",buffer_file[0][file],buffercut,buffercateg,buffer_file[1][file]);
+		sprintf(buffer,"%ssplot_pt%s%s_datasig.%s",buffer_file[0][file],buffercut,buffercateg,buffer_file[1][file]);
 		canvas->SaveAs(buffer);
 	}
-//	cout << "weigthed sgn drawn" << endl;
+//	cout << "weigthed sig drawn" << endl;
 	canvas->Clear();
 //	cout << "end MakePlot" << endl;
 	return 0;
